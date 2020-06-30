@@ -2760,6 +2760,9 @@
  */
 //#define SPINDLE_FEATURE
 #define LASER_FEATURE
+#define CUTTER_POWER_DISPLAY PERCENT
+#define SPINDLE_LASER_ENA_PIN P1_00
+#define SPINDLE_LASER_PWM_PIN P2_00
 #if EITHER(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_HIGH     false  // Set to "true" if the on/off function is active HIGH
   #define SPINDLE_LASER_PWM             true   // Set to "true" if your controller supports setting the speed/power
