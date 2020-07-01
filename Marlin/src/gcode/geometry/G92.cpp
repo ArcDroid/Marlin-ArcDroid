@@ -46,6 +46,7 @@ void GcodeSuite::G92() {
     #if ENABLED(CNC_COORDINATE_SYSTEMS)
       case 1: {
         // Zero the G92 values and restore current position
+        //// FIXME
         #if !IS_SCARA
           LOOP_XYZ(i) if (position_shift[i]) {
             position_shift[i] = 0;
@@ -71,6 +72,7 @@ void GcodeSuite::G92() {
                       v = i == E_AXIS ? l : LOGICAL_TO_NATIVE(l, i),
                       d = v - current_position[i];
           if (!NEAR_ZERO(d)) {
+            //// FIXME
             #if IS_SCARA || !HAS_POSITION_SHIFT
               if (i == E_AXIS) sync_E = true; else sync_XYZ = true;
               current_position[i] = v;        // Without workspaces revert to Marlin 1.0 behavior
