@@ -594,6 +594,10 @@ void restore_feedrate_and_scaling() {
           delta_clip_start_height = soft_endstop.max[axis] - delta_safe_distance_from_top();
         default: break;
       }
+    #elif IS_SCARA
+      //DEBUG_ECHOLNPAIR("delta_max_radius", SCARA_PRINTABLE_RADIUS);
+      delta_max_radius = SCARA_PRINTABLE_RADIUS;
+      delta_max_radius_2 = sq(SCARA_PRINTABLE_RADIUS);
 
     #elif HAS_HOTEND_OFFSET
 
@@ -645,9 +649,15 @@ void restore_feedrate_and_scaling() {
       #endif
 
       if (TERN1(IS_SCARA, TEST(axis_homed, X_AXIS) && TEST(axis_homed, Y_AXIS))) {
-        const float dist_2 = HYPOT2(target.x - offs.x, target.y - offs.y);
+        target.x -= SCARA_OFFSET_X;
+        target.y -= SCARA_OFFSET_Y;
+        const float dist_2 = HYPOT2(target.x, target.y);
+        //DEBUG_ECHOLNPAIR("dist_2 ", dist_2, " ", delta_max_radius_2);
         if (dist_2 > delta_max_radius_2)
           target *= float(delta_max_radius / SQRT(dist_2)); // 200 / 300 = 0.66
+
+        target.x += SCARA_OFFSET_X;
+        target.y += SCARA_OFFSET_Y;
       }
 
     #else
@@ -727,11 +737,15 @@ FORCE_INLINE void segment_idle(millis_t &next_idle_ms) {
    * this is replaced by segmented_line_to_destination below.
    */
   inline bool line_to_destination_kinematic() {
+    //DEBUG_ECHOLNPAIR("line_to_destination_kinematic", __LINE__);
 
     // Get the top feedrate of the move in the XY plane
     const float scaled_fr_mm_s = MMS_SCALED(feedrate_mm_s);
 
     const xyze_float_t diff = destination - current_position;
+    //DEBUG_POS("destination", destination);
+    //DEBUG_POS("current_position", current_position);
+    //DEBUG_POS("diff", diff);
 
     // If the move is only in Z/E don't split up the move
     if (!diff.x && !diff.y) {
@@ -765,6 +779,8 @@ FORCE_INLINE void segment_idle(millis_t &next_idle_ms) {
 
     // At least one segment is required
     NOLESS(segments, 1U);
+
+    //DEBUG_ECHOLNPAIR("line_to_destination_kinematic", __LINE__);
 
     // The approximate length of each segment
     const float inv_segments = 1.0f / float(segments),
@@ -1032,7 +1048,9 @@ FORCE_INLINE void segment_idle(millis_t &next_idle_ms) {
  * Before exit, current_position is set to destination.
  */
 void prepare_line_to_destination() {
+  //DEBUG_POS("destination", destination);
   apply_motion_limits(destination);
+  //DEBUG_POS("limitdestination", destination);
 
   #if EITHER(PREVENT_COLD_EXTRUSION, PREVENT_LENGTHY_EXTRUDE)
 
@@ -1309,7 +1327,10 @@ void do_homing_move(const AxisEnum axis, const float distance, const feedRate_t 
     TERN_(SENSORLESS_HOMING, stealth_states = start_sensorless_homing_per_axis(axis));
   }
 
-  #if IS_SCARA
+  //DEBUG_ECHOLNPAIR(__FILE__, __LINE__);
+
+  #if IS_SCARA && FALSE
+
     // Tell the planner the axis is at 0
     current_position[axis] = 0;
     sync_plan_position();
@@ -1318,9 +1339,12 @@ void do_homing_move(const AxisEnum axis, const float distance, const feedRate_t 
   #else
     // Get the ABC or XYZ positions in mm
     abce_pos_t target = planner.get_axis_positions_mm();
-
-    target[axis] = 0;                         // Set the single homing axis to 0
-    planner.set_machine_position_mm(target);  // Update the machine position
+    //DEBUG_ECHOLNPAIR("target[axis] = ", target[axis]);
+    target[axis] = 0;
+    planner.set_machine_position_mm(target);
+    //DEBUG_ECHOLNPAIR("target[axis] = ", target[axis]);
+    target[axis] = distance;
+    //DEBUG_ECHOLNPAIR("target[axis] = ", target[axis]);
 
     #if HAS_DIST_MM_ARG
       const xyze_float_t cart_dist_mm{0};
@@ -1532,9 +1556,11 @@ void backout_to_tmc_homing_phase(const AxisEnum axis) {
 
 void homeaxis(const AxisEnum axis) {
 
-  #if IS_SCARA
+  #if IS_SCARA && FALSE
     // Only Z homing (with probe) is permitted
-    if (axis != Z_AXIS) { BUZZ(100, 880); return; }
+    if (axis != Z_AXIS) {
+      DEBUG_ECHOLNPGM("SCARA can only home XY together!");
+      BUZZ(100, 880); return; }
   #else
     #define _CAN_HOME(A) (axis == _AXIS(A) && ( \
          ENABLED(A##_SPI_SENSORLESS) \
@@ -1578,7 +1604,11 @@ void homeaxis(const AxisEnum axis) {
       do_homing_move(axis, -ABS(backoff[axis]) * axis_home_dir, homing_feedrate(axis));
   #endif
 
+  #if IS_SCARA
+  do_homing_move(axis, 30.0f * max_length(TERN(DELTA, Z_AXIS, axis)) * axis_home_dir);
+  #else
   do_homing_move(axis, 1.5f * max_length(TERN(DELTA, Z_AXIS, axis)) * axis_home_dir);
+  #endif
 
   #if BOTH(HOMING_Z_WITH_PROBE, BLTOUCH) && DISABLED(BLTOUCH_HS_MODE)
     if (axis == Z_AXIS) bltouch.stow(); // Intermediate STOW (in LOW SPEED MODE)

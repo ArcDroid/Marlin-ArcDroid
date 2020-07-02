@@ -314,7 +314,7 @@ void homeaxis(const AxisEnum axis);
       const float R2 = HYPOT2(rx - SCARA_OFFSET_X, ry - SCARA_OFFSET_Y);
       return (
         R2 <= sq(L1 + L2) - inset
-        #if MIDDLE_DEAD_ZONE_R > 0
+        #ifdef MIDDLE_DEAD_ZONE_R
           && R2 >= sq(float(MIDDLE_DEAD_ZONE_R))
         #endif
       );

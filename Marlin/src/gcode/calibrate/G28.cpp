@@ -66,7 +66,11 @@
   static void quick_home_xy() {
 
     // Pretend the current position is 0,0
+    #if IS_SCARA
+    current_position.set(0.0 + SCARA_OFFSET_X, 0.0 + SCARA_OFFSET_Y);
+    #else
     current_position.set(0.0, 0.0);
+    #endif
     sync_plan_position();
 
     const int x_axis_home_dir = x_home_dir(active_extruder);
@@ -92,7 +96,19 @@
       };
     #endif
 
+    #if IS_SCARA
+
+    for (char attempts = 0; attempts < 4 && !endstops.trigger_state(); attempts++) {
+      current_position.set(0.0 + SCARA_OFFSET_X, -SCARA_PRINTABLE_RADIUS * 0.5 + SCARA_OFFSET_Y);
+      sync_plan_position();
+      do_blocking_move_to_xy(
+        SCARA_PRINTABLE_RADIUS * 0.5 + SCARA_OFFSET_X,
+        0 + SCARA_OFFSET_Y,
+        fr_mm_s);
+    }
+    #else
     do_blocking_move_to_xy(1.5 * mlx * x_axis_home_dir, 1.5 * mly * home_dir(Y_AXIS), fr_mm_s);
+    #endif
 
     endstops.validate_homing_move();
 

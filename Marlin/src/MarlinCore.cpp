@@ -959,7 +959,7 @@ void setup() {
       STRING_DISTRIBUTION_DATE
       STR_AUTHOR STRING_CONFIG_H_AUTHOR
     );
-    SERIAL_ECHO_MSG("Compiled: " __DATE__);
+    SERIAL_ECHO_MSG("Compiled: " __DATE__ " " __TIME__);
   #endif
 
   SERIAL_ECHO_START();

@@ -32,6 +32,10 @@
 #include "motion.h"
 #include "planner.h"
 
+
+#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
+#include "../core/debug_out.h"
+
 float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
 
 void scara_set_axis_is_at_home(const AxisEnum axis) {
@@ -110,6 +114,12 @@ void inverse_kinematics(const xyz_pos_t &raw) {
     // Translate SCARA to standard XY with scaling factor
     const xy_pos_t spos = raw - scara_offset;
 
+    //DEBUG_ECHOLNPGM("inverse_kinematics");
+    //DEBUG_ECHOLNPAIR("raw  = ", raw.x, ",", raw.y);
+    //DEBUG_ECHOLNPAIR("spos = ", spos.x, ",", spos.y);
+
+    #ifdef sdkfhals
+
     const float H2 = HYPOT2(spos.x, spos.y);
     if (L1 == L2)
       C2 = H2 / L1_2_2 - 1;
@@ -130,13 +140,32 @@ void inverse_kinematics(const xyz_pos_t &raw) {
     // Angle of Arm2
     PSI = ATAN2(S2, C2);
 
+    DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
+
     delta.set(DEGREES(THETA), DEGREES(THETA + PSI), raw.z);
 
+    #else
+
+    float r = HYPOT(spos.x, spos.y) / SCARA_PRINTABLE_RADIUS;
+
+    float t = ATAN2(spos.y, spos.x);
+
+    float elbow = ACOS(r);
+
+    THETA = t + elbow;
+
+    PSI = t - elbow;
+
+    //DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
+
+    delta.set(DEGREES(THETA), DEGREES(PSI), raw.z);
+
+    #endif
     /*
       DEBUG_POS("SCARA IK", raw);
       DEBUG_POS("SCARA IK", delta);
       SERIAL_ECHOLNPAIR("  SCARA (x,y) ", sx, ",", sy, " C2=", C2, " S2=", S2, " Theta=", THETA, " Phi=", PHI);
-    //*/
+      //*/
 
   #else // MP_SCARA
 
