@@ -757,7 +757,7 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 605: M605(); break;                                  // M605: Set Dual X Carriage movement mode
       #endif
 
-      #if ENABLED(DELTA)
+      #if IS_KINEMATIC
         case 665: M665(); break;                                  // M665: Set delta configurations
       #endif
 

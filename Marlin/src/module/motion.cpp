@@ -779,6 +779,7 @@ FORCE_INLINE void segment_idle(millis_t &next_idle_ms) {
 
     // At least one segment is required
     NOLESS(segments, 1U);
+    ////segments = 4;
 
     //DEBUG_ECHOLNPAIR("line_to_destination_kinematic", __LINE__);
 
@@ -815,11 +816,14 @@ FORCE_INLINE void segment_idle(millis_t &next_idle_ms) {
     }
 
     // Ensure last segment arrives at target location.
+
+    //*
     planner.buffer_line(destination, scaled_fr_mm_s, active_extruder, cartesian_segment_mm
       #if ENABLED(SCARA_FEEDRATE_SCALING)
         , inv_duration
       #endif
     );
+    //*/
 
     return false; // caller will update current_position
   }
