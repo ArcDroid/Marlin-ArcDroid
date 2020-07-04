@@ -785,8 +785,8 @@
 //#define MULTI_NOZZLE_DUPLICATION
 
 // By default pololu step drivers require an active high signal. However, some high power drivers require an active low signal as step.
-#define INVERT_X_STEP_PIN false
-#define INVERT_Y_STEP_PIN false
+#define INVERT_X_STEP_PIN true
+#define INVERT_Y_STEP_PIN true
 #define INVERT_Z_STEP_PIN false
 #define INVERT_E_STEP_PIN false
 
@@ -1765,8 +1765,8 @@
  *
  * Override the default value based on the driver type set in Configuration.h.
  */
-#define MINIMUM_STEPPER_POST_DIR_DELAY 5000
-#define MINIMUM_STEPPER_PRE_DIR_DELAY 2500
+#define MINIMUM_STEPPER_POST_DIR_DELAY 200
+#define MINIMUM_STEPPER_PRE_DIR_DELAY 200
 
 /**
  * Minimum stepper driver pulse width (in µs)
@@ -1779,7 +1779,7 @@
  *
  * Override the default value based on the driver type set in Configuration.h.
  */
-#define MINIMUM_STEPPER_PULSE 3
+#define MINIMUM_STEPPER_PULSE 5
 
 /**
  * Maximum stepping rate (in Hz) the stepper driver allows
@@ -1793,7 +1793,7 @@
  *
  * Override the default value based on the driver type set in Configuration.h.
  */
-//#define MAXIMUM_STEPPER_RATE 25000
+#define MAXIMUM_STEPPER_RATE 50000
 
 // @section temperature
 
