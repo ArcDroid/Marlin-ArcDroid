@@ -817,13 +817,21 @@ FORCE_INLINE void segment_idle(millis_t &next_idle_ms) {
 
     // Ensure last segment arrives at target location.
 
-    //*
+
+    /*
+    const xyze_float_t diff_tail = destination - raw;
+    if (NEAR_ZERO(diff_tail.x) && NEAR_ZERO(diff_tail.y) && NEAR_ZERO(diff_tail.z)) {
+      auto tail_mag = diff_tail.magnitude();
+      DEBUG_POS("diff_tail", diff_tail);
+      DEBUG_ECHOLNPAIR("tail_mag/seg_mag = ", tail_mag / cartesian_segment_mm);
+    }
+    //*/
+
     planner.buffer_line(destination, scaled_fr_mm_s, active_extruder, cartesian_segment_mm
       #if ENABLED(SCARA_FEEDRATE_SCALING)
         , inv_duration
       #endif
     );
-    //*/
 
     return false; // caller will update current_position
   }

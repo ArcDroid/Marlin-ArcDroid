@@ -1779,7 +1779,7 @@
  *
  * Override the default value based on the driver type set in Configuration.h.
  */
-#define MINIMUM_STEPPER_PULSE 5
+#define MINIMUM_STEPPER_PULSE 10
 
 /**
  * Maximum stepping rate (in Hz) the stepper driver allows
@@ -2760,8 +2760,8 @@
  */
 //#define SPINDLE_FEATURE
 #define LASER_FEATURE
-#define SPINDLE_LASER_ENA_PIN 21
-#define SPINDLE_LASER_PWM_PIN 2
+#define SPINDLE_LASER_ENA_PIN SERVO0_PIN
+//#define SPINDLE_LASER_PWM_PIN 2
 #if EITHER(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_HIGH     true  // Set to "true" if the on/off function is active HIGH
   #define SPINDLE_LASER_PWM             false   // Set to "true" if your controller supports setting the speed/power
