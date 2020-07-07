@@ -86,6 +86,9 @@
   #define SCARA_LINKAGE_1 150.0       // (mm)
   #define SCARA_LINKAGE_2 150.0       // (mm)
 
+  // Arms can't extend completely because of joints hitting
+  #define SCARA_PRINTABLE_RADIUS (SCARA_LINKAGE_1 + SCARA_LINKAGE_2 - 1.0)
+
   // SCARA tower offset (position of Tower relative to bed zero position)
   // This needs to be reasonably accurate as it defines the printbed position in the SCARA space.
   #define SCARA_OFFSET_X  0.0       // (mm)

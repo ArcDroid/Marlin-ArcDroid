@@ -34,6 +34,10 @@
   #include "scara.h"
 #endif
 
+#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
+#include "../core/debug_out.h"
+
+
 // Axis homed and known-position states
 extern uint8_t axis_homed, axis_known_position;
 constexpr uint8_t xyz_bits = _BV(X_AXIS) | _BV(Y_AXIS) | _BV(Z_AXIS);
@@ -311,9 +315,16 @@ void homeaxis(const AxisEnum axis);
     #if ENABLED(DELTA)
       return HYPOT2(rx, ry) <= sq(DELTA_PRINTABLE_RADIUS - inset + fslop);
     #elif IS_SCARA
-      const float R2 = HYPOT2(rx - SCARA_OFFSET_X, ry - SCARA_OFFSET_Y);
+      const float ax = rx - SCARA_OFFSET_X;
+      const float ay = ry - SCARA_OFFSET_Y;
+      DEBUG_ECHOLNPAIR("ax = ", ax);
+      DEBUG_ECHOLNPAIR("ay = ", ay);
+      const float R2 = HYPOT2(ax, ay);
+      const float slope = !NEAR_ZERO(ax) ? ay / ax : 2.0f;
+      const bool slope_ok = ay < 0 || (slope > -0.24f && slope < 0.24f);
       return (
-        R2 <= sq(L1 + L2) - inset
+        R2 <= sq(SCARA_PRINTABLE_RADIUS - inset)
+          && slope_ok
         #ifdef MIDDLE_DEAD_ZONE_R
           && R2 >= sq(float(MIDDLE_DEAD_ZONE_R))
         #endif

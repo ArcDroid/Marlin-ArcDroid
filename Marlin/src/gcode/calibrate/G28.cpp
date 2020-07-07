@@ -99,10 +99,10 @@
     #if IS_SCARA
 
     for (char attempts = 0; attempts < 4 && !endstops.trigger_state(); attempts++) {
-      current_position.set(0.0 + SCARA_OFFSET_X, -SCARA_PRINTABLE_RADIUS * 0.5 + SCARA_OFFSET_Y);
+      current_position.set(0.0 + SCARA_OFFSET_X, -SCARA_PRINTABLE_RADIUS * 0.5f + SCARA_OFFSET_Y);
       sync_plan_position();
       do_blocking_move_to_xy(
-        SCARA_PRINTABLE_RADIUS * 0.5 + SCARA_OFFSET_X,
+        SCARA_PRINTABLE_RADIUS * 0.5f + SCARA_OFFSET_X,
         0 + SCARA_OFFSET_Y,
         fr_mm_s);
     }
