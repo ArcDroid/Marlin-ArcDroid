@@ -2760,12 +2760,13 @@ bool Planner::buffer_line(const float &rx, const float &ry, const float &rz, con
     // Cartesian XYZ to kinematic ABC, stored in global 'delta'
     inverse_kinematics(machine);
 
-    #if ENABLED(SCARA_FEEDRATE_SCALING)
+    #if 0 && ENABLED(SCARA_FEEDRATE_SCALING)
       // For SCARA scale the feed rate from mm/s to degrees/s
       // i.e., Complete the angular vector in the given time.
       const float duration_recip = inv_duration ?: fr_mm_s / mm;
       const xyz_pos_t diff = delta - position_float;
       const feedRate_t feedrate = diff.magnitude() * duration_recip;
+      mm = 0;
     #else
       const feedRate_t feedrate = fr_mm_s;
     #endif
