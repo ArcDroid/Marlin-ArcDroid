@@ -317,8 +317,8 @@ void homeaxis(const AxisEnum axis);
     #elif IS_SCARA
       const float ax = rx - SCARA_OFFSET_X;
       const float ay = ry - SCARA_OFFSET_Y;
-      DEBUG_ECHOLNPAIR("ax = ", ax);
-      DEBUG_ECHOLNPAIR("ay = ", ay);
+      //DEBUG_ECHOLNPAIR("ax = ", ax);
+      //DEBUG_ECHOLNPAIR("ay = ", ay);
       const float R2 = HYPOT2(ax, ay);
       const float slope = !NEAR_ZERO(ax) ? ay / ax : 2.0f;
       const bool slope_ok = ay < 0 || (slope > -0.24f && slope < 0.24f);
