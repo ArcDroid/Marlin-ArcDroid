@@ -1773,7 +1773,7 @@
 #endif
 
 // Moves (or segments) with fewer steps than this will be joined with the next move
-#define MIN_STEPS_PER_SEGMENT 1
+#define MIN_STEPS_PER_SEGMENT 6 //1
 
 /**
  * Minimum delay before and after setting the stepper DIR (in ns)
@@ -3498,4 +3498,4 @@
 //#define PINS_DEBUGGING
 
 // Enable Marlin dev mode which adds some special commands
-#define MARLIN_DEV_MODE
+////#define MARLIN_DEV_MODE
