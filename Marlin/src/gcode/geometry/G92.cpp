@@ -46,13 +46,10 @@ void GcodeSuite::G92() {
     #if ENABLED(CNC_COORDINATE_SYSTEMS)
       case 1: {
         // Zero the G92 values and restore current position
-        //// FIXME
-        #if !IS_SCARA
-          LOOP_XYZ(i) if (position_shift[i]) {
-            position_shift[i] = 0;
-            update_workspace_offset((AxisEnum)i);
-          }
-        #endif // Not SCARA
+        LOOP_XYZ(i) if (position_shift[i]) {
+          position_shift[i] = 0;
+          update_workspace_offset((AxisEnum)i);
+        }
       } return;
     #endif
     #if ENABLED(POWER_LOSS_RECOVERY)
@@ -73,10 +70,10 @@ void GcodeSuite::G92() {
                       d = v - current_position[i];
           if (!NEAR_ZERO(d)) {
             //// FIXME
-            #if IS_SCARA || !HAS_POSITION_SHIFT
+            #if !HAS_POSITION_SHIFT
               if (i == E_AXIS) sync_E = true; else sync_XYZ = true;
               current_position[i] = v;        // Without workspaces revert to Marlin 1.0 behavior
-            #elif HAS_POSITION_SHIFT
+            #else
               if (i == E_AXIS) {
                 sync_E = true;
                 current_position.e = v;       // When using coordinate spaces, only E is set directly
