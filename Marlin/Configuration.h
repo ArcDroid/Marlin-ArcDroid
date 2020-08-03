@@ -1150,8 +1150,8 @@
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #ifdef MINI_MODEL_2AM
-#define INVERT_X_DIR false
-#define INVERT_Y_DIR true
+#define INVERT_X_DIR true
+#define INVERT_Y_DIR false
 #else
 #define INVERT_X_DIR true
 #define INVERT_Y_DIR true
@@ -1183,13 +1183,8 @@
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
-#ifdef MINI_MODEL_2AM
-#define X_HOME_DIR 1
-#define Y_HOME_DIR 1
-#else
 #define X_HOME_DIR -1
 #define Y_HOME_DIR -1
-#endif
 #define Z_HOME_DIR -1
 
 // @section machine
@@ -1445,13 +1440,8 @@
 
 // Manually set the home position. Leave these undefined for automatic settings.
 // For DELTA this is the top-center of the Cartesian print volume.
-#ifdef MINI_MODEL_2AM
-#define MANUAL_X_HOME_POS -517.694
-#define MANUAL_Y_HOME_POS -420.3
-#else
 #define MANUAL_X_HOME_POS 517.694
 #define MANUAL_Y_HOME_POS -420.3
-#endif
 #define MANUAL_Z_HOME_POS 0.1
 
 // Use "Z Safe Homing" to avoid homing with a Z probe outside the bed area.

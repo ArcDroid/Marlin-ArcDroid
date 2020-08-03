@@ -154,9 +154,9 @@ void inverse_kinematics(const xyz_pos_t &raw) {
 
     float elbow = ACOS(r);
 
-    THETA = t + elbow;
+    THETA = t - elbow;
 
-    PSI = t - elbow;
+    PSI = t + elbow;
 
     //DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
 
