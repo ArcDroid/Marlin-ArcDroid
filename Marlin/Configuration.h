@@ -819,7 +819,7 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 3600, 3600, 20, 1000 }
+#define DEFAULT_MAX_ACCELERATION      { 360, 360, 20, 1000 }
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
@@ -1113,9 +1113,15 @@
 
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 // :{ 0:'Low', 1:'High' }
+#ifdef MINI_MODEL_2AM
 #define X_ENABLE_ON 0
 #define Y_ENABLE_ON 0
 #define Z_ENABLE_ON 0
+#else
+#define X_ENABLE_ON 1
+#define Y_ENABLE_ON 1
+#define Z_ENABLE_ON 1
+#endif
 #define E_ENABLE_ON 0 // For all extruders
 
 // Disables axis stepper immediately when it's not being used.
@@ -1135,8 +1141,13 @@
 // @section machine
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
+#ifdef MINI_MODEL_2AM
 #define INVERT_X_DIR false
 #define INVERT_Y_DIR true
+#else
+#define INVERT_X_DIR true
+#define INVERT_Y_DIR true
+#endif
 #define INVERT_Z_DIR false
 
 // @section extruder
@@ -1447,7 +1458,7 @@
 #endif
 
 // Homing speeds (mm/m)
-#define HOMING_FEEDRATE_XY (120*60)
+#define HOMING_FEEDRATE_XY (12*60)
 #define HOMING_FEEDRATE_Z  (10*60)
 
 // Validate that endstops are triggered on homing moves
