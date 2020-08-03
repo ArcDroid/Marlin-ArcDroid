@@ -65,7 +65,7 @@
 //============================= SCARA Printer ===============================
 //===========================================================================
 
-//#define MINI_MODEL_2AM
+#define MINI_MODEL_2AM
 
 /**
  * MORGAN_SCARA was developed by QHARLEY in South Africa in 2012-2013.
@@ -806,7 +806,11 @@
  * Override with M203
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
+#ifdef MINI_MODEL_2AM
 #define DEFAULT_MAX_FEEDRATE          { 36000, 36000, 30, 25 }
+#else
+#define DEFAULT_MAX_FEEDRATE          { 3600, 3600, 30, 25 }
+#endif
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
@@ -819,7 +823,11 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 360, 360, 20, 1000 }
+#ifdef MINI_MODEL_2AM
+#define DEFAULT_MAX_ACCELERATION      { 3600, 3600, 20, 1000 }
+#else
+#define DEFAULT_MAX_ACCELERATION      { 60, 60, 20, 1000 }
+#endif
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
@@ -1463,7 +1471,11 @@
 #endif
 
 // Homing speeds (mm/m)
+#ifdef MINI_MODEL_2AM
+#define HOMING_FEEDRATE_XY (120*60)
+#else
 #define HOMING_FEEDRATE_XY (12*60)
+#endif
 #define HOMING_FEEDRATE_Z  (10*60)
 
 // Validate that endstops are triggered on homing moves
