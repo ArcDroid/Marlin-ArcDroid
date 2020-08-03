@@ -149,8 +149,8 @@ void inverse_kinematics(const xyz_pos_t &raw) {
     float r = HYPOT(spos.x, spos.y) / (SCARA_LINKAGE_1 + SCARA_LINKAGE_2);
 
     float t = ATAN2(spos.y, spos.x);
-    if (t > M_PI / 4)
-        t -= M_PI * 2;
+    if (t < -M_PI / 4)
+        t += M_PI * 2;
 
     float elbow = ACOS(r);
 

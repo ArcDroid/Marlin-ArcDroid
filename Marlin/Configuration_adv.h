@@ -803,8 +803,13 @@
 //#define MULTI_NOZZLE_DUPLICATION
 
 // By default pololu step drivers require an active high signal. However, some high power drivers require an active low signal as step.
+#ifdef MINI_MODEL_2AM
 #define INVERT_X_STEP_PIN true
 #define INVERT_Y_STEP_PIN true
+#else
+#define INVERT_X_STEP_PIN false
+#define INVERT_Y_STEP_PIN false
+#endif
 #define INVERT_Z_STEP_PIN false
 #define INVERT_E_STEP_PIN false
 
@@ -2837,7 +2842,11 @@
  */
 //#define SPINDLE_FEATURE
 #define LASER_FEATURE
+#ifdef MINI_MODEL_2AM
 #define SPINDLE_LASER_ENA_PIN SERVO0_PIN
+#else
+#define SPINDLE_LASER_ENA_PIN HEATER_BED_PIN
+#endif
 //#define SPINDLE_LASER_PWM_PIN 2
 #if EITHER(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_HIGH     true   // Set to "true" if the on/off function is active HIGH
@@ -3134,7 +3143,7 @@
  * High feedrates may cause ringing and harm print quality.
  */
 //#define PAREN_COMMENTS      // Support for parentheses-delimited comments
-//#define GCODE_MOTION_MODES  // Remember the motion mode (G0 G1 G2 G3 G5 G38.X) and apply for X Y Z E F, etc.
+#define GCODE_MOTION_MODES  // Remember the motion mode (G0 G1 G2 G3 G5 G38.X) and apply for X Y Z E F, etc.
 
 // Enable and set a (default) feedrate for all G0 moves
 #define G0_FEEDRATE 30000 // (mm/m)

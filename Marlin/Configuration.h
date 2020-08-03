@@ -65,6 +65,8 @@
 //============================= SCARA Printer ===============================
 //===========================================================================
 
+//#define MINI_MODEL_2AM
+
 /**
  * MORGAN_SCARA was developed by QHARLEY in South Africa in 2012-2013.
  * Implemented and slightly reworked by JCERNY in June, 2014.
@@ -83,8 +85,8 @@
   #define SCARA_SEGMENTS_PER_SECOND 200
 
   // Length of inner and outer support arms. Measure arm lengths precisely.
-  #define SCARA_LINKAGE_1 150.0       // (mm)
-  #define SCARA_LINKAGE_2 150.0       // (mm)
+  #define SCARA_LINKAGE_1 300.0       // (mm)
+  #define SCARA_LINKAGE_2 300.0       // (mm)
 
   // Arms can't extend completely because of joints hitting
   #define SCARA_PRINTABLE_RADIUS (SCARA_LINKAGE_1 + SCARA_LINKAGE_2 - 1.0)
@@ -92,7 +94,7 @@
   // SCARA tower offset (position of Tower relative to bed zero position)
   // This needs to be reasonably accurate as it defines the printbed position in the SCARA space.
   #define SCARA_OFFSET_X  0.0       // (mm)
-  #define SCARA_OFFSET_Y  150.0       // (mm)
+  #define SCARA_OFFSET_Y  -300.0       // (mm)
 
   #if ENABLED(MORGAN_SCARA)
 
@@ -121,7 +123,7 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(none, default config)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(igor.yeremin@gmail.com)" // Who made the changes.
 //#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 /**
@@ -185,7 +187,7 @@
 #endif
 
 // Name displayed in the LCD "Ready" message and Info menu
-#define CUSTOM_MACHINE_NAME "2am Plasma SCARA"
+#define CUSTOM_MACHINE_NAME "2am PPR"
 
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like http://www.uuidgenerator.net/version4
@@ -797,7 +799,7 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 200/1.25, 1000 }  // default steps per unit for SCARA
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 12.0*16*200/360, 12.0*16*200/360, 200/1.25, 1000 }  // default steps per unit for SCARA
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -1169,8 +1171,8 @@
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 200
-#define Y_BED_SIZE 326
+#define X_BED_SIZE 652
+#define Y_BED_SIZE 400
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS -(SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
@@ -1419,8 +1421,13 @@
 
 // Manually set the home position. Leave these undefined for automatic settings.
 // For DELTA this is the top-center of the Cartesian print volume.
-#define MANUAL_X_HOME_POS 258.847
-#define MANUAL_Y_HOME_POS 210.15
+#ifdef MINI_MODEL_2AM
+#define MANUAL_X_HOME_POS -517.694
+#define MANUAL_Y_HOME_POS -420.3
+#else
+#define MANUAL_X_HOME_POS -517.694
+#define MANUAL_Y_HOME_POS -420.3
+#endif
 #define MANUAL_Z_HOME_POS 0.1
 
 // Use "Z Safe Homing" to avoid homing with a Z probe outside the bed area.
@@ -1682,7 +1689,7 @@
  *
  * View the current statistics with M78.
  */
-//#define PRINTCOUNTER
+#define PRINTCOUNTER
 
 //=============================================================================
 //============================= LCD and SD support ============================
