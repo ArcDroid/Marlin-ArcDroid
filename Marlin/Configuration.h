@@ -65,7 +65,7 @@
 //============================= SCARA Printer ===============================
 //===========================================================================
 
-#define MINI_MODEL_2AM
+////#define MINI_MODEL_2AM
 
 /**
  * MORGAN_SCARA was developed by QHARLEY in South Africa in 2012-2013.
@@ -94,7 +94,7 @@
   // SCARA tower offset (position of Tower relative to bed zero position)
   // This needs to be reasonably accurate as it defines the printbed position in the SCARA space.
   #define SCARA_OFFSET_X  0.0       // (mm)
-  #define SCARA_OFFSET_Y  -300.0       // (mm)
+  #define SCARA_OFFSET_Y  -290.0       // (mm)
 
   #if ENABLED(MORGAN_SCARA)
 
@@ -1440,8 +1440,13 @@
 
 // Manually set the home position. Leave these undefined for automatic settings.
 // For DELTA this is the top-center of the Cartesian print volume.
+#ifdef MINI_MODEL_2AM
 #define MANUAL_X_HOME_POS 517.694
-#define MANUAL_Y_HOME_POS -420.3
+#define MANUAL_Y_HOME_POS -410.3
+#else
+#define MANUAL_X_HOME_POS 338.85
+#define MANUAL_Y_HOME_POS -229.84
+#endif
 #define MANUAL_Z_HOME_POS 0.1
 
 // Use "Z Safe Homing" to avoid homing with a Z probe outside the bed area.
