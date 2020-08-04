@@ -26,6 +26,7 @@
 
 #include "../gcode.h"
 #include "../../module/motion.h"
+#include "../../module/planner.h"
 
 #if ENABLED(DELTA)
 
@@ -78,15 +79,17 @@
   void GcodeSuite::M665() {
     if (parser.seenval('S')) delta_segments_per_second = parser.value_float();
 
+    abc_pos_t offset_new;
+
     #if HAS_SCARA_OFFSET
 
-      if (parser.seenval('Z')) scara_home_offset.z = parser.value_linear_units();
+      if (parser.seenval('Z')) offset_new.z = parser.value_linear_units();
 
       const bool hasA = parser.seenval('A'), hasP = parser.seenval('P'), hasX = parser.seenval('X');
       const uint8_t sumAPX = hasA + hasP + hasX;
       if (sumAPX) {
         if (sumAPX == 1)
-          scara_home_offset.a = parser.value_float();
+          offset_new.a = parser.value_float();
         else {
           SERIAL_ERROR_MSG("Only one of A, P, or X is allowed.");
           return;
@@ -97,7 +100,7 @@
       const uint8_t sumBTY = hasB + hasT + hasY;
       if (sumBTY) {
         if (sumBTY == 1)
-          scara_home_offset.b = parser.value_float();
+          offset_new.b = parser.value_float();
         else {
           SERIAL_ERROR_MSG("Only one of B, T, or Y is allowed.");
           return;
@@ -105,6 +108,13 @@
       }
 
     #endif // HAS_SCARA_OFFSET
+
+    // reset cartesian position to match offset motor position
+    abce_pos_t target = planner.get_axis_positions_mm();
+    target = target + scara_home_offset - offset_new;
+    scara_home_offset = offset_new;
+    planner.set_machine_position_mm(target);
+    set_current_from_steppers_for_axis(ALL_AXES);
   }
 
 #endif

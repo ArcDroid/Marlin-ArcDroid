@@ -40,7 +40,7 @@ float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
 
 void scara_set_axis_is_at_home(const AxisEnum axis) {
   if (axis == Z_AXIS)
-    current_position.z = Z_HOME_POS;
+    current_position.z = Z_HOME_POS - scara_home_offset.z;
   else {
 
     /**
@@ -53,7 +53,10 @@ void scara_set_axis_is_at_home(const AxisEnum axis) {
       // MORGAN_SCARA uses arm angles for AB home position
       // SERIAL_ECHOLNPAIR("homeposition A:", homeposition.a, " B:", homeposition.b);
       inverse_kinematics(homeposition);
-      forward_kinematics_SCARA(delta.a + scara_home_offset.x, delta.b + scara_home_offset.y);
+      // scara_home_offset is applied here
+      // this will move cartesian home position from MANUAL_X_HOME_POS
+      // since scara_home_offset is angular and HOME_POS is cartesian
+      forward_kinematics_SCARA(delta.a - scara_home_offset.a, delta.b - scara_home_offset.b);
       current_position[axis] = cartes[axis];
     #else
       // MP_SCARA uses a Cartesian XY home position
@@ -77,10 +80,10 @@ static constexpr xy_pos_t scara_offset = { SCARA_OFFSET_X, SCARA_OFFSET_Y };
  */
 void forward_kinematics_SCARA(const float &a, const float &b) {
 
-  const float a_sin = sin(RADIANS(a - scara_home_offset.x)) * L1,
-              a_cos = cos(RADIANS(a - scara_home_offset.x)) * L1,
-              b_sin = sin(RADIANS(b - scara_home_offset.y)) * L2,
-              b_cos = cos(RADIANS(b - scara_home_offset.y)) * L2;
+  const float a_sin = sin(RADIANS(a)) * L1,
+              a_cos = cos(RADIANS(a)) * L1,
+              b_sin = sin(RADIANS(b)) * L2,
+              b_cos = cos(RADIANS(b)) * L2;
 
   cartes.set(a_cos + b_cos + scara_offset.x,  // theta
              a_sin + b_sin + scara_offset.y); // theta+phi
@@ -160,7 +163,7 @@ void inverse_kinematics(const xyz_pos_t &raw) {
 
     //DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
 
-    delta.set(DEGREES(THETA) + scara_home_offset.x, DEGREES(PSI) + scara_home_offset.y, raw.z);
+    delta.set(DEGREES(THETA), DEGREES(PSI), raw.z);
 
     #endif
     /*
