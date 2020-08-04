@@ -40,7 +40,7 @@ float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
 
 void scara_set_axis_is_at_home(const AxisEnum axis) {
   if (axis == Z_AXIS)
-    current_position.z = Z_HOME_POS - scara_home_offset.z;
+    current_position.z = Z_HOME_POS + scara_home_offset.z;
   else {
 
     /**
@@ -56,7 +56,7 @@ void scara_set_axis_is_at_home(const AxisEnum axis) {
       // scara_home_offset is applied here
       // this will move cartesian home position from MANUAL_X_HOME_POS
       // since scara_home_offset is angular and HOME_POS is cartesian
-      forward_kinematics_SCARA(delta.a - scara_home_offset.a, delta.b - scara_home_offset.b);
+      forward_kinematics_SCARA(delta.a + scara_home_offset.a, delta.b + scara_home_offset.b);
       current_position[axis] = cartes[axis];
     #else
       // MP_SCARA uses a Cartesian XY home position

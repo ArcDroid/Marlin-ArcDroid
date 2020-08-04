@@ -110,11 +110,13 @@
     #endif // HAS_SCARA_OFFSET
 
     // reset cartesian position to match offset motor position
+    xyze_pos_t pos = current_position;
     abce_pos_t target = planner.get_axis_positions_mm();
-    target = target + scara_home_offset - offset_new;
+    target = target - scara_home_offset + offset_new;
     scara_home_offset = offset_new;
     planner.set_machine_position_mm(target);
     set_current_from_steppers_for_axis(ALL_AXES);
+    do_blocking_move_to(pos);
   }
 
 #endif
