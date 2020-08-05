@@ -1467,9 +1467,9 @@
 
 // Homing speeds (mm/m)
 #ifdef MINI_MODEL_2AM
-#define HOMING_FEEDRATE_XY (120*60)
+#define HOMING_FEEDRATE_XY (90*60)
 #else
-#define HOMING_FEEDRATE_XY (12*60)
+#define HOMING_FEEDRATE_XY (30*60)
 #endif
 #define HOMING_FEEDRATE_Z  (10*60)
 

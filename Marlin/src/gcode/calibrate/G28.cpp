@@ -63,7 +63,7 @@
 
 #if ENABLED(QUICK_HOME)
 
-  static void quick_home_xy() {
+  void quick_home_xy() {
 
     // Pretend the current position is 0,0
     #if IS_SCARA
@@ -74,6 +74,7 @@
     sync_plan_position();
 
     const int x_axis_home_dir = x_home_dir(active_extruder);
+    const int y_axis_home_dir = home_dir(Y_AXIS);
 
     const float mlx = max_length(X_AXIS),
                 mly = max_length(Y_AXIS),
@@ -97,15 +98,12 @@
     #endif
 
     #if IS_SCARA
+      abce_pos_t target = planner.get_axis_positions_mm();
+      target.x += x_axis_home_dir * 360.0f;
+      target.y += y_axis_home_dir * 360.0f;
+      planner.buffer_segment(target.a, target.b, target.c, target.e, homing_feedrate(X_AXIS), active_extruder);
+      planner.synchronize();
 
-    for (char attempts = 0; attempts < 8 && !endstops.trigger_state(); attempts++) {
-      current_position.set(0.0 + SCARA_OFFSET_X, SCARA_PRINTABLE_RADIUS * 0.5f + SCARA_OFFSET_Y);
-      sync_plan_position();
-      do_blocking_move_to_xy(
-        x_axis_home_dir * -SCARA_PRINTABLE_RADIUS * 0.5f * 0.7f + SCARA_OFFSET_X,
-        SCARA_PRINTABLE_RADIUS * 0.5f * 0.7f + SCARA_OFFSET_Y,
-        fr_mm_s);
-    }
     #else
     do_blocking_move_to_xy(1.5 * mlx * x_axis_home_dir, 1.5 * mly * home_dir(Y_AXIS), fr_mm_s);
     #endif
