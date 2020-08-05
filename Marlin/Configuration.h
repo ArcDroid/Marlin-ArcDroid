@@ -799,7 +799,11 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
+#ifdef MINI_MODEL_2AM
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 12.0*16*200/360, 12.0*16*200/360, 200/1.25, 1000 }  // default steps per unit for SCARA
+#else
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 8.0*32*200/360, 8.0*32*200/360, 200/1.25, 1000 }  // default steps per unit for SCARA
+#endif
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -826,7 +830,7 @@
 #ifdef MINI_MODEL_2AM
 #define DEFAULT_MAX_ACCELERATION      { 3600, 3600, 20, 1000 }
 #else
-#define DEFAULT_MAX_ACCELERATION      { 60, 60, 20, 1000 }
+#define DEFAULT_MAX_ACCELERATION      { 2000, 2000, 20, 1000 }
 #endif
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
@@ -842,9 +846,9 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          3600    // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3600    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   3600    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_ACCELERATION          2000    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   2000    // X, Y, Z acceleration for travel (non printing) moves
 
 /**
  * Default Jerk limits (mm/s)
@@ -1469,7 +1473,7 @@
 #ifdef MINI_MODEL_2AM
 #define HOMING_FEEDRATE_XY (90*60)
 #else
-#define HOMING_FEEDRATE_XY (30*60)
+#define HOMING_FEEDRATE_XY (12*60)
 #endif
 #define HOMING_FEEDRATE_Z  (10*60)
 
