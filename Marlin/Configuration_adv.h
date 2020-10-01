@@ -2837,11 +2837,7 @@
  */
 //#define SPINDLE_FEATURE
 #define LASER_FEATURE
-#ifdef MINI_MODEL_2AM
-#define SPINDLE_LASER_ENA_PIN SERVO0_PIN
-#else
 #define SPINDLE_LASER_ENA_PIN HEATER_BED_PIN
-#endif
 //#define SPINDLE_LASER_PWM_PIN 2
 #if EITHER(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_HIGH     true   // Set to "true" if the on/off function is active HIGH
