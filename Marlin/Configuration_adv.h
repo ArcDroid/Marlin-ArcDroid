@@ -803,13 +803,8 @@
 //#define MULTI_NOZZLE_DUPLICATION
 
 // By default pololu step drivers require an active high signal. However, some high power drivers require an active low signal as step.
-#ifdef MINI_MODEL_2AM
-#define INVERT_X_STEP_PIN true
-#define INVERT_Y_STEP_PIN true
-#else
 #define INVERT_X_STEP_PIN false
 #define INVERT_Y_STEP_PIN false
-#endif
 #define INVERT_Z_STEP_PIN false
 #define INVERT_E_STEP_PIN false
 
