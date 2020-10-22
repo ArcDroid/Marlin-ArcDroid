@@ -65,7 +65,7 @@
 //============================= SCARA Printer ===============================
 //===========================================================================
 
-////#define MINI_MODEL_2AM
+#define MINI_MODEL_2AM
 
 /**
  * MORGAN_SCARA was developed by QHARLEY in South Africa in 2012-2013.
