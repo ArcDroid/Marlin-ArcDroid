@@ -363,6 +363,16 @@ void restore_closedloop_drivers() {
   stepper.set_directions();
 }
 
+void closedloop_home_encoders(abce_pos_t motor_pos) {
+    #if AXIS_IS_CLOSEDLOOP(X)
+        stepperX.touch_off_encoder(motor_pos.x);
+    #endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+        stepperY.touch_off_encoder(motor_pos.y);
+    #endif
+}
+
+
 S42BClosedLoop::S42BClosedLoop(Stream * SerialPort) {
     HWSerial = SerialPort;
 }
@@ -563,19 +573,5 @@ int32_t S42BClosedLoop::readPosition() {
     int32_t position = (buff[0] << 24) | (buff[1] << 16) | (buff[2] << 8) | buff[3];
     return position;
 }
-
-template<char AXIS_LETTER, char DRIVER_ID, AxisEnum AXIS_ID>
-    ClosedLoopMarlin<AXIS_LETTER, DRIVER_ID, AXIS_ID>::ClosedLoopMarlin(Stream * SerialPort)
-    : S42BClosedLoop(SerialPort) {
-            // nothing
-    }
-
-#if SW_CAPABLE_PLATFORM
-template<char AXIS_LETTER, char DRIVER_ID, AxisEnum AXIS_ID>
-    ClosedLoopMarlin<AXIS_LETTER, DRIVER_ID, AXIS_ID>::ClosedLoopMarlin(uint16_t SW_RX_pin, uint16_t SW_TX_pin)
-    : S42BClosedLoop(SW_RX_pin, SW_TX_pin) {
-            // nothing
-    }
-#endif
 
 #endif // HAS_CLOSEDLOOP_CONFIG

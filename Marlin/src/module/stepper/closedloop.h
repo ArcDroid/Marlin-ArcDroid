@@ -83,12 +83,33 @@ protected:
 template<char AXIS_LETTER, char DRIVER_ID, AxisEnum AXIS_ID>
 class ClosedLoopMarlin : public S42BClosedLoop {
   public:
-    ClosedLoopMarlin(Stream * SerialPort);
-    ClosedLoopMarlin(uint16_t SW_RX_pin, uint16_t SW_TX_pin);
+    ClosedLoopMarlin(Stream * SerialPort) : S42BClosedLoop(SerialPort) {
+
+    }
+    ClosedLoopMarlin(uint16_t SW_RX_pin, uint16_t SW_TX_pin) : S42BClosedLoop(SW_RX_pin, SW_TX_pin) {
+
+    }
+
     float encoder_counts_per_unit;
     float encoder_offset;
     bool homed;
     void check_comms();
+
+    void touch_off_encoder(float new_position) {
+        int32_t pos = new_position * encoder_counts_per_unit;
+        int32_t raw_read = readPosition();
+        encoder_offset = pos - raw_read;
+        homed = true;
+    }
+
+    float to_mm(int32_t enc_count) {
+        return (enc_count + encoder_offset) / encoder_counts_per_unit;
+    }
+
+    float read_encoder() {
+        return (readPosition() + encoder_offset) / encoder_counts_per_unit;
+    }
+
 };
 
 
@@ -123,6 +144,8 @@ class ClosedLoopMarlin : public S42BClosedLoop {
 void closedloop_serial_begin();
 
 void restore_closedloop_drivers();
+
+void closedloop_home_encoders(abce_pos_t motor_pos);
 
 // X Stepper
 #if AXIS_IS_CLOSEDLOOP(X)

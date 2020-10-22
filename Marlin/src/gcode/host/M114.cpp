@@ -92,7 +92,7 @@
 
     planner.synchronize();
 
-    #if HAS_DRIVER(CLOSEDLOOP)
+    #if HAS_CLOSEDLOOP_CONFIG
       DEBUG_ECHOPGM("\nClosedLoop:");
       int32_t pos_temp;
       #if AXIS_IS_CLOSEDLOOP(X)
@@ -101,7 +101,7 @@
             DEBUG_ECHOPAIR(" X: readerr ", 0x7f000000 - pos_temp);
         } else {
             DEBUG_ECHOPAIR(" X:", pos_temp);
-            DEBUG_ECHOPAIR_F(" (", (float)pos_temp / stepperX.encoder_counts_per_unit);
+            DEBUG_ECHOPAIR_F(" (", stepperX.to_mm(pos_temp));
             DEBUG_CHAR(')');
         }
       #endif
@@ -111,7 +111,7 @@
             DEBUG_ECHOPAIR(" Y: readerr ", 0x7f000000 - pos_temp);
         } else {
             DEBUG_ECHOPAIR(" Y:", pos_temp);
-            DEBUG_ECHOPAIR_F(" (", (float)pos_temp / stepperY.encoder_counts_per_unit);
+            DEBUG_ECHOPAIR_F(" (", stepperY.to_mm(pos_temp));
             DEBUG_CHAR(')');
         }
       #endif

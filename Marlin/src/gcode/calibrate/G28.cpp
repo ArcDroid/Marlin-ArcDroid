@@ -39,6 +39,10 @@
   #include "../../feature/tmc_util.h"
 #endif
 
+#if HAS_CLOSEDLOOP_CONFIG
+  #include "../../module/stepper/closedloop.h"
+#endif
+
 #include "../../module/probe.h"
 
 #if ENABLED(BLTOUCH)
@@ -515,4 +519,7 @@ void GcodeSuite::G28() {
       L64xxManager.set_param((L64XX_axis_t)cv, L6470_ABS_POS, stepper.position(L64XX_axis_xref[cv]));
     }
   #endif
+
+  TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_home_encoders(planner.get_axis_positions_mm()));
+
 }

@@ -2740,12 +2740,12 @@
 
 #if HAS_CLOSEDLOOP_CONFIG
   #if AXIS_IS_CLOSEDLOOP(X)
-    #define X_ENCODER_PPU 16384.0 / 360
+    #define X_ENCODER_PPU -16384.0 / 360 * 4
     #define X_SERIAL_RX_PIN P1_23
     #define X_SERIAL_TX_PIN P1_22
   #endif
   #if AXIS_IS_CLOSEDLOOP(Y)
-    #define Y_ENCODER_PPU 16384.0 / 360
+    #define Y_ENCODER_PPU 16384.0 / 360 * 4
     #define Y_SERIAL_RX_PIN P1_21
     #define Y_SERIAL_TX_PIN P1_20
   #endif
