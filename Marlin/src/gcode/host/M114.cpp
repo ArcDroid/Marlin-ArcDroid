@@ -92,6 +92,32 @@
 
     planner.synchronize();
 
+    #if HAS_DRIVER(CLOSEDLOOP)
+      DEBUG_ECHOPGM("\nClosedLoop:");
+      int32_t pos_temp;
+      #if AXIS_IS_CLOSEDLOOP(X)
+        pos_temp = stepperX.readPosition();
+        if (pos_temp > 0x7f000000) {
+            DEBUG_ECHOPAIR(" X: readerr ", 0x7f000000 - pos_temp);
+        } else {
+            DEBUG_ECHOPAIR(" X:", pos_temp);
+            DEBUG_ECHOPAIR_F(" (", (float)pos_temp / stepperX.encoder_counts_per_unit);
+            DEBUG_CHAR(')');
+        }
+      #endif
+      #if AXIS_IS_CLOSEDLOOP(Y)
+        pos_temp = stepperY.readPosition();
+        if (pos_temp > 0x7f000000) {
+            DEBUG_ECHOPAIR(" Y: readerr ", 0x7f000000 - pos_temp);
+        } else {
+            DEBUG_ECHOPAIR(" Y:", pos_temp);
+            DEBUG_ECHOPAIR_F(" (", (float)pos_temp / stepperY.encoder_counts_per_unit);
+            DEBUG_CHAR(')');
+        }
+      #endif
+      SERIAL_EOL();
+    #endif
+
     #if HAS_L64XX
       char temp_buf[80];
       int32_t temp;
