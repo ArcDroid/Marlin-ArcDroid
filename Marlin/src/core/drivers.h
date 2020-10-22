@@ -53,6 +53,7 @@
 #define _TMC5130_STANDALONE 0x5130B
 #define _TMC5160            0x5160A
 #define _TMC5160_STANDALONE 0x5160B
+#define _CL_S42B            0xc1042b
 
 #define _DRIVER_ID(V) _CAT(_, V)
 #define _AXIS_DRIVER_TYPE(A,T) (_DRIVER_ID(A##_DRIVER_TYPE) == _DRIVER_ID(T))
@@ -188,3 +189,13 @@
 #endif
 
 #define AXIS_IS_L64XX(A) (AXIS_DRIVER_TYPE_##A(L6470) || AXIS_DRIVER_TYPE_##A(L6474) ||  AXIS_DRIVER_TYPE_##A(L6480) || AXIS_DRIVER_TYPE_##A(POWERSTEP01))
+
+//
+// Closed loop driver
+//
+
+#define AXIS_IS_CLOSEDLOOP(A)   ( AXIS_DRIVER_TYPE(A,CL_S42B) )
+
+#if (    HAS_DRIVER(CLOSEDLOOP) )
+  #define HAS_CLOSEDLOOP_CONFIG 1
+#endif

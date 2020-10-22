@@ -44,6 +44,10 @@
   #include "trinamic.h"
 #endif
 
+#if HAS_CLOSEDLOOP_CONFIG
+  #include "closedloop.h"
+#endif
+
 void restore_stepper_drivers();  // Called by PSU_ON
 void reset_stepper_drivers();    // Called by settings.load / settings.reset
 

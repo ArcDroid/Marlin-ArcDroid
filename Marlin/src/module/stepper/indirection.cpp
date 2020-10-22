@@ -34,6 +34,7 @@
 
 void restore_stepper_drivers() {
   TERN_(HAS_TRINAMIC_CONFIG, restore_trinamic_drivers());
+  TERN_(HAS_CLOSEDLOOP_CONFIG, restore_closedloop_drivers());
 }
 
 void reset_stepper_drivers() {

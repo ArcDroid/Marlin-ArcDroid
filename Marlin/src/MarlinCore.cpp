@@ -919,6 +919,11 @@ void setup() {
     SETUP_RUN(tmc_serial_begin());
   #endif
 
+  #if HAS_CLOSEDLOOP_CONFIG
+    SETUP_RUN(closedloop_serial_begin());
+    SETUP_RUN(restore_closedloop_drivers());
+  #endif
+
   SETUP_RUN(setup_powerhold());
 
   #if HAS_STEPPER_RESET
