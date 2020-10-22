@@ -1961,7 +1961,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
   #endif
 
   // Enable active axes
-  #if CORE_IS_XY
+  #if CORE_IS_XY || IS_SCARA
     if (block->steps.a || block->steps.b) {
       ENABLE_AXIS_X();
       ENABLE_AXIS_Y();
