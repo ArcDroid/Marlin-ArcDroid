@@ -189,23 +189,47 @@
   //
   // Software serial
   //
-  #define X_SERIAL_TX_PIN                  P1_10
-  #define X_SERIAL_RX_PIN                  P1_10
+  #ifndef X_SERIAL_TX_PIN
+    #define X_SERIAL_TX_PIN                  P1_10
+  #endif
+  #ifndef X_SERIAL_RX_PIN
+    #define X_SERIAL_RX_PIN                  P1_10
+  #endif
 
-  #define Y_SERIAL_TX_PIN                  P1_09
-  #define Y_SERIAL_RX_PIN                  P1_09
+  #ifndef Y_SERIAL_TX_PIN
+    #define Y_SERIAL_TX_PIN                  P1_09
+  #endif
+  #ifndef Y_SERIAL_RX_PIN
+    #define Y_SERIAL_RX_PIN                  P1_09
+  #endif
 
-  #define Z_SERIAL_TX_PIN                  P1_08
-  #define Z_SERIAL_RX_PIN                  P1_08
+  #ifndef Z_SERIAL_TX_PIN
+    #define Z_SERIAL_TX_PIN                  P1_08
+  #endif
+  #ifndef Z_SERIAL_RX_PIN
+    #define Z_SERIAL_RX_PIN                  P1_08
+  #endif
 
-  #define E0_SERIAL_TX_PIN                 P1_04
-  #define E0_SERIAL_RX_PIN                 P1_04
+  #ifndef E0_SERIAL_TX_PIN
+    #define E0_SERIAL_TX_PIN                 P1_04
+  #endif
+  #ifndef E0_SERIAL_RX_PIN
+    #define E0_SERIAL_RX_PIN                 P1_04
+  #endif
 
-  #define E1_SERIAL_TX_PIN                 P1_01
-  #define E1_SERIAL_RX_PIN                 P1_01
+  #ifndef E1_SERIAL_TX_PIN
+     #define E1_SERIAL_TX_PIN                 P1_01
+  #endif
+  #ifndef E1_SERIAL_RX_PIN
+    #define E1_SERIAL_RX_PIN                 P1_01
+  #endif
 
-  #define Z2_SERIAL_TX_PIN                 P1_01
-  #define Z2_SERIAL_RX_PIN                 P1_01
+  #ifndef Z2_SERIAL_TX_PIN
+    #define Z2_SERIAL_TX_PIN                 P1_01
+  #endif
+  #ifndef Z2_SERIAL_RX_PIN
+    #define Z2_SERIAL_RX_PIN                 P1_01
+  #endif
 
   // Reduce baud rate to improve software serial reliability
   #define TMC_BAUD_RATE 19200
