@@ -34,10 +34,7 @@
  */
 void GcodeSuite::M17() {
   #if HAS_CLOSEDLOOP_CONFIG
-    abce_pos_t pos = planner.get_axis_positions_mm();
-    closedloop_restore_position(&pos);
-    planner.set_machine_position_mm(pos);
-    set_current_from_steppers_for_axis(ALL_AXES);
+    set_position_from_encoders_if_lost(true);
   #endif
   if (parser.seen("XYZE")) {
     if (parser.seen('X')) ENABLE_AXIS_X();

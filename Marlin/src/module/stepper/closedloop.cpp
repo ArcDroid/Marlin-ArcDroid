@@ -372,15 +372,43 @@ void closedloop_home_encoders(abce_pos_t motor_pos) {
     #endif
 }
 
-void closedloop_restore_position(abce_pos_t *motor_pos) {
+bool closedloop_need_restore() {
+    return false
     #if AXIS_IS_CLOSEDLOOP(X)
-        if (!X_ENABLE_READ())
-            motor_pos->x = stepperX.read_encoder();
+        || !TEST(axis_known_position, X_AXIS) && stepperX.homed
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        if (!Y_ENABLE_READ())
-            motor_pos->y = stepperY.read_encoder();
+        || !TEST(axis_known_position, Y_AXIS) && stepperY.homed
     #endif
+    ;
+}
+
+void closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
+    bool enabled_any = false;
+    #if AXIS_IS_CLOSEDLOOP(X)
+        if (!TEST(axis_known_position, X_AXIS) && stepperX.homed) {
+            motor_pos->x = stepperX.read_encoder();
+            if (enable) {
+                ENABLE_STEPPER_X();
+                SBI(axis_known_position, X_AXIS);
+                enabled_any = true;
+            }
+        }
+    #endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+        if (!TEST(axis_known_position, Y_AXIS) && stepperY.homed) {
+            motor_pos->y = stepperY.read_encoder();
+            if (enable) {
+                ENABLE_STEPPER_Y();
+                SBI(axis_known_position, Y_AXIS);
+                enabled_any = true;
+            }
+        }
+    #endif
+    if (enabled_any) {
+        stepper.set_directions();
+        delayMicroseconds(100);
+    }
 }
 
 

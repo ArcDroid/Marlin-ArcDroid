@@ -39,10 +39,6 @@
   #include "../../feature/tmc_util.h"
 #endif
 
-#if HAS_CLOSEDLOOP_CONFIG
-  #include "../../module/stepper/closedloop.h"
-#endif
-
 #include "../../module/probe.h"
 
 #if ENABLED(BLTOUCH)

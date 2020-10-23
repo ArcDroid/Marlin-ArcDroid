@@ -309,6 +309,20 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
     current_position[axis] = pos[axis];
 }
 
+
+#if HAS_CLOSEDLOOP_CONFIG
+  void set_position_from_encoders_if_lost(bool enable_motors) {
+    if (closedloop_need_restore()) {
+      planner.synchronize();
+      abce_pos_t pos = planner.get_axis_positions_mm();
+      closedloop_restore_position(&pos, enable_motors);
+      planner.set_machine_position_mm(pos);
+      set_current_from_steppers_for_axis(ALL_AXES);
+      planner.position_cart = cartes;
+    }
+  }
+#endif
+
 /**
  * Move the planner to the current position from wherever it last moved
  * (or from wherever it has been told it is located).

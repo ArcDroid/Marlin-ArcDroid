@@ -146,7 +146,8 @@ void closedloop_serial_begin();
 void restore_closedloop_drivers();
 
 void closedloop_home_encoders(abce_pos_t motor_pos);
-void closedloop_restore_position(abce_pos_t *motor_pos);
+bool closedloop_need_restore();
+void closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
 
 // X Stepper
 #if AXIS_IS_CLOSEDLOOP(X)
