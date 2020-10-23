@@ -87,7 +87,7 @@ uint8_t GcodeSuite::axis_relative = (
 #endif
 
 #if ENABLED(CNC_COORDINATE_SYSTEMS)
-  int8_t GcodeSuite::active_coordinate_system = -1; // machine space
+  int8_t GcodeSuite::active_coordinate_system = 0; // machine space
   xyz_pos_t GcodeSuite::coordinate_system[MAX_COORDINATE_SYSTEMS];
 #endif
 
