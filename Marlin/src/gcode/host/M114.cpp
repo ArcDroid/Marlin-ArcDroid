@@ -226,6 +226,9 @@ void GcodeSuite::M114() {
       #if DISABLED(M114_LEGACY)
         planner.synchronize();
       #endif
+      #if HAS_CLOSEDLOOP_CONFIG
+        set_position_from_encoders_if_lost(false);
+      #endif
       report_current_position();
       report_current_position_detail();
       return;
@@ -241,5 +244,8 @@ void GcodeSuite::M114() {
   #endif
 
   TERN_(M114_LEGACY, planner.synchronize());
+  #if HAS_CLOSEDLOOP_CONFIG
+    set_position_from_encoders_if_lost(false);
+  #endif
   report_current_position_projected();
 }

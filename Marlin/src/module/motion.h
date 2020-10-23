@@ -174,6 +174,10 @@ void report_current_position_projected();
 void get_cartesian_from_steppers();
 void set_current_from_steppers_for_axis(const AxisEnum axis);
 
+#if HAS_CLOSEDLOOP_CONFIG
+  void set_position_from_encoders_if_lost(bool enable_motors);
+#endif
+
 /**
  * sync_plan_position
  *

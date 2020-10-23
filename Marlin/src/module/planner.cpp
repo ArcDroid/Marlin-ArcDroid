@@ -2650,6 +2650,11 @@ bool Planner::buffer_segment(const float &a, const float &b, const float &c, con
   // If we are cleaning, do not accept queuing of movements
   if (cleaning_buffer_counter) return false;
 
+  #if HAS_CLOSEDLOOP_CONFIG
+    // doing distance calculation, need to get latest position
+    set_position_from_encoders_if_lost(true);
+  #endif
+
   // When changing extruders recalculate steps corresponding to the E position
   #if ENABLED(DISTINCT_E_FACTORS)
     if (last_extruder != extruder && settings.axis_steps_per_mm[E_AXIS_N(extruder)] != settings.axis_steps_per_mm[E_AXIS_N(last_extruder)]) {
@@ -2741,6 +2746,11 @@ bool Planner::buffer_line(const float &rx, const float &ry, const float &rz, con
 ) {
   xyze_pos_t machine = { rx, ry, rz, e };
   TERN_(HAS_POSITION_MODIFIERS, apply_modifiers(machine));
+
+  #if HAS_CLOSEDLOOP_CONFIG
+    // doing distance calculation, need to get latest position
+    set_position_from_encoders_if_lost(true);
+  #endif
 
   #if IS_KINEMATIC
 

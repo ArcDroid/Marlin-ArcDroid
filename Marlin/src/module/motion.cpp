@@ -349,6 +349,11 @@ void line_to_current_position(const feedRate_t &fr_mm_s/*=feedrate_mm_s*/) {
     if (DEBUGGING(LEVELING)) DEBUG_POS("prepare_fast_move_to_destination", destination);
     apply_motion_limits(destination);
 
+    #if HAS_CLOSEDLOOP_CONFIG
+      // doing distance calculation, need to get latest position
+      set_position_from_encoders_if_lost(true);
+    #endif
+
     #if UBL_SEGMENTED
       // UBL segmented line will do Z-only moves in single segment
       ubl.line_to_destination_segmented(scaled_fr_mm_s);
@@ -753,6 +758,11 @@ FORCE_INLINE void segment_idle(millis_t &next_idle_ms) {
    */
   inline bool line_to_destination_kinematic() {
     //DEBUG_ECHOLNPAIR("line_to_destination_kinematic", __LINE__);
+
+    #if HAS_CLOSEDLOOP_CONFIG
+      // doing distance calculation, need to get latest position
+      set_position_from_encoders_if_lost(true);
+    #endif
 
     // Get the top feedrate of the move in the XY plane
     const float scaled_fr_mm_s = MMS_SCALED(feedrate_mm_s);

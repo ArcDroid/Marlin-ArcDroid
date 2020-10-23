@@ -603,7 +603,7 @@ int16_t S42BClosedLoop::sendCommand(const uint8_t function, const uint16_t data,
 int32_t S42BClosedLoop::readPosition() {
     uint8_t buff[4];
     preCommunication();
-    int16_t res = sendCommand(0x37, 0xaaaa, buff, 4, 2000);
+    int16_t res = sendCommand(0x37, 0xaaaa, buff, 4, 500);
     postCommunication();
 
     if (res < 0)
