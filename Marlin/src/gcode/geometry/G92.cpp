@@ -63,6 +63,9 @@ void GcodeSuite::G92() {
       } break;
     #endif
     case 0: {
+      #if HAS_CLOSEDLOOP_CONFIG
+        set_position_from_encoders_if_lost(false);
+      #endif
       LOOP_XYZE(i) {
         if (parser.seenval(axis_codes[i])) {
           const float l = parser.value_axis_units((AxisEnum)i),
