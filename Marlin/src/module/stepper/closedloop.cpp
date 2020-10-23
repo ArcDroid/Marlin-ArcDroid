@@ -372,6 +372,15 @@ void closedloop_home_encoders(abce_pos_t motor_pos) {
     #endif
 }
 
+void closedloop_restore_position(abce_pos_t *motor_pos) {
+    #if AXIS_IS_CLOSEDLOOP(X)
+        motor_pos->x = stepperX.read_encoder();
+    #endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+        motor_pos->y = stepperY.read_encoder();
+    #endif
+}
+
 
 S42BClosedLoop::S42BClosedLoop(Stream * SerialPort) {
     HWSerial = SerialPort;

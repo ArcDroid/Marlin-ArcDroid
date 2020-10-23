@@ -33,6 +33,12 @@
  * M17: Enable stepper motors
  */
 void GcodeSuite::M17() {
+  #if HAS_CLOSEDLOOP_CONFIG
+    abce_pos_t pos = planner.get_axis_positions_mm();
+    closedloop_restore_position(&pos);
+    planner.set_machine_position_mm(pos);
+    set_current_from_steppers_for_axis(ALL_AXES);
+  #endif
   if (parser.seen("XYZE")) {
     if (parser.seen('X')) ENABLE_AXIS_X();
     if (parser.seen('Y')) ENABLE_AXIS_Y();
