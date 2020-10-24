@@ -2852,22 +2852,34 @@
  */
 //#define SPINDLE_FEATURE
 #define LASER_FEATURE
+#ifdef MINI_MODEL_2AM
+#define SPINDLE_LASER_ENA_PIN P1_31
+#define SPINDLE_LASER_PWM_PIN HEATER_BED_PIN
+#else
 #define SPINDLE_LASER_ENA_PIN HEATER_BED_PIN
 //#define SPINDLE_LASER_PWM_PIN 2
+#endif
 #if EITHER(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_HIGH     true   // Set to "true" if the on/off function is active HIGH
+#ifdef MINI_MODEL_2AM
+  #define SPINDLE_LASER_PWM             true   // Set to "true" if your controller supports setting the speed/power
+#else
   #define SPINDLE_LASER_PWM             false  // Set to "true" if your controller supports setting the speed/power
+#endif
   #define SPINDLE_LASER_PWM_INVERT      false  // Set to "true" if the speed/power goes up when you want it to go slower
 
+#ifdef MINI_MODEL_2AM
+  #define SPINDLE_LASER_FREQUENCY       10000  // (Hz) Spindle/laser frequency (only on supported HALs: AVR and LPC)
+#else
   //#define SPINDLE_LASER_FREQUENCY     2500   // (Hz) Spindle/laser frequency (only on supported HALs: AVR and LPC)
-
+#endif
   /**
    * Speed / Power can be set ('M3 S') and displayed in terms of:
    *  - PWM255  (S0 - S255)
    *  - PERCENT (S0 - S100)
    *  - RPM     (S0 - S50000)  Best for use with a spindle
    */
-  #define CUTTER_POWER_UNIT PWM255
+  #define CUTTER_POWER_UNIT PERCENT
 
   /**
    * Relative Cutter Power
@@ -2978,9 +2990,13 @@
 
     #else
 
+#ifdef MINI_MODEL_2AM
+      #define SPINDLE_LASER_POWERUP_DELAY     100 // (ms) Delay to allow the spindle/laser to come up to speed/power
+      #define SPINDLE_LASER_POWERDOWN_DELAY   100 // (ms) Delay to allow the spindle to stop
+#else
       #define SPINDLE_LASER_POWERUP_DELAY     1000 // (ms) Delay to allow the spindle/laser to come up to speed/power
       #define SPINDLE_LASER_POWERDOWN_DELAY   1000 // (ms) Delay to allow the spindle to stop
-
+#endif
     #endif
   #endif
 #endif
