@@ -602,15 +602,22 @@ int16_t S42BClosedLoop::sendCommand(const uint8_t function, const uint16_t data,
 
 int32_t S42BClosedLoop::readPosition() {
     uint8_t buff[4];
+    int16_t res;
     preCommunication();
-    int16_t res = sendCommand(0x37, 0xaaaa, buff, 4, 500);
+    for (uint8_t retries = 0; retries < 5; retries++) {
+        delay(2);
+        res = sendCommand(0x37, 0xaaaa, buff, 4, 40);
+
+        if (res < 0)
+            continue;
+        postCommunication();
+
+        int32_t position = (buff[0] << 24) | (buff[1] << 16) | (buff[2] << 8) | buff[3];
+        return position;
+    }
     postCommunication();
 
-    if (res < 0)
-        return 0x7f000000 - res ; // read failed
-
-    int32_t position = (buff[0] << 24) | (buff[1] << 16) | (buff[2] << 8) | buff[3];
-    return position;
+    return 0x7f000000 - res ; // read failed
 }
 
 #endif // HAS_CLOSEDLOOP_CONFIG
