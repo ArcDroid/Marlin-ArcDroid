@@ -2739,15 +2739,23 @@
 #endif // HAS_L64XX
 
 #if HAS_CLOSEDLOOP_CONFIG
+  #define HAS_CLOSEDLOOP_HW_SERIAL 1
   #if AXIS_IS_CLOSEDLOOP(X)
     #define X_ENCODER_PPU -16384.0 / 360 * 4
-    #define X_SERIAL_RX_PIN P1_23
-    #define X_SERIAL_TX_PIN P1_22
+    //#define X_SERIAL_RX_PIN P1_23
+    //#define X_SERIAL_TX_PIN P1_22
+
+    // EXP2 0.15 = TXD1, 0.16 = RXD1
+    #define X_HARDWARE_SERIAL Serial1
   #endif
   #if AXIS_IS_CLOSEDLOOP(Y)
     #define Y_ENCODER_PPU 16384.0 / 360 * 4
-    #define Y_SERIAL_RX_PIN P1_21
-    #define Y_SERIAL_TX_PIN P1_20
+    //#define Y_SERIAL_RX_PIN P1_21
+    //#define Y_SERIAL_TX_PIN P1_20
+
+    // WiFi 4.28 = TXD3, 4.29 = RXD3
+    #define LPC_PINCFG_UART3_P4_28
+    #define Y_HARDWARE_SERIAL Serial3
   #endif
 #endif // HAS_CLOSEDLOOP_CONFIG
 
