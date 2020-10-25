@@ -96,7 +96,7 @@
       DEBUG_ECHOPGM("\nClosedLoop:");
       int32_t pos_temp;
       #if AXIS_IS_CLOSEDLOOP(X)
-        pos_temp = stepperX.readPosition();
+        pos_temp = stepperX.readPosition(true);
         if (pos_temp > 0x7f000000) {
             DEBUG_ECHOPAIR(" X: readerr ", 0x7f000000 - pos_temp);
         } else {
@@ -106,7 +106,7 @@
         }
       #endif
       #if AXIS_IS_CLOSEDLOOP(Y)
-        pos_temp = stepperY.readPosition();
+        pos_temp = stepperY.readPosition(true);
         if (pos_temp > 0x7f000000) {
             DEBUG_ECHOPAIR(" Y: readerr ", 0x7f000000 - pos_temp);
         } else {

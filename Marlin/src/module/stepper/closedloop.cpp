@@ -600,13 +600,13 @@ int16_t S42BClosedLoop::sendCommand(const uint8_t function, const uint16_t data,
 	return read;
 }
 
-int32_t S42BClosedLoop::readPosition() {
+int32_t S42BClosedLoop::readPosition(bool onetry) {
     uint8_t buff[4];
     int16_t res;
     preCommunication();
-    for (uint8_t retries = 0; retries < 5; retries++) {
+    for (uint8_t retries = 0; retries < (onetry ? 1 : 5); retries++) {
         delay(2);
-        res = sendCommand(0x37, 0xaaaa, buff, 4, 40);
+        res = sendCommand(0x37, 0xaaaa, buff, 4, 20);
 
         if (res < 0)
             continue;

@@ -51,7 +51,7 @@ public:
     void beginSerial(uint32_t) = delete; // Your platform does not currently support Software Serial
 #endif
 
-    int32_t readPosition();
+    int32_t readPosition(bool onetry = false);
 
 
     uint16_t bytesWritten = 0;
