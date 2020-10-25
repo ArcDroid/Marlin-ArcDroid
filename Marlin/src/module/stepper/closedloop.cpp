@@ -49,7 +49,7 @@
 
 
 #ifndef CLOSEDLOOP_BAUD_RATE
-  #define CLOSEDLOOP_BAUD_RATE 19200
+  #define CLOSEDLOOP_BAUD_RATE 38400
 #endif
 
 
