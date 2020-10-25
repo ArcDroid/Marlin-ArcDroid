@@ -1769,7 +1769,9 @@
  * you must uncomment the following option or it won't work.
  *
  */
+#ifndef MINI_MODEL_2AM
 #define SDSUPPORT
+#endif
 
 /**
  * SD CARD: SPI SPEED

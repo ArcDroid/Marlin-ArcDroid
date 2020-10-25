@@ -1283,9 +1283,7 @@
    *
    * :[ 'LCD', 'ONBOARD', 'CUSTOM_CABLE' ]
    */
-  #ifndef MINI_MODEL_2AM
-    #define SDCARD_CONNECTION ONBOARD
-  #endif
+  #define SDCARD_CONNECTION ONBOARD
 
 #endif // SDSUPPORT
 
