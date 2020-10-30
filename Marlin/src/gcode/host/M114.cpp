@@ -95,10 +95,12 @@
     #if HAS_CLOSEDLOOP_CONFIG
       DEBUG_ECHOPGM("\nClosedLoop:");
       int32_t pos_temp;
+      int32_t error;
       #if AXIS_IS_CLOSEDLOOP(X)
         pos_temp = stepperX.readPosition(true);
-        if (pos_temp > 0x7f000000) {
-            DEBUG_ECHOPAIR(" X: readerr ", 0x7f000000 - pos_temp);
+        error = S42BClosedLoop::positionIsError(pos_temp);
+        if (error != 0) {
+            DEBUG_ECHOPAIR(" X: readerr ", error);
         } else {
             DEBUG_ECHOPAIR(" X:", pos_temp);
             DEBUG_ECHOPAIR_F(" (", stepperX.to_mm(pos_temp));
@@ -107,8 +109,9 @@
       #endif
       #if AXIS_IS_CLOSEDLOOP(Y)
         pos_temp = stepperY.readPosition(true);
-        if (pos_temp > 0x7f000000) {
-            DEBUG_ECHOPAIR(" Y: readerr ", 0x7f000000 - pos_temp);
+        error = S42BClosedLoop::positionIsError(pos_temp);
+        if (error != 0) {
+            DEBUG_ECHOPAIR(" Y: readerr ", error);
         } else {
             DEBUG_ECHOPAIR(" Y:", pos_temp);
             DEBUG_ECHOPAIR_F(" (", stepperY.to_mm(pos_temp));

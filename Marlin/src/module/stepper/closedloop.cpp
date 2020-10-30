@@ -375,10 +375,10 @@ void closedloop_home_encoders(abce_pos_t motor_pos) {
 bool closedloop_need_restore() {
     return false
     #if AXIS_IS_CLOSEDLOOP(X)
-        || !TEST(axis_known_position, X_AXIS) && stepperX.homed
+        || (!TEST(axis_known_position, X_AXIS) && stepperX.homed)
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        || !TEST(axis_known_position, Y_AXIS) && stepperY.homed
+        || (!TEST(axis_known_position, Y_AXIS) && stepperY.homed)
     #endif
     ;
 }
@@ -595,18 +595,18 @@ int16_t S42BClosedLoop::sendCommand(const uint8_t function, const uint16_t data,
     if (checksum != expected)
         return -4; // crc error
 
-	while (available() > 0) serial_read(); // Flush
+    while (available() > 0) serial_read(); // Flush
 
 	return read;
 }
 
 int32_t S42BClosedLoop::readPosition(bool onetry) {
     uint8_t buff[4];
-    int16_t res;
+    int16_t res = 0;
     preCommunication();
     for (uint8_t retries = 0; retries < (onetry ? 1 : 5); retries++) {
         delay(2);
-        res = sendCommand(0x37, 0xaaaa, buff, 4, 20);
+        res = sendCommand(0x37, 0xaaaa, buff, 4, 40);
 
         if (res < 0)
             continue;

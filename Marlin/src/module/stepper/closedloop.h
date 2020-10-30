@@ -28,6 +28,7 @@
 
 #include "../../inc/MarlinConfig.h"
 
+#include "../../MarlinCore.h"
 
 #if (__cplusplus == 201703L) && defined(__has_include)
 	#define SW_CAPABLE_PLATFORM __has_include(<SoftwareSerial.h>)
@@ -52,6 +53,13 @@ public:
 #endif
 
     int32_t readPosition(bool onetry = false);
+
+    static int32_t positionIsError(int32_t position) {
+        if (position > 0x7f000000)
+            return position - 0x7f000000;
+        else
+            return 0;
+    }
 
 
     uint16_t bytesWritten = 0;
@@ -98,6 +106,17 @@ class ClosedLoopMarlin : public S42BClosedLoop {
     void touch_off_encoder(float new_position) {
         int32_t pos = new_position * encoder_counts_per_unit;
         int32_t raw_read = readPosition();
+        int32_t error = S42BClosedLoop::positionIsError(raw_read);
+        if (error != 0) {
+            SERIAL_ECHO("touch_off_encoder err:");
+            SERIAL_ECHO(error);
+            SERIAL_ECHO("axis:");
+            SERIAL_ECHO(AXIS_LETTER);
+            idle();
+            idle();
+            idle();
+            kill(PSTR("touch_off_encoder could not read encoder"));
+        }
         encoder_offset = pos - raw_read;
         homed = true;
     }
@@ -107,7 +126,20 @@ class ClosedLoopMarlin : public S42BClosedLoop {
     }
 
     float read_encoder() {
-        return (readPosition() + encoder_offset) / encoder_counts_per_unit;
+        int32_t raw_read = readPosition();
+        int32_t error = S42BClosedLoop::positionIsError(raw_read);
+        if (error != 0) {
+            SERIAL_ECHO("read_encoder err:");
+            SERIAL_ECHO(error);
+            SERIAL_ECHO("axis:");
+            SERIAL_ECHO(AXIS_LETTER);
+            idle();
+            idle();
+            idle();
+
+            kill(PSTR("read_encoder could not read encoder"));
+        }
+        return (raw_read + encoder_offset) / encoder_counts_per_unit;
     }
 
 };
