@@ -2739,7 +2739,11 @@
 #if HAS_CLOSEDLOOP_CONFIG
   #define HAS_CLOSEDLOOP_HW_SERIAL 1
   #if AXIS_IS_CLOSEDLOOP(X)
+    #ifdef MINI_MODEL_2AM
     #define X_ENCODER_PPU -16384.0 / 360 * 4
+    #else
+    #define X_ENCODER_PPU 16384.0 / 360 * 10
+    #endif
     //#define X_SERIAL_RX_PIN P1_23
     //#define X_SERIAL_TX_PIN P1_22
 
@@ -2747,7 +2751,11 @@
     #define X_HARDWARE_SERIAL Serial1
   #endif
   #if AXIS_IS_CLOSEDLOOP(Y)
+    #ifdef MINI_MODEL_2AM
     #define Y_ENCODER_PPU 16384.0 / 360 * 4
+    #else
+    #define Y_ENCODER_PPU 16384.0 / 360 * 10
+    #endif
     //#define Y_SERIAL_RX_PIN P1_21
     //#define Y_SERIAL_TX_PIN P1_20
 
@@ -3000,8 +3008,8 @@
       #define SPINDLE_LASER_POWERUP_DELAY     100 // (ms) Delay to allow the spindle/laser to come up to speed/power
       #define SPINDLE_LASER_POWERDOWN_DELAY   100 // (ms) Delay to allow the spindle to stop
 #else
-      #define SPINDLE_LASER_POWERUP_DELAY     1000 // (ms) Delay to allow the spindle/laser to come up to speed/power
-      #define SPINDLE_LASER_POWERDOWN_DELAY   1000 // (ms) Delay to allow the spindle to stop
+      #define SPINDLE_LASER_POWERUP_DELAY     100 // (ms) Delay to allow the spindle/laser to come up to speed/power
+      #define SPINDLE_LASER_POWERDOWN_DELAY   100 // (ms) Delay to allow the spindle to stop
 #endif
     #endif
   #endif

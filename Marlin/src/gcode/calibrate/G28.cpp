@@ -100,7 +100,7 @@
     #if IS_SCARA
       abce_pos_t target = planner.get_axis_positions_mm();
       target.x += x_axis_home_dir * 360.0f;
-      target.y += y_axis_home_dir * 360.0f;
+      target.y += x_axis_home_dir * 360.0f;
       planner.buffer_segment(target.a, target.b, target.c, target.e, homing_feedrate(X_AXIS), active_extruder);
       planner.synchronize();
 
