@@ -2195,7 +2195,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     }while(0)
 
     // Start with print or travel acceleration
-    accel = CEIL((esteps ? settings.acceleration : settings.travel_acceleration) * steps_per_mm);
+    accel = CEIL((esteps || TERN(HAS_CUTTER, block->cutter_power, false) ? settings.acceleration : settings.travel_acceleration) * steps_per_mm);
 
     #if ENABLED(LIN_ADVANCE)
 
