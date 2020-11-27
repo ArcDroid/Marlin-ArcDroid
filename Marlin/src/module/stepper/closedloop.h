@@ -54,6 +54,8 @@ public:
 
     int32_t readPosition(bool onetry = false);
 
+    bool userCommand(uint8_t function, uint16_t data);
+
     static int32_t positionIsError(int32_t position) {
         if (position > 0x7f000000)
             return position - 0x7f000000;
@@ -81,7 +83,8 @@ protected:
     static uint8_t calcChecksum(uint8_t buffer[], uint8_t start, uint8_t len);
     static uint8_t calcChecksum(uint8_t l_val, uint8_t f_val, uint8_t buffer[], uint8_t start, uint8_t len);
 
-    int16_t sendCommand(const uint8_t function, const uint16_t data, uint8_t respBuffer[], const uint8_t rBufSize, uint16_t timeout);
+    void sendCommandBase(const uint8_t function, const uint16_t data);
+    int16_t sendCommandBinary(const uint8_t function, const uint16_t data, uint8_t respBuffer[], const uint8_t rBufSize, uint16_t timeout);
 
     static constexpr uint8_t replyDelay = 2;
     static constexpr uint8_t abort_window = 5;

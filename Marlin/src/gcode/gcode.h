@@ -264,6 +264,9 @@
  * M916 - L6470 tuning: Increase KVAL_HOLD until thermal warning. (Requires at least one _DRIVER_TYPE L6470)
  * M917 - L6470 tuning: Find minimum current thresholds. (Requires at least one _DRIVER_TYPE L6470)
  * M918 - L6470 tuning: Increase speed until max or error. (Requires at least one _DRIVER_TYPE L6470)
+ * M925: Configure CL_S42B driver
+ * M926: Start CL_S42B calibration
+ * M926: Send CL_S42B raw command
  * M951 - Set Magnetic Parking Extruder parameters. (Requires MAGNETIC_PARKING_EXTRUDER)
  * M7219 - Control Max7219 Matrix LEDs. (Requires MAX7219_GCODE)
  *
@@ -826,6 +829,12 @@ private:
     static void M916();
     static void M917();
     static void M918();
+  #endif
+
+  #if HAS_CLOSEDLOOP_CONFIG
+    static void M925();
+    static void M926();
+    static void M927();
   #endif
 
   #if ANY(HAS_DIGIPOTSS, HAS_MOTOR_CURRENT_PWM, HAS_I2C_DIGIPOT, DAC_STEPPER_CURRENT)

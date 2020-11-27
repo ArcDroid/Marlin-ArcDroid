@@ -522,14 +522,18 @@ int16_t S42BClosedLoop::serial_read_timed(uint32_t millis_deadline) {
 		    return -1; // timeout waiting for response
 
 		int16_t res = serial_read();
-		if (res < 0) continue; // nothing in serial buffer
+		if (res < 0) {
+            ////SERIAL_ECHOPAIR("res=", res, "time", time, "millis_deadline", millis_deadline);
+            idle();
+            continue; // nothing in serial buffer
+        }
 
 		return res;
     } while (true);
 }
 
-int16_t S42BClosedLoop::sendCommand(const uint8_t function, const uint16_t data, uint8_t respBuffer[], const uint8_t rBufSize, uint16_t timeout) {
-	uint8_t dh = data >> 8;
+void S42BClosedLoop::sendCommandBase(const uint8_t function, const uint16_t data) {
+    uint8_t dh = data >> 8;
     uint8_t dl = data & 0xFF;
 	uint8_t command[] = {0xfe, 0xfe, 0x05, function, dh, dl, 0, 0x16};
     uint8_t len = sizeof(command);
@@ -542,6 +546,10 @@ int16_t S42BClosedLoop::sendCommand(const uint8_t function, const uint16_t data,
 		bytesWritten += serial_write(command[i]);
 	}
 	delay(replyDelay);
+}
+
+int16_t S42BClosedLoop::sendCommandBinary(const uint8_t function, const uint16_t data, uint8_t respBuffer[], const uint8_t rBufSize, uint16_t timeout) {
+	sendCommandBase(function, data);
 
 	// scan for the rx frame and read it
 	uint32_t deadline = millis() + timeout;
@@ -606,7 +614,7 @@ int32_t S42BClosedLoop::readPosition(bool onetry) {
     preCommunication();
     for (uint8_t retries = 0; retries < (onetry ? 1 : 5); retries++) {
         delay(2);
-        res = sendCommand(0x37, 0xaaaa, buff, 4, 40);
+        res = sendCommandBinary(0x37, 0xaaaa, buff, 4, 40);
 
         if (res < 0)
             continue;
@@ -618,6 +626,32 @@ int32_t S42BClosedLoop::readPosition(bool onetry) {
     postCommunication();
 
     return 0x7f000000 - res ; // read failed
+}
+
+bool S42BClosedLoop::userCommand(uint8_t function, uint16_t data) {
+    preCommunication();
+    delay(2);
+
+    sendCommandBase(function, data);
+    uint32_t timeout = 50;
+
+	// scan for the rx frame and read it
+	uint32_t deadline = millis() + timeout;
+
+	do {
+		int16_t res = serial_read_timed(deadline);
+		if (res <= 0) {
+            break; // timeout while waiting for start word
+        }
+        else {
+            deadline = millis() + timeout;
+            SERIAL_CHAR(res);
+        }
+	} while (true);
+
+    postCommunication();
+
+    return true;
 }
 
 #endif // HAS_CLOSEDLOOP_CONFIG
