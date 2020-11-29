@@ -2742,7 +2742,7 @@
     #ifdef MINI_MODEL_2AM
     #define X_ENCODER_PPU -16384.0 / 360 * 4
     #else
-    #define X_ENCODER_PPU 16384.0 / 360 * 10
+    #define X_ENCODER_PPU 38508.0 / 90.0
     #endif
     //#define X_SERIAL_RX_PIN P1_23
     //#define X_SERIAL_TX_PIN P1_22
@@ -2754,7 +2754,7 @@
     #ifdef MINI_MODEL_2AM
     #define Y_ENCODER_PPU 16384.0 / 360 * 4
     #else
-    #define Y_ENCODER_PPU 16384.0 / 360 * 10
+    #define Y_ENCODER_PPU 38508.0 / 90.0
     #endif
     //#define Y_SERIAL_RX_PIN P1_21
     //#define Y_SERIAL_TX_PIN P1_20

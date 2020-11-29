@@ -809,7 +809,7 @@
 #ifdef MINI_MODEL_2AM
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 8192.0/360.0*4.0, 8192.0/2.0/360.0*4.0, 200/1.25, 1000 }  // default steps per unit for SCARA
 #else
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 8192.0/360.0*10.0, 8192.0/360.0*10.0, 200/1.25, 1000 }  // default steps per unit for SCARA
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 38508.0/90.0/2.0, 38508.0/90.0/2.0, 200/1.25, 1000 }  // default steps per unit for SCARA
 #endif
 
 /**
