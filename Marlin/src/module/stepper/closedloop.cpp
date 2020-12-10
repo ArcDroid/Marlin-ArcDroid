@@ -624,7 +624,7 @@ int32_t S42BClosedLoop::readPosition(bool onetry) {
     uint8_t buff[4];
     int16_t res = 0;
     preCommunication();
-    for (uint8_t retries = 0; retries < (onetry ? 1 : 5); retries++) {
+    for (uint8_t retries = 0; retries < (onetry ? 1 : 15); retries++) {
         delay(2);
         res = sendCommandBinary(0x37, 0xaaaa, buff, 4, 40);
 
