@@ -32,9 +32,10 @@
 #include "closedloop.h"
 #include "../stepper.h"
 
+
 #include <HardwareSerial.h>
 
-#define CLOSEDLOOP_INIT(ST) closedloop_init(stepper##ST, ST##_ENCODER_PPU)
+#define CLOSEDLOOP_INIT(ST) closedloop_init(stepper##ST, ST##_ENCODER_PPS)
 
 #define CLOSEDLOOP_UART_HW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> stepper##ST(&ST##_HARDWARE_SERIAL)
 #define CLOSEDLOOP_UART_SW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> stepper##ST(ST##_SERIAL_RX_PIN, ST##_SERIAL_TX_PIN)
@@ -300,8 +301,8 @@
 
 #if HAS_DRIVER(CLOSEDLOOP)
   template<char AXIS_LETTER, char DRIVER_ID, AxisEnum AXIS_ID>
-  void closedloop_init(ClosedLoopMarlin<AXIS_LETTER, DRIVER_ID, AXIS_ID> &st, float encoder_counts_per_unit) {
-    st.encoder_counts_per_unit = encoder_counts_per_unit;
+  void closedloop_init(ClosedLoopMarlin<AXIS_LETTER, DRIVER_ID, AXIS_ID> &st, float encoder_counts_per_step) {
+    st.encoder_counts_per_step = encoder_counts_per_step;
     st.homed = false;
     st.check_comms();
     delay(200);

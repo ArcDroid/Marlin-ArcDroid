@@ -42,6 +42,8 @@
 	#include <SoftwareSerial.h>
 #endif
 
+#include "../planner.h"
+
 class S42BClosedLoop {
 public:
     S42BClosedLoop(Stream * SerialPort);
@@ -101,13 +103,17 @@ class ClosedLoopMarlin : public S42BClosedLoop {
 
     }
 
-    float encoder_counts_per_unit;
+    float encoder_counts_per_step;
     float encoder_offset;
     bool homed;
     void check_comms();
 
+    inline float encoder_counts_per_unit() {
+        return planner.settings.axis_steps_per_mm[AXIS_ID] * encoder_counts_per_step;
+    }
+
     void touch_off_encoder(float new_position) {
-        int32_t pos = new_position * encoder_counts_per_unit;
+        int32_t pos = new_position * encoder_counts_per_unit();
         int32_t raw_read = readPosition();
         int32_t error = S42BClosedLoop::positionIsError(raw_read);
         if (error != 0) {
@@ -125,7 +131,7 @@ class ClosedLoopMarlin : public S42BClosedLoop {
     }
 
     float to_mm(int32_t enc_count) {
-        return (enc_count + encoder_offset) / encoder_counts_per_unit;
+        return (enc_count + encoder_offset) / encoder_counts_per_unit();
     }
 
     float read_encoder() {
@@ -142,7 +148,7 @@ class ClosedLoopMarlin : public S42BClosedLoop {
 
             kill(PSTR("read_encoder could not read encoder"));
         }
-        return (raw_read + encoder_offset) / encoder_counts_per_unit;
+        return (raw_read + encoder_offset) / encoder_counts_per_unit();
     }
 
 };
