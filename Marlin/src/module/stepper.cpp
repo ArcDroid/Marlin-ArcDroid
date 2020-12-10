@@ -2719,9 +2719,9 @@ void Stepper::report_a_position(const xyz_long_t &pos) {
     SERIAL_ECHOPAIR_P(PSTR(STR_COUNT_X), pos.x, SP_Y_LBL, pos.y);
   #endif
   #if CORE_IS_XZ || CORE_IS_YZ || ENABLED(DELTA)
-    SERIAL_ECHOLNPAIR(" C:", pos.z);
+    SERIAL_ECHOPAIR(" C:", pos.z);
   #else
-    SERIAL_ECHOLNPAIR_P(SP_Z_LBL, pos.z);
+    SERIAL_ECHOPAIR_P(SP_Z_LBL, pos.z);
   #endif
 }
 

@@ -373,6 +373,17 @@ void closedloop_home_encoders(abce_pos_t motor_pos) {
     #endif
 }
 
+bool closedloop_has_aligned() {
+    return true
+    #if AXIS_IS_CLOSEDLOOP(X)
+        && stepperX.homed
+    #endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+        && stepperY.homed
+    #endif
+    ;
+}
+
 bool closedloop_need_restore() {
     return false
     #if AXIS_IS_CLOSEDLOOP(X)

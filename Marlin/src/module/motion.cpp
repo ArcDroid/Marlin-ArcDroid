@@ -204,6 +204,10 @@ xyz_pos_t cartes;
 
 inline void report_more_positions() {
   stepper.report_positions();
+  #if HAS_CLOSEDLOOP_CONFIG
+    report_closedloop_alignment();
+  #endif
+  SERIAL_ECHOLN("");
   TERN_(IS_SCARA, scara_report_positions());
 }
 
@@ -243,6 +247,10 @@ void report_current_position() {
 void report_current_position_projected() {
   report_logical_position(current_position);
   stepper.report_a_position(planner.position);
+  #if HAS_CLOSEDLOOP_CONFIG
+    report_closedloop_alignment();
+  #endif
+  SERIAL_ECHOLN("");
 }
 
 /**
@@ -320,6 +328,10 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
       set_current_from_steppers_for_axis(ALL_AXES);
       planner.position_cart = cartes;
     }
+  }
+
+  void report_closedloop_alignment() {
+    SERIAL_ECHOPAIR(" CLaligned:", closedloop_has_aligned());
   }
 #endif
 
