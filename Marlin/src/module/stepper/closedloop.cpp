@@ -395,12 +395,18 @@ bool closedloop_need_restore() {
     ;
 }
 
-void closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
+bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
     bool enabled_any = false;
+    bool valid_position = true;
     #if AXIS_IS_CLOSEDLOOP(X)
         if (!TEST(axis_known_position, X_AXIS) && stepperX.homed) {
             motor_pos->x = stepperX.read_encoder();
-            if (enable) {
+            if (isnan(motor_pos->x)) {
+                valid_position = false;
+                stepperX.homed = false;
+                set_axis_not_trusted(X_AXIS);
+            }
+            else if (enable) {
                 ENABLE_STEPPER_X();
                 SBI(axis_known_position, X_AXIS);
                 enabled_any = true;
@@ -410,7 +416,12 @@ void closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
     #if AXIS_IS_CLOSEDLOOP(Y)
         if (!TEST(axis_known_position, Y_AXIS) && stepperY.homed) {
             motor_pos->y = stepperY.read_encoder();
-            if (enable) {
+            if (isnan(motor_pos->y)) {
+                valid_position = false;
+                stepperY.homed = false;
+                set_axis_not_trusted(Y_AXIS);
+            }
+            else if (enable) {
                 ENABLE_STEPPER_Y();
                 SBI(axis_known_position, Y_AXIS);
                 enabled_any = true;
@@ -421,7 +432,27 @@ void closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
         stepper.set_directions();
         delayMicroseconds(100);
     }
+
+    if (!valid_position) {
+        SERIAL_ERROR_MSG("encoder ", "error "
+        #if AXIS_IS_CLOSEDLOOP(X)
+            ,"X:", stepperX.last_error
+        #endif
+        #if AXIS_IS_CLOSEDLOOP(Y)
+            ,"Y:", stepperY.last_error
+        #endif
+            );
+        SERIAL_FLUSHTX();
+        idle();
+        if (enable) {
+            kill(PSTR("encoder error"), PSTR("failed read"), true);
+        }
+    }
+
+    return valid_position;
 }
+
+
 
 
 S42BClosedLoop::S42BClosedLoop(Stream * SerialPort) {
@@ -633,10 +664,12 @@ int32_t S42BClosedLoop::readPosition(bool onetry) {
         postCommunication();
 
         int32_t position = (buff[0] << 24) | (buff[1] << 16) | (buff[2] << 8) | buff[3];
+        last_error = 0;
         return position;
     }
     postCommunication();
 
+    last_error = res;
     return 0x7f000000 - res ; // read failed
 }
 

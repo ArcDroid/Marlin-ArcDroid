@@ -68,6 +68,7 @@ public:
 
     uint16_t bytesWritten = 0;
     bool CRCerror = false;
+    int16_t last_error = 0;
 
 protected:
     Stream * HWSerial = nullptr;
@@ -138,15 +139,7 @@ class ClosedLoopMarlin : public S42BClosedLoop {
         int32_t raw_read = readPosition();
         int32_t error = S42BClosedLoop::positionIsError(raw_read);
         if (error != 0) {
-            SERIAL_ECHO("read_encoder err:");
-            SERIAL_ECHO(error);
-            SERIAL_ECHO("axis:");
-            SERIAL_ECHO(AXIS_LETTER);
-            idle();
-            idle();
-            idle();
-
-            kill(PSTR("read_encoder could not read encoder"));
+            return NAN;
         }
         return (raw_read + encoder_offset) / encoder_counts_per_unit();
     }
@@ -189,7 +182,7 @@ void restore_closedloop_drivers();
 void closedloop_home_encoders(abce_pos_t motor_pos);
 bool closedloop_has_aligned();
 bool closedloop_need_restore();
-void closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
+bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
 
 // X Stepper
 #if AXIS_IS_CLOSEDLOOP(X)

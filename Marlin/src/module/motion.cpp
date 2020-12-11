@@ -323,7 +323,10 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
     if (closedloop_need_restore()) {
       planner.synchronize();
       abce_pos_t pos = planner.get_axis_positions_mm();
-      closedloop_restore_position(&pos, enable_motors);
+      bool valid_pos = closedloop_restore_position(&pos, enable_motors);
+      if (!valid_pos) {
+        return;
+      }
       planner.set_machine_position_mm(pos);
       set_current_from_steppers_for_axis(ALL_AXES);
       planner.position_cart = cartes;
