@@ -44,6 +44,10 @@
   #include "../feature/joystick.h"
 #endif
 
+#if ENABLED(HOST_ACTION_COMMANDS)
+  #include "../feature/host_actions.h"
+#endif
+
 Endstops endstops;
 
 // private:
@@ -384,6 +388,9 @@ void Endstops::event_handler() {
       if (planner.abort_on_endstop_hit) {
         #if ENABLED(SDSUPPORT)
           abortSDPrinting();
+        #endif
+        #if ENABLED(HOST_ACTION_COMMANDS)
+          host_action_cancel();
         #endif
       }
     #endif
