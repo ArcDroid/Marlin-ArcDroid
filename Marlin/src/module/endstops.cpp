@@ -351,6 +351,17 @@ void Endstops::event_handler() {
   if (hit_state == prev_hit_state) return;
   prev_hit_state = hit_state;
   if (hit_state) {
+    #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
+      if (planner.abort_on_endstop_hit) {
+        #if ENABLED(SDSUPPORT)
+          abortSDPrinting();
+        #endif
+        #if ENABLED(HOST_ACTION_COMMANDS)
+          host_action_cancel();
+        #endif
+      }
+    #endif
+
     #if HAS_SPI_LCD
       char chrX = ' ', chrY = ' ', chrZ = ' ', chrP = ' ';
       #define _SET_STOP_CHAR(A,C) (chr## A = C)
@@ -383,17 +394,6 @@ void Endstops::event_handler() {
     SERIAL_EOL();
 
     TERN_(HAS_SPI_LCD, ui.status_printf_P(0, PSTR(S_FMT " %c %c %c %c"), GET_TEXT(MSG_LCD_ENDSTOPS), chrX, chrY, chrZ, chrP));
-
-    #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
-      if (planner.abort_on_endstop_hit) {
-        #if ENABLED(SDSUPPORT)
-          abortSDPrinting();
-        #endif
-        #if ENABLED(HOST_ACTION_COMMANDS)
-          host_action_cancel();
-        #endif
-      }
-    #endif
   }
 }
 
