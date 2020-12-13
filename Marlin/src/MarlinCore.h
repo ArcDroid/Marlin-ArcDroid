@@ -79,6 +79,7 @@ inline bool IsStopped() { return marlin_state != MF_RUNNING; }
 bool printingIsActive();
 bool printingIsPaused();
 void startOrResumeJob();
+void abortSDPrinting();
 
 extern bool wait_for_heatup;
 

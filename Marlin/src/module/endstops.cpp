@@ -36,10 +36,6 @@
   #include HAL_PATH(../HAL, endstop_interrupts.h)
 #endif
 
-#if BOTH(SD_ABORT_ON_ENDSTOP_HIT, SDSUPPORT)
-  #include "printcounter.h" // for print_job_timer
-#endif
-
 #if ENABLED(BLTOUCH)
   #include "../feature/bltouch.h"
 #endif
@@ -384,12 +380,11 @@ void Endstops::event_handler() {
 
     TERN_(HAS_SPI_LCD, ui.status_printf_P(0, PSTR(S_FMT " %c %c %c %c"), GET_TEXT(MSG_LCD_ENDSTOPS), chrX, chrY, chrZ, chrP));
 
-    #if BOTH(SD_ABORT_ON_ENDSTOP_HIT, SDSUPPORT)
+    #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
       if (planner.abort_on_endstop_hit) {
-        card.endFilePrint();
-        quickstop_stepper();
-        thermalManager.disable_all_heaters();
-        print_job_timer.stop();
+        #if ENABLED(SDSUPPORT)
+          abortSDPrinting();
+        #endif
       }
     #endif
   }

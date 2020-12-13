@@ -421,7 +421,7 @@ void startOrResumeJob() {
 
 #if ENABLED(SDSUPPORT)
 
-  inline void abortSDPrinting() {
+  void abortSDPrinting() {
     card.endFilePrint(TERN_(SD_RESORT, true));
     queue.clear();
     quickstop_stepper();

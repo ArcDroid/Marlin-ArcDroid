@@ -152,7 +152,7 @@ float Planner::steps_to_mm[XYZE_N];             // (mm) Millimeters per step
 #endif
 
 #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
-  bool Planner::abort_on_endstop_hit = false;
+  bool Planner::abort_on_endstop_hit = true;
 #endif
 
 #if ENABLED(DISTINCT_E_FACTORS)
