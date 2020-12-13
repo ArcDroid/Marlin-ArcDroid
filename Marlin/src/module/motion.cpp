@@ -207,7 +207,7 @@ inline void report_more_positions() {
   #if HAS_CLOSEDLOOP_CONFIG
     report_closedloop_alignment();
   #endif
-  SERIAL_ECHOLN("");
+  SERIAL_EOL();
   TERN_(IS_SCARA, scara_report_positions());
 }
 
@@ -250,7 +250,7 @@ void report_current_position_projected() {
   #if HAS_CLOSEDLOOP_CONFIG
     report_closedloop_alignment();
   #endif
-  SERIAL_ECHOLN("");
+  SERIAL_EOL();
 }
 
 /**

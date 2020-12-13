@@ -93,29 +93,29 @@
     planner.synchronize();
 
     #if HAS_CLOSEDLOOP_CONFIG
-      DEBUG_ECHOPGM("\nClosedLoop:");
+      SERIAL_ECHOPGM("\nClosedLoop:");
       int32_t pos_temp;
       int32_t error;
       #if AXIS_IS_CLOSEDLOOP(X)
         pos_temp = stepperX.readPosition(true);
         error = S42BClosedLoop::positionIsError(pos_temp);
         if (error != 0) {
-            DEBUG_ECHOPAIR(" X: readerr ", error);
+            SERIAL_ECHOPAIR(" X: readerr ", error);
         } else {
-            DEBUG_ECHOPAIR(" X:", pos_temp);
-            DEBUG_ECHOPAIR_F(" (", stepperX.to_mm(pos_temp));
-            DEBUG_CHAR(')');
+            SERIAL_ECHOPAIR(" X:", pos_temp);
+            SERIAL_ECHOPAIR_F(" (", stepperX.to_mm(pos_temp));
+            SERIAL_CHAR(')');
         }
       #endif
       #if AXIS_IS_CLOSEDLOOP(Y)
         pos_temp = stepperY.readPosition(true);
         error = S42BClosedLoop::positionIsError(pos_temp);
         if (error != 0) {
-            DEBUG_ECHOPAIR(" Y: readerr ", error);
+            SERIAL_ECHOPAIR(" Y: readerr ", error);
         } else {
-            DEBUG_ECHOPAIR(" Y:", pos_temp);
-            DEBUG_ECHOPAIR_F(" (", stepperY.to_mm(pos_temp));
-            DEBUG_CHAR(')');
+            SERIAL_ECHOPAIR(" Y:", pos_temp);
+            SERIAL_ECHOPAIR_F(" (", stepperY.to_mm(pos_temp));
+            SERIAL_CHAR(')');
         }
       #endif
       SERIAL_EOL();
