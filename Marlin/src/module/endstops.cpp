@@ -667,12 +667,16 @@ void Endstops::update() {
 
   // Record endstop was hit
   #define _ENDSTOP_HIT(AXIS, MINMAX) SBI(hit_state, _ENDSTOP(AXIS, MINMAX))
+  #define _ENDSTOP_RELEASED(AXIS, MINMAX) CBI(hit_state, _ENDSTOP(AXIS, MINMAX))
 
   // Call the endstop triggered routine for single endstops
   #define PROCESS_ENDSTOP(AXIS, MINMAX) do { \
     if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX))) { \
       _ENDSTOP_HIT(AXIS, MINMAX); \
       planner.endstop_triggered(_AXIS(AXIS)); \
+    } \
+    else { \
+      _ENDSTOP_RELEASED(AXIS, MINMAX); \
     } \
   }while(0)
 
