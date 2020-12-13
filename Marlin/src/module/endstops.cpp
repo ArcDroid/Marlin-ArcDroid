@@ -48,6 +48,10 @@
   #include "../feature/host_actions.h"
 #endif
 
+#if HAS_CUTTER
+  #include "../feature/spindle_laser.h"
+#endif
+
 Endstops endstops;
 
 // private:
@@ -353,6 +357,9 @@ void Endstops::event_handler() {
   if (hit_state) {
     #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
       if (planner.abort_on_endstop_hit) {
+        #if HAS_CUTTER
+          cutter.kill();
+        #endif
         #if ENABLED(SDSUPPORT)
           abortSDPrinting();
         #endif
