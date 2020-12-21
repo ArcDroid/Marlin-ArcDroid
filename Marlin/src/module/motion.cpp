@@ -207,8 +207,8 @@ inline void report_more_positions() {
   #if HAS_CLOSEDLOOP_CONFIG
     report_closedloop_alignment();
   #endif
-  SERIAL_EOL();
   TERN_(IS_SCARA, scara_report_positions());
+  SERIAL_EOL();
 }
 
 // Report the logical position for a given machine position

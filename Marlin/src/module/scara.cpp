@@ -191,8 +191,7 @@ void inverse_kinematics(const xyz_pos_t &raw) {
 }
 
 void scara_report_positions() {
-  SERIAL_ECHOLNPAIR("SCARA Theta:", planner.get_axis_position_degrees(A_AXIS), "  Psi+Theta:", planner.get_axis_position_degrees(B_AXIS));
-  SERIAL_EOL();
+  SERIAL_ECHOLNPAIR(" SCARA Theta:", planner.get_axis_position_degrees(A_AXIS), "  Psi+Theta:", planner.get_axis_position_degrees(B_AXIS));
 }
 
 #endif // IS_SCARA
