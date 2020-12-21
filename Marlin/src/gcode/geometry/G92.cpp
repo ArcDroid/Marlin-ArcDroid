@@ -50,7 +50,7 @@ void GcodeSuite::G92() {
           position_shift[i] = 0;
           update_workspace_offset((AxisEnum)i);
         }
-      } return;
+      } break;
     #endif
     #if ENABLED(POWER_LOSS_RECOVERY)
       case 9: {
