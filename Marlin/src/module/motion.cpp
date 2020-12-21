@@ -207,6 +207,14 @@ inline void report_more_positions() {
   #if HAS_CLOSEDLOOP_CONFIG
     report_closedloop_alignment();
   #endif
+  #if ENABLED(CNC_COORDINATE_SYSTEMS)
+    if (WITHIN(gcode.active_coordinate_system, 0, MAX_COORDINATE_SYSTEMS - 1)) {
+      xyz_pos_t* o = &gcode.coordinate_system[gcode.active_coordinate_system];
+      SERIAL_ECHOPAIR(" CS:", gcode.active_coordinate_system + 54, " OX:", o->x, " OY:", o->y, " OZ:", o->z);
+    } else {
+      SERIAL_ECHO(" CS:53 OX:0 OY:0 OZ:0");
+    }
+  #endif
   TERN_(IS_SCARA, scara_report_positions());
   SERIAL_EOL();
 }
