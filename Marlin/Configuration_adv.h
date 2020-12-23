@@ -2760,7 +2760,7 @@
     //#define Y_SERIAL_TX_PIN P1_20
 
     // WiFi 4.28 = TXD3, 4.29 = RXD3
-    #define LPC_PINCFG_UART3_P4_28
+    ////#define LPC_PINCFG_UART3_P4_28
     #define Y_HARDWARE_SERIAL Serial3
   #endif
 #endif // HAS_CLOSEDLOOP_CONFIG
