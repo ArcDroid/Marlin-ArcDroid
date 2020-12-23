@@ -2761,7 +2761,7 @@
 
     // WiFi 4.28 = TXD3, 4.29 = RXD3
     ////#define LPC_PINCFG_UART3_P4_28
-    #define Y_HARDWARE_SERIAL Serial3
+    #define Y_HARDWARE_SERIAL Serial2
   #endif
 #endif // HAS_CLOSEDLOOP_CONFIG
 
