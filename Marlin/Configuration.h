@@ -1188,12 +1188,9 @@
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
+#define SCARA_Y_HOME_NEEDS_X
 #define X_HOME_DIR -1
-#ifdef MINI_MODEL_2AM
-#define Y_HOME_DIR -1
-#else
 #define Y_HOME_DIR 1
-#endif
 #define Z_HOME_DIR -1
 
 // @section machine
@@ -1450,8 +1447,8 @@
 // Manually set the home position. Leave these undefined for automatic settings.
 // For DELTA this is the top-center of the Cartesian print volume.
 #ifdef MINI_MODEL_2AM
-#define MANUAL_X_HOME_POS 517.694
-#define MANUAL_Y_HOME_POS -410.3
+#define MANUAL_X_HOME_POS 70.43
+#define MANUAL_Y_HOME_POS -233.65
 #else
 #define MANUAL_X_HOME_POS 127.207
 #define MANUAL_Y_HOME_POS -200.928
