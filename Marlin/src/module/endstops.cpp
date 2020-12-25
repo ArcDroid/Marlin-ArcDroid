@@ -770,6 +770,9 @@ void Endstops::update() {
     if (stepper.motor_direction(X_AXIS_HEAD)) { // -direction
       #if HAS_X_MIN || (X_SPI_SENSORLESS && X_HOME_DIR < 0)
         PROCESS_ENDSTOP_X(MIN);
+        #ifdef SCARA_Y_HOME_NEEDS_X
+          PROCESS_ENDSTOP_Y(MAX);
+        #endif
         #if   CORE_DIAG(XY, Y, MIN)
           PROCESS_CORE_ENDSTOP(Y,MIN,X,MIN);
         #elif CORE_DIAG(XY, Y, MAX)
@@ -814,7 +817,24 @@ void Endstops::update() {
     }
     else { // +direction
       #if HAS_Y_MAX || (Y_SPI_SENSORLESS && Y_HOME_DIR > 0)
-        PROCESS_ENDSTOP_Y(MAX);
+        #ifdef SCARA_Y_HOME_NEEDS_X
+          if (TEST_ENDSTOP(_ENDSTOP(Y, MAX))) {
+            // the first move away from home starts sitting on the endstop
+            // and the B motor might be moving towards the endstop direction
+            // but the A motor will always be moving away and eventually
+            // move off the B endstop too
+            if (!stepper.axis_is_moving(X_AXIS) || stepper.motor_direction(X_AXIS_HEAD)) {
+              SERIAL_ECHOLNPAIR("debug: XM", stepper.axis_is_moving(X_AXIS), "XD", stepper.motor_direction(X_AXIS_HEAD));
+              _ENDSTOP_HIT(Y, MAX);
+              planner.endstop_triggered(_AXIS(Y));
+            }
+          }
+          else {
+            _ENDSTOP_RELEASED(Y, MAX);
+          }
+        #else
+          PROCESS_ENDSTOP_Y(MAX);
+        #endif
         #if   CORE_DIAG(XY, X, MIN)
           PROCESS_CORE_ENDSTOP(X,MIN,Y,MAX);
         #elif CORE_DIAG(XY, X, MAX)
