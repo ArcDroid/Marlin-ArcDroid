@@ -824,7 +824,7 @@ void Endstops::update() {
             // but the A motor will always be moving away and eventually
             // move off the B endstop too
             if (!stepper.axis_is_moving(X_AXIS) || stepper.motor_direction(X_AXIS_HEAD)) {
-              SERIAL_ECHOLNPAIR("debug: XM", stepper.axis_is_moving(X_AXIS), "XD", stepper.motor_direction(X_AXIS_HEAD));
+              ////SERIAL_ECHOLNPAIR("debug: YSTOP XM", stepper.axis_is_moving(X_AXIS), "XD", stepper.motor_direction(X_AXIS_HEAD));
               _ENDSTOP_HIT(Y, MAX);
               planner.endstop_triggered(_AXIS(Y));
             }
