@@ -38,6 +38,17 @@
 
 float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
 
+float scara_L1 = SCARA_LINKAGE_1, scara_L2 = SCARA_LINKAGE_2,
+      scara_L1_2_2 = sq(float(scara_L1)) + sq(float(scara_L2)),
+      scara_L12 = 2.0f * scara_L1 * scara_L2;
+
+void scara_set_arm_length(float l1, float l2) {
+  scara_L1 = l1;
+  scara_L2 = l2;
+  scara_L1_2_2 = sq(scara_L1) + sq(scara_L2),
+  scara_L12 = 2.0f * scara_L1 * scara_L2;
+}
+
 void scara_set_axis_is_at_home(const AxisEnum axis) {
   if (axis == Z_AXIS)
     current_position.z = Z_HOME_POS + scara_home_offset.z;
@@ -80,10 +91,10 @@ static constexpr xy_pos_t scara_offset = { SCARA_OFFSET_X, SCARA_OFFSET_Y };
  */
 void forward_kinematics_SCARA(const float &a, const float &b) {
 
-  const float a_sin = sin(RADIANS(a)) * L1,
-              a_cos = cos(RADIANS(a)) * L1,
-              b_sin = sin(RADIANS(b)) * L2,
-              b_cos = cos(RADIANS(b)) * L2;
+  const float a_sin = sin(RADIANS(a)) * scara_L1,
+              a_cos = cos(RADIANS(a)) * scara_L1,
+              b_sin = sin(RADIANS(b)) * scara_L2,
+              b_cos = cos(RADIANS(b)) * scara_L2;
 
   cartes.set(a_cos + b_cos + scara_offset.x,  // theta
              a_sin + b_sin + scara_offset.y); // theta+phi
@@ -121,63 +132,41 @@ void inverse_kinematics(const xyz_pos_t &raw) {
     //DEBUG_ECHOLNPAIR("raw  = ", raw.x, ",", raw.y);
     //DEBUG_ECHOLNPAIR("spos = ", spos.x, ",", spos.y);
 
-    #ifdef sdkfhals
-
     const float H2 = HYPOT2(spos.x, spos.y);
-    if (L1 == L2)
-      C2 = H2 / L1_2_2 - 1;
-    else
-      C2 = (H2 - (L1_2 + L2_2)) / (2.0f * L1 * L2);
+    // cosine position of spos relative to arm1
+    C2 = (H2 - scara_L1_2_2) / scara_L12;
 
+    // sine position of spos relative to arm1
     S2 = SQRT(1.0f - sq(C2));
 
     // Unrotated Arm1 plus rotated Arm2 gives the distance from Center to End
-    SK1 = L1 + L2 * C2;
+    SK1 = scara_L1 + scara_L2 * C2;
 
     // Rotated Arm2 gives the distance from Arm1 to Arm2
-    SK2 = L2 * S2;
+    SK2 = scara_L2 * S2;
 
     // Angle of Arm1 is the difference between Center-to-End angle and the Center-to-Elbow
-    THETA = ATAN2(SK1, SK2) - ATAN2(spos.x, spos.y);
+    THETA = ATAN2(spos.y, spos.x) - ATAN2(SK2, SK1);
 
     // Angle of Arm2
-    PSI = ATAN2(S2, C2);
-
-    DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
-
-    delta.set(DEGREES(THETA), DEGREES(THETA + PSI), raw.z);
-
-    #else
-
-    float r = HYPOT(spos.x, spos.y) / (SCARA_LINKAGE_1 + SCARA_LINKAGE_2);
-
-    float t = ATAN2(spos.y, spos.x);
-    if (t < -M_PI / 4)
-        t += M_PI * 2;
-
-    float elbow = ACOS(r);
-
-    THETA = t - elbow;
-
-    PSI = t + elbow;
+    PSI = ATAN2(S2, C2) + THETA;
 
     //DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
 
     delta.set(DEGREES(THETA), DEGREES(PSI), raw.z);
 
-    #endif
-    /*
+
       DEBUG_POS("SCARA IK", raw);
       DEBUG_POS("SCARA IK", delta);
-      SERIAL_ECHOLNPAIR("  SCARA (x,y) ", sx, ",", sy, " C2=", C2, " S2=", S2, " Theta=", THETA, " Phi=", PHI);
+      SERIAL_ECHOLNPAIR("  SCARA (x,y) ", spos.x, ",", spos.y, " C2=", C2, " S2=", S2, " Theta=", THETA, " Psi=", PSI);
       //*/
 
   #else // MP_SCARA
 
     const float x = raw.x, y = raw.y, c = HYPOT(x, y),
                 THETA3 = ATAN2(y, x),
-                THETA1 = THETA3 + ACOS((sq(c) + sq(L1) - sq(L2)) / (2.0f * c * L1)),
-                THETA2 = THETA3 - ACOS((sq(c) + sq(L2) - sq(L1)) / (2.0f * c * L2));
+                THETA1 = THETA3 + ACOS((sq(c) + sq(scara_L1) - sq(scara_L2)) / (2.0f * c * scara_L1)),
+                THETA2 = THETA3 - ACOS((sq(c) + sq(scara_L2) - sq(scara_L1)) / (2.0f * c * scara_L2));
 
     delta.set(DEGREES(THETA1), DEGREES(THETA2), raw.z);
 
