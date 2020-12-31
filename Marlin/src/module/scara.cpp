@@ -66,12 +66,10 @@ void scara_set_axis_is_at_home(const AxisEnum axis) {
 
     #if ENABLED(MORGAN_SCARA)
       // MORGAN_SCARA uses arm angles for AB home position
-      // SERIAL_ECHOLNPAIR("homeposition A:", homeposition.a, " B:", homeposition.b);
-      inverse_kinematics(homeposition);
       // scara_home_offset is applied here
       // this will move cartesian home position from MANUAL_X_HOME_POS
       // since scara_home_offset is angular and HOME_POS is cartesian
-      forward_kinematics_SCARA(delta.a + scara_home_offset.a, delta.b + scara_home_offset.b);
+      forward_kinematics_SCARA(SCARA_A_HOME + scara_home_offset.a, SCARA_B_HOME + scara_home_offset.b);
       current_position[axis] = cartes[axis];
     #else
       // MP_SCARA uses a Cartesian XY home position

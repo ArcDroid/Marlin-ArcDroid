@@ -1449,9 +1449,13 @@
 #ifdef MINI_MODEL_2AM
 #define MANUAL_X_HOME_POS 70.43
 #define MANUAL_Y_HOME_POS -233.65
+#define SCARA_A_HOME -42.73
+#define SCARA_B_HOME 120.00
 #else
 #define MANUAL_X_HOME_POS 127.207
 #define MANUAL_Y_HOME_POS -200.928
+#define SCARA_A_HOME -40.00
+#define SCARA_B_HOME 110.00
 #endif
 #define MANUAL_Z_HOME_POS 0.1
 
