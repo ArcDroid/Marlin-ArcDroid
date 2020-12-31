@@ -3742,7 +3742,7 @@ void MarlinSettings::reset() {
 
     #if HAS_CUTTER
 
-      CONFIG_ECHO_HEADING("Cutter delays: P<power-on-delay> S<power-off-delay>");
+      CONFIG_ECHO_HEADING("Cutter delays: S<power-on-delay> P<power-off-delay>");
       CONFIG_ECHO_START();
       SERIAL_ECHOLNPAIR_P(
           PSTR("  M444 S"), cutter.powerup_delay / 1000.0f
