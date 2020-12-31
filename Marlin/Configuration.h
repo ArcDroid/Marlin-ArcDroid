@@ -65,9 +65,6 @@
 //============================= SCARA Printer ===============================
 //===========================================================================
 
-#define MINI_MODEL_2AM
-////#define NO_CLOSEDLOOP_2AM
-
 /**
  * MORGAN_SCARA was developed by QHARLEY in South Africa in 2012-2013.
  * Implemented and slightly reworked by JCERNY in June, 2014.
@@ -741,10 +738,7 @@
  *          CL_S42B
  * :['A4988', 'A5984', 'DRV8825', 'LV8729', 'L6470', 'L6474', 'POWERSTEP01', 'TB6560', 'TB6600', 'TMC2100', 'TMC2130', 'TMC2130_STANDALONE', 'TMC2160', 'TMC2160_STANDALONE', 'TMC2208', 'TMC2208_STANDALONE', 'TMC2209', 'TMC2209_STANDALONE', 'TMC26X', 'TMC26X_STANDALONE', 'TMC2660', 'TMC2660_STANDALONE', 'TMC5130', 'TMC5130_STANDALONE', 'TMC5160', 'TMC5160_STANDALONE', 'CL_S42B']
  */
-#ifdef NO_CLOSEDLOOP_2AM
-#define X_DRIVER_TYPE  TB6600
-#define Y_DRIVER_TYPE  TB6600
-#else
+#ifndef NO_CLOSEDLOOP_2AM
 #define X_DRIVER_TYPE  CL_S42B
 #define Y_DRIVER_TYPE  CL_S42B
 #endif
