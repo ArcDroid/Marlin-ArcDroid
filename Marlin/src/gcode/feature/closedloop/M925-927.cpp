@@ -34,13 +34,13 @@ void send_axis_commands(uint8_t function, uint16_t data) {
       case X_AXIS:
         #if AXIS_IS_CLOSEDLOOP(X)
           SERIAL_ECHOPGM("ClosedLoop X:\n");
-          stepperX.userCommand(function, data);
+          encoderX.userCommand(function, data);
         #endif
         break;
       case Y_AXIS:
         #if AXIS_IS_CLOSEDLOOP(Y)
           SERIAL_ECHOPGM("ClosedLoop Y:\n");
-          stepperY.userCommand(function, data);
+          encoderY.userCommand(function, data);
         #endif
         break;
     }
@@ -171,7 +171,7 @@ void GcodeSuite::M925() {
         #if AXIS_IS_CLOSEDLOOP(X)
           SERIAL_ECHOPGM("ClosedLoop X:\n");
           for (byte index = 0; index < set_value; index++) {
-              stepperX.userCommand(keys[index], values[index]);
+              encoderX.userCommand(keys[index], values[index]);
           }
         #endif
         break;
@@ -179,7 +179,7 @@ void GcodeSuite::M925() {
         #if AXIS_IS_CLOSEDLOOP(Y)
           SERIAL_ECHOPGM("ClosedLoop Y:\n");
           for (byte index = 0; index < set_value; index++) {
-              stepperY.userCommand(keys[index], values[index]);
+              encoderY.userCommand(keys[index], values[index]);
           }
         #endif
         break;

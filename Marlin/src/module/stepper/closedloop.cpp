@@ -35,10 +35,10 @@
 
 #include <HardwareSerial.h>
 
-#define CLOSEDLOOP_INIT(ST) closedloop_init(stepper##ST, ST##_ENCODER_PPS)
+#define CLOSEDLOOP_INIT(ST) closedloop_init(encoder##ST, ST##_ENCODER_PPS)
 
-#define CLOSEDLOOP_UART_HW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> stepper##ST(&ST##_HARDWARE_SERIAL)
-#define CLOSEDLOOP_UART_SW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> stepper##ST(ST##_SERIAL_RX_PIN, ST##_SERIAL_TX_PIN)
+#define CLOSEDLOOP_UART_HW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> encoder##ST(&ST##_ENCODER_HARDWARE_SERIAL)
+#define CLOSEDLOOP_UART_SW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> encoder##ST(ST##_SERIAL_RX_PIN, ST##_SERIAL_TX_PIN)
 
 #define CLOSEDLOOP_UART_DEFINE(SWHW, ST, AI) CLOSEDLOOP_UART_##SWHW##_DEFINE(ST, CLOSEDLOOP_##ST##_LABEL, AI##_AXIS)
 
@@ -55,116 +55,18 @@
 
 
 #if HAS_DRIVER(CLOSEDLOOP)
-  #if AXIS_IS_CLOSEDLOOP(X)
-    #ifdef X_HARDWARE_SERIAL
+  #if X_ENCODER_TYPE == _CL_S42B
+    #ifdef X_ENCODER_HARDWARE_SERIAL
       CLOSEDLOOP_UART_DEFINE(HW, X, X);
     #else
       CLOSEDLOOP_UART_DEFINE(SW, X, X);
     #endif
   #endif
-  #if AXIS_IS_CLOSEDLOOP(X2)
-    #ifdef X2_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE(HW, X2, X);
-    #else
-      CLOSEDLOOP_UART_DEFINE(SW, X2, X);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Y)
-    #ifdef Y_HARDWARE_SERIAL
+  #if Y_ENCODER_TYPE == _CL_S42B
+    #ifdef Y_ENCODER_HARDWARE_SERIAL
       CLOSEDLOOP_UART_DEFINE(HW, Y, Y);
     #else
       CLOSEDLOOP_UART_DEFINE(SW, Y, Y);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Y2)
-    #ifdef Y2_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE(HW, Y2, Y);
-    #else
-      CLOSEDLOOP_UART_DEFINE(SW, Y2, Y);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z)
-    #ifdef Z_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE(HW, Z, Z);
-    #else
-      CLOSEDLOOP_UART_DEFINE(SW, Z, Z);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z2)
-    #ifdef Z2_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE(HW, Z2, Z);
-    #else
-      CLOSEDLOOP_UART_DEFINE(SW, Z2, Z);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z3)
-    #ifdef Z3_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE(HW, Z3, Z);
-    #else
-      CLOSEDLOOP_UART_DEFINE(SW, Z3, Z);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z4)
-    #ifdef Z4_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE(HW, Z4, Z);
-    #else
-      CLOSEDLOOP_UART_DEFINE(SW, Z4, Z);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E0)
-    #ifdef E0_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 0);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 0);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E1)
-    #ifdef E1_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 1);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 1);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E2)
-    #ifdef E2_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 2);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 2);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E3)
-    #ifdef E3_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 3);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 3);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E4)
-    #ifdef E4_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 4);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 4);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E5)
-    #ifdef E5_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 5);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 5);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E6)
-    #ifdef E6_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 6);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 6);
-    #endif
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E7)
-    #ifdef E7_HARDWARE_SERIAL
-      CLOSEDLOOP_UART_DEFINE_E(HW, 7);
-    #else
-      CLOSEDLOOP_UART_DEFINE_E(SW, 7);
     #endif
   #endif
 
@@ -180,120 +82,22 @@
         };
       } sp_helper;
 
-      #define HW_SERIAL_BEGIN(A) do{ if (!sp_helper.began(CLOSEDLOOPAxis::A, &A##_HARDWARE_SERIAL)) \
-                                          A##_HARDWARE_SERIAL.begin(CLOSEDLOOP_BAUD_RATE); }while(0)
+      #define HW_SERIAL_BEGIN(A) do{ if (!sp_helper.began(CLOSEDLOOPAxis::A, &A##_ENCODER_HARDWARE_SERIAL)) \
+                                          A##_ENCODER_HARDWARE_SERIAL.begin(CLOSEDLOOP_BAUD_RATE); }while(0)
     #endif
 
     #if AXIS_IS_CLOSEDLOOP(X)
-      #ifdef X_HARDWARE_SERIAL
+      #ifdef X_ENCODER_HARDWARE_SERIAL
         HW_SERIAL_BEGIN(X);
       #else
-        stepperX.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(X2)
-      #ifdef X2_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(X2);
-      #else
-        stepperX2.beginSerial(CLOSEDLOOP_BAUD_RATE);
+        encoderX.beginSerial(CLOSEDLOOP_BAUD_RATE);
       #endif
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-      #ifdef Y_HARDWARE_SERIAL
+      #ifdef Y_ENCODER_HARDWARE_SERIAL
         HW_SERIAL_BEGIN(Y);
       #else
-        stepperY.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(Y2)
-      #ifdef Y2_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(Y2);
-      #else
-        stepperY2.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(Z)
-      #ifdef Z_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(Z);
-      #else
-        stepperZ.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(Z2)
-      #ifdef Z2_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(Z2);
-      #else
-        stepperZ2.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(Z3)
-      #ifdef Z3_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(Z3);
-      #else
-        stepperZ3.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(Z4)
-      #ifdef Z4_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(Z4);
-      #else
-        stepperZ4.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E0)
-      #ifdef E0_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E0);
-      #else
-        stepperE0.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E1)
-      #ifdef E1_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E1);
-      #else
-        stepperE1.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E2)
-      #ifdef E2_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E2);
-      #else
-        stepperE2.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E3)
-      #ifdef E3_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E3);
-      #else
-        stepperE3.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E4)
-      #ifdef E4_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E4);
-      #else
-        stepperE4.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E5)
-      #ifdef E5_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E5);
-      #else
-        stepperE5.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E6)
-      #ifdef E6_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E6);
-      #else
-        stepperE6.beginSerial(CLOSEDLOOP_BAUD_RATE);
-      #endif
-    #endif
-    #if AXIS_IS_CLOSEDLOOP(E7)
-      #ifdef E7_HARDWARE_SERIAL
-        HW_SERIAL_BEGIN(E7);
-      #else
-        stepperE7.beginSerial(CLOSEDLOOP_BAUD_RATE);
+        encoderY.beginSerial(CLOSEDLOOP_BAUD_RATE);
       #endif
     #endif
   }
@@ -315,50 +119,8 @@ void restore_closedloop_drivers() {
   #if AXIS_IS_CLOSEDLOOP(X)
     CLOSEDLOOP_INIT(X);
   #endif
-  #if AXIS_IS_CLOSEDLOOP(X2)
-    CLOSEDLOOP_INIT(X2);
-  #endif
   #if AXIS_IS_CLOSEDLOOP(Y)
     CLOSEDLOOP_INIT(Y);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Y2)
-    CLOSEDLOOP_INIT(Y2);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z)
-    CLOSEDLOOP_INIT(Z);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z2)
-    CLOSEDLOOP_INIT(Z2);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z3)
-    CLOSEDLOOP_INIT(Z3);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(Z4)
-    CLOSEDLOOP_INIT(Z4);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E0)
-    CLOSEDLOOP_INIT(E0);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E1)
-    CLOSEDLOOP_INIT(E1);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E2)
-    CLOSEDLOOP_INIT(E2);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E3)
-    CLOSEDLOOP_INIT(E3);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E4)
-    CLOSEDLOOP_INIT(E4);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E5)
-    CLOSEDLOOP_INIT(E5);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E6)
-    CLOSEDLOOP_INIT(E6);
-  #endif
-  #if AXIS_IS_CLOSEDLOOP(E7)
-    CLOSEDLOOP_INIT(E7);
   #endif
 
   stepper.set_directions();
@@ -366,20 +128,20 @@ void restore_closedloop_drivers() {
 
 void closedloop_home_encoders(abce_pos_t motor_pos) {
     #if AXIS_IS_CLOSEDLOOP(X)
-        stepperX.touch_off_encoder(motor_pos.x);
+        encoderX.touch_off_encoder(motor_pos.x);
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        stepperY.touch_off_encoder(motor_pos.y);
+        encoderY.touch_off_encoder(motor_pos.y);
     #endif
 }
 
 bool closedloop_has_aligned() {
     return true
     #if AXIS_IS_CLOSEDLOOP(X)
-        && stepperX.homed
+        && encoderX.homed
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        && stepperY.homed
+        && encoderY.homed
     #endif
     ;
 }
@@ -387,10 +149,10 @@ bool closedloop_has_aligned() {
 bool closedloop_need_restore() {
     return false
     #if AXIS_IS_CLOSEDLOOP(X)
-        || (!TEST(axis_known_position, X_AXIS) && stepperX.homed)
+        || (!TEST(axis_known_position, X_AXIS) && encoderX.homed)
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        || (!TEST(axis_known_position, Y_AXIS) && stepperY.homed)
+        || (!TEST(axis_known_position, Y_AXIS) && encoderY.homed)
     #endif
     ;
 }
@@ -399,11 +161,11 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
     bool enabled_any = false;
     bool valid_position = true;
     #if AXIS_IS_CLOSEDLOOP(X)
-        if (!TEST(axis_known_position, X_AXIS) && stepperX.homed) {
-            motor_pos->x = stepperX.read_encoder();
+        if (!TEST(axis_known_position, X_AXIS) && encoderX.homed) {
+            motor_pos->x = encoderX.read_encoder();
             if (isnan(motor_pos->x)) {
                 valid_position = false;
-                stepperX.homed = false;
+                encoderX.homed = false;
                 set_axis_not_trusted(X_AXIS);
             }
             else if (enable) {
@@ -414,11 +176,11 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
         }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        if (!TEST(axis_known_position, Y_AXIS) && stepperY.homed) {
-            motor_pos->y = stepperY.read_encoder();
+        if (!TEST(axis_known_position, Y_AXIS) && encoderY.homed) {
+            motor_pos->y = encoderY.read_encoder();
             if (isnan(motor_pos->y)) {
                 valid_position = false;
-                stepperY.homed = false;
+                encoderY.homed = false;
                 set_axis_not_trusted(Y_AXIS);
             }
             else if (enable) {
@@ -436,10 +198,10 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
     if (!valid_position) {
         SERIAL_ERROR_MSG("encoder ", "error "
         #if AXIS_IS_CLOSEDLOOP(X)
-            ,"X:", stepperX.last_error
+            ,"X:", encoderX.last_error
         #endif
         #if AXIS_IS_CLOSEDLOOP(Y)
-            ,"Y:", stepperY.last_error
+            ,"Y:", encoderY.last_error
         #endif
             );
         SERIAL_FLUSHTX();

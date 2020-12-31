@@ -2736,9 +2736,20 @@
 
 #endif // HAS_L64XX
 
-#if HAS_CLOSEDLOOP_CONFIG
+#ifndef NO_CLOSEDLOOP_2AM
+
+#define X_ENCODER_TYPE _CL_S42B
+#define Y_ENCODER_TYPE _CL_S42B
+#define AXIS_IS_CLOSEDLOOP_X 1
+#define AXIS_IS_CLOSEDLOOP_Y 1
+#define AXIS_IS_CLOSEDLOOP(A) AXIS_IS_CLOSEDLOOP_##A
+#define HAS_CLOSEDLOOP_CONFIG 1
+
+#endif
+
+#ifdef HAS_CLOSEDLOOP_CONFIG
   #define HAS_CLOSEDLOOP_HW_SERIAL 1
-  #if AXIS_IS_CLOSEDLOOP(X)
+  #ifdef X_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
     #define X_ENCODER_PPS -2.0
     #else
@@ -2748,9 +2759,9 @@
     //#define X_SERIAL_TX_PIN P1_22
 
     // EXP2 0.15 = TXD1, 0.16 = RXD1
-    #define X_HARDWARE_SERIAL Serial1
+    #define X_ENCODER_HARDWARE_SERIAL Serial1
   #endif
-  #if AXIS_IS_CLOSEDLOOP(Y)
+  #ifdef Y_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
     #define Y_ENCODER_PPS 2.0
     #else
@@ -2761,7 +2772,7 @@
 
     // WiFi 4.28 = TXD3, 4.29 = RXD3
     ////#define LPC_PINCFG_UART3_P4_28
-    #define Y_HARDWARE_SERIAL Serial2
+    #define Y_ENCODER_HARDWARE_SERIAL Serial2
   #endif
 #endif // HAS_CLOSEDLOOP_CONFIG
 

@@ -186,160 +186,20 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
 
 // X Stepper
 #if AXIS_IS_CLOSEDLOOP(X)
-  extern CLOSEDLOOP_CLASS(X, X) stepperX;
+  extern CLOSEDLOOP_CLASS(X, X) encoderX;
   #if ENABLED(SOFTWARE_DRIVER_ENABLE)
     #define X_ENABLE_INIT() NOOP
-    #define X_ENABLE_WRITE(STATE) stepperX.toff((STATE)==X_ENABLE_ON ? chopper_timing.toff : 0)
-    #define X_ENABLE_READ() stepperX.isEnabled()
+    #define X_ENABLE_WRITE(STATE) encoderX.toff((STATE)==X_ENABLE_ON ? chopper_timing.toff : 0)
+    #define X_ENABLE_READ() encoderX.isEnabled()
   #endif
 #endif
 
 // Y Stepper
 #if AXIS_IS_CLOSEDLOOP(Y)
-  extern CLOSEDLOOP_CLASS(Y, Y) stepperY;
+  extern CLOSEDLOOP_CLASS(Y, Y) encoderY;
   #if ENABLED(SOFTWARE_DRIVER_ENABLE)
     #define Y_ENABLE_INIT() NOOP
-    #define Y_ENABLE_WRITE(STATE) stepperY.toff((STATE)==Y_ENABLE_ON ? chopper_timing.toff : 0)
-    #define Y_ENABLE_READ() stepperY.isEnabled()
-  #endif
-#endif
-
-// Z Stepper
-#if AXIS_IS_CLOSEDLOOP(Z)
-  extern CLOSEDLOOP_CLASS(Z, Z) stepperZ;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE)
-    #define Z_ENABLE_INIT() NOOP
-    #define Z_ENABLE_WRITE(STATE) stepperZ.toff((STATE)==Z_ENABLE_ON ? chopper_timing.toff : 0)
-    #define Z_ENABLE_READ() stepperZ.isEnabled()
-  #endif
-#endif
-
-// X2 Stepper
-#if HAS_X2_ENABLE && AXIS_IS_CLOSEDLOOP(X2)
-  extern CLOSEDLOOP_CLASS(X2, X) stepperX2;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE)
-    #define X2_ENABLE_INIT() NOOP
-    #define X2_ENABLE_WRITE(STATE) stepperX2.toff((STATE)==X_ENABLE_ON ? chopper_timing.toff : 0)
-    #define X2_ENABLE_READ() stepperX2.isEnabled()
-  #endif
-#endif
-
-// Y2 Stepper
-#if HAS_Y2_ENABLE && AXIS_IS_CLOSEDLOOP(Y2)
-  extern CLOSEDLOOP_CLASS(Y2, Y) stepperY2;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE)
-    #define Y2_ENABLE_INIT() NOOP
-    #define Y2_ENABLE_WRITE(STATE) stepperY2.toff((STATE)==Y_ENABLE_ON ? chopper_timing.toff : 0)
-    #define Y2_ENABLE_READ() stepperY2.isEnabled()
-  #endif
-#endif
-
-// Z2 Stepper
-#if HAS_Z2_ENABLE && AXIS_IS_CLOSEDLOOP(Z2)
-  extern CLOSEDLOOP_CLASS(Z2, Z) stepperZ2;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(Z2)
-    #define Z2_ENABLE_INIT() NOOP
-    #define Z2_ENABLE_WRITE(STATE) stepperZ2.toff((STATE)==Z_ENABLE_ON ? chopper_timing.toff : 0)
-    #define Z2_ENABLE_READ() stepperZ2.isEnabled()
-  #endif
-#endif
-
-// Z3 Stepper
-#if HAS_Z3_ENABLE && AXIS_IS_CLOSEDLOOP(Z3)
-  extern CLOSEDLOOP_CLASS(Z3, Z) stepperZ3;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE)
-    #define Z3_ENABLE_INIT() NOOP
-    #define Z3_ENABLE_WRITE(STATE) stepperZ3.toff((STATE)==Z_ENABLE_ON ? chopper_timing.toff : 0)
-    #define Z3_ENABLE_READ() stepperZ3.isEnabled()
-  #endif
-#endif
-
-// Z4 Stepper
-#if HAS_Z4_ENABLE && AXIS_IS_CLOSEDLOOP(Z4)
-  extern CLOSEDLOOP_CLASS(Z4, Z) stepperZ4;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE)
-    #define Z4_ENABLE_INIT() NOOP
-    #define Z4_ENABLE_WRITE(STATE) stepperZ4.toff((STATE)==Z_ENABLE_ON ? chopper_timing.toff : 0)
-    #define Z4_ENABLE_READ() stepperZ4.isEnabled()
-  #endif
-#endif
-
-// E0 Stepper
-#if AXIS_IS_CLOSEDLOOP(E0)
-  extern CLOSEDLOOP_CLASS_E(0) stepperE0;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E0)
-    #define E0_ENABLE_INIT() NOOP
-    #define E0_ENABLE_WRITE(STATE) stepperE0.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E0_ENABLE_READ() stepperE0.isEnabled()
-  #endif
-#endif
-
-// E1 Stepper
-#if AXIS_IS_CLOSEDLOOP(E1)
-  extern CLOSEDLOOP_CLASS_E(1) stepperE1;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E1)
-    #define E1_ENABLE_INIT() NOOP
-    #define E1_ENABLE_WRITE(STATE) stepperE1.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E1_ENABLE_READ() stepperE1.isEnabled()
-  #endif
-#endif
-
-// E2 Stepper
-#if AXIS_IS_CLOSEDLOOP(E2)
-  extern CLOSEDLOOP_CLASS_E(2) stepperE2;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E2)
-    #define E2_ENABLE_INIT() NOOP
-    #define E2_ENABLE_WRITE(STATE) stepperE2.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E2_ENABLE_READ() stepperE2.isEnabled()
-  #endif
-#endif
-
-// E3 Stepper
-#if AXIS_IS_CLOSEDLOOP(E3)
-  extern CLOSEDLOOP_CLASS_E(3) stepperE3;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E3)
-    #define E3_ENABLE_INIT() NOOP
-    #define E3_ENABLE_WRITE(STATE) stepperE3.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E3_ENABLE_READ() stepperE3.isEnabled()
-  #endif
-#endif
-
-// E4 Stepper
-#if AXIS_IS_CLOSEDLOOP(E4)
-  extern CLOSEDLOOP_CLASS_E(4) stepperE4;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E4)
-    #define E4_ENABLE_INIT() NOOP
-    #define E4_ENABLE_WRITE(STATE) stepperE4.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E4_ENABLE_READ() stepperE4.isEnabled()
-  #endif
-#endif
-
-// E5 Stepper
-#if AXIS_IS_CLOSEDLOOP(E5)
-  extern CLOSEDLOOP_CLASS_E(5) stepperE5;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E5)
-    #define E5_ENABLE_INIT() NOOP
-    #define E5_ENABLE_WRITE(STATE) stepperE5.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E5_ENABLE_READ() stepperE5.isEnabled()
-  #endif
-#endif
-
-// E6 Stepper
-#if AXIS_IS_CLOSEDLOOP(E6)
-  extern CLOSEDLOOP_CLASS_E(6) stepperE6;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E6)
-    #define E6_ENABLE_INIT() NOOP
-    #define E6_ENABLE_WRITE(STATE) stepperE6.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E6_ENABLE_READ() stepperE6.isEnabled()
-  #endif
-#endif
-
-// E7 Stepper
-#if AXIS_IS_CLOSEDLOOP(E7)
-  extern CLOSEDLOOP_CLASS_E(7) stepperE7;
-  #if ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_CLOSEDLOOP(E7)
-    #define E7_ENABLE_INIT() NOOP
-    #define E7_ENABLE_WRITE(STATE) stepperE7.toff((STATE)==E_ENABLE_ON ? chopper_timing.toff : 0)
-    #define E7_ENABLE_READ() stepperE7.isEnabled()
+    #define Y_ENABLE_WRITE(STATE) encoderY.toff((STATE)==Y_ENABLE_ON ? chopper_timing.toff : 0)
+    #define Y_ENABLE_READ() encoderY.isEnabled()
   #endif
 #endif
