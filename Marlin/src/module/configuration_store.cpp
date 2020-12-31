@@ -140,6 +140,10 @@
   #define HAS_CASE_LIGHT_BRIGHTNESS 1
 #endif
 
+#if HAS_CUTTER
+  #include "../feature/spindle_laser.h"
+#endif
+
 #pragma pack(push, 1) // No padding between variables
 
 typedef struct { uint16_t X, Y, Z, X2, Y2, Z2, Z3, Z4, E0, E1, E2, E3, E4, E5, E6, E7; } tmc_stepper_current_t;
@@ -401,6 +405,16 @@ typedef struct SettingsDataStruct {
   //
   #if HAS_CASE_LIGHT_BRIGHTNESS
     uint8_t case_light_brightness;
+  #endif
+
+  #if IS_SCARA
+    float scara_l1;
+    float scara_l2;
+  #endif
+
+  #if HAS_CUTTER
+    millis_t cutter_powerup_delay;
+    millis_t cutter_powerdown_delay;
   #endif
 
 } SettingsData;
@@ -1334,6 +1348,25 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(case_light_brightness);
     #endif
 
+
+    #if IS_SCARA
+      float scara_l1 = scara_L1;
+      float scara_l2 = scara_L2;
+      _FIELD_TEST(scara_l1);
+      EEPROM_WRITE(scara_l1);
+      _FIELD_TEST(scara_l2);
+      EEPROM_WRITE(scara_l2);
+    #endif
+
+    #if HAS_CUTTER
+      millis_t cutter_powerup_delay = cutter.powerup_delay;
+      millis_t cutter_powerdown_delay = cutter.powerdown_delay;
+      _FIELD_TEST(cutter_powerup_delay);
+      EEPROM_WRITE(cutter_powerup_delay);
+      _FIELD_TEST(cutter_powerdown_delay);
+      EEPROM_WRITE(cutter_powerdown_delay);
+    #endif
+
     //
     // Validate CRC and Data Size
     //
@@ -2167,6 +2200,25 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(case_light_brightness);
       #endif
 
+      #if IS_SCARA
+        float scara_l1, scara_l2;
+        _FIELD_TEST(scara_l1);
+        EEPROM_READ(scara_l1);
+        _FIELD_TEST(scara_l2);
+        EEPROM_READ(scara_l2);
+        if (!validating) scara_set_arm_length(scara_l1, scara_l2);
+      #endif
+
+      #if HAS_CUTTER
+        millis_t cutter_powerup_delay, cutter_powerdown_delay;
+        _FIELD_TEST(cutter_powerup_delay);
+        EEPROM_READ(cutter_powerup_delay);
+        _FIELD_TEST(cutter_powerdown_delay);
+        EEPROM_READ(cutter_powerdown_delay);
+        cutter.powerup_delay = cutter_powerup_delay;
+        cutter.powerdown_delay = cutter_powerdown_delay;
+      #endif
+
       eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
       if (eeprom_error) {
         DEBUG_ECHO_START();
@@ -2753,6 +2805,15 @@ void MarlinSettings::reset() {
     }
   #endif
 
+  #if IS_SCARA
+    scara_set_arm_length(SCARA_LINKAGE_1, SCARA_LINKAGE_2);
+  #endif
+
+  #if HAS_CUTTER
+    cutter.powerup_delay = SPINDLE_LASER_POWERUP_DELAY;
+    cutter.powerdown_delay = SPINDLE_LASER_POWERUP_DELAY;
+  #endif
+
   postprocess();
 
   DEBUG_ECHO_START();
@@ -3104,6 +3165,13 @@ void MarlinSettings::reset() {
         , SP_P_STR, scara_home_offset.a
         , SP_T_STR, scara_home_offset.b
         , SP_Z_STR, LINEAR_UNIT(scara_home_offset.z)
+      );
+
+      CONFIG_ECHO_HEADING("SCARA geometry: X<L1-length> Y<L2-length>");
+      CONFIG_ECHO_START();
+      SERIAL_ECHOLNPAIR_P(
+          PSTR("  M365 X"), scara_L1
+        , SP_Y_STR, scara_L2
       );
 
     #elif ENABLED(DELTA)
@@ -3670,6 +3738,17 @@ void MarlinSettings::reset() {
           , " D", LINEAR_UNIT(runout.runout_distance())
         #endif
       );
+    #endif
+
+    #if HAS_CUTTER
+
+      CONFIG_ECHO_HEADING("Cutter delays: P<power-on-delay> S<power-off-delay>");
+      CONFIG_ECHO_START();
+      SERIAL_ECHOLNPAIR_P(
+          PSTR("  M444 S"), cutter.powerup_delay / 1000.0f
+        , SP_P_STR, cutter.powerdown_delay / 1000.0f
+      );
+
     #endif
   }
 
