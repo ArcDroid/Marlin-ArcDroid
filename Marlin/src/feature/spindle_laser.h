@@ -94,6 +94,9 @@ public:
   static cutter_power_t menuPower,        // Power as set via LCD menu in PWM, Percentage or RPM
                         unitPower;        // Power as displayed status in PWM, Percentage or RPM
 
+  static millis_t powerup_delay,
+                  powerdown_delay;
+
   static void init();
 
   #if ENABLED(MARLIN_DEV_MODE)
@@ -180,7 +183,7 @@ public:
   // Wait for spindle to spin up or spin down
   static inline void power_delay(const bool on) {
     #if DISABLED(LASER_POWER_INLINE)
-      safe_delay(on ? SPINDLE_LASER_POWERUP_DELAY : SPINDLE_LASER_POWERDOWN_DELAY);
+      safe_delay(on ? powerup_delay : powerdown_delay);
     #endif
   }
 

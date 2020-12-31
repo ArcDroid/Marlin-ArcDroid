@@ -723,6 +723,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 430: M430(); break;                                  // M430: Read the system current (A), voltage (V), and power (W)
       #endif
 
+      #if HAS_CUTTER
+        case 444: M444(); break;
+      #endif
+
       #if ENABLED(CANCEL_OBJECTS)
         case 486: M486(); break;                                  // M486: Identify and cancel objects
       #endif

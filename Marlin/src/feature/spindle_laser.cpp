@@ -36,6 +36,9 @@ bool SpindleLaser::isReady;                                           // Ready t
 cutter_power_t SpindleLaser::menuPower,                               // Power set via LCD menu in PWM, PERCENT, or RPM
                SpindleLaser::unitPower;                               // LCD status power in PWM, PERCENT, or RPM
 
+millis_t SpindleLaser::powerup_delay = SPINDLE_LASER_POWERUP_DELAY,
+         SpindleLaser::powerdown_delay = SPINDLE_LASER_POWERDOWN_DELAY;
+
 #if ENABLED(MARLIN_DEV_MODE)
   cutter_frequency_t SpindleLaser::frequency;                         // setting PWM frequency; range: 2K - 50K
 #endif
