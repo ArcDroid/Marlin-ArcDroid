@@ -78,4 +78,44 @@ bool GcodeSuite::M364() {
   return SCARA_move_to_cal(45, 135);
 }
 
+/**
+ * M365: SCARA calibration: set arm lengths (X=L1, Y=L2)
+ */
+void GcodeSuite::M365() {
+
+  const bool hasA = parser.seenval('A'), hasP = parser.seenval('P'), hasX = parser.seenval('X');
+  const uint8_t sumAPX = hasA + hasP + hasX;
+  float l1 = scara_L1, l2 = scara_L2;
+  bool setAny = false;
+  if (sumAPX) {
+    if (sumAPX == 1) {
+      l1 = parser.value_float();
+      setAny = true;
+    }
+    else {
+      SERIAL_ERROR_MSG("Only one of A, P, or X is allowed.");
+      return;
+    }
+  }
+
+  const bool hasB = parser.seenval('B'), hasT = parser.seenval('T'), hasY = parser.seenval('Y');
+  const uint8_t sumBTY = hasB + hasT + hasY;
+  if (sumBTY) {
+    if (sumBTY == 1) {
+      l2 = parser.value_float();
+      setAny = true;
+    }
+    else {
+      SERIAL_ERROR_MSG("Only one of B, T, or Y is allowed.");
+      return;
+    }
+  }
+
+  if (setAny) {
+    scara_set_arm_length(l1, l2);
+  }
+
+  SERIAL_ECHOLNPAIR("SCARA L1:", scara_L1, " L2:", scara_L2);
+}
+
 #endif // MORGAN_SCARA

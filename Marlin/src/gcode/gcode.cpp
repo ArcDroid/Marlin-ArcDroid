@@ -673,6 +673,7 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 362: if (M362()) return; break;                      // M362: SCARA Psi pos1
         case 363: if (M363()) return; break;                      // M363: SCARA Psi pos2
         case 364: if (M364()) return; break;                      // M364: SCARA Psi pos3 (90 deg to Theta)
+        case 365: M365(); break;                                  // M365: SCARA calibration: set arm lengths (X=L1, Y=L2)
       #endif
 
       #if EITHER(EXT_SOLENOID, MANUAL_SOLENOID_CONTROL)

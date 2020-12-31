@@ -47,6 +47,10 @@ void scara_set_arm_length(float l1, float l2) {
   scara_L2 = l2;
   scara_L1_2_2 = sq(scara_L1) + sq(scara_L2),
   scara_L12 = 2.0f * scara_L1 * scara_L2;
+
+  // update cartesian position from kinematic
+  set_current_from_steppers_for_axis(ALL_AXES);
+  report_current_position();
 }
 
 void scara_set_axis_is_at_home(const AxisEnum axis) {
@@ -155,7 +159,7 @@ void inverse_kinematics(const xyz_pos_t &raw) {
 
     delta.set(DEGREES(THETA), DEGREES(PSI), raw.z);
 
-
+    /**
       DEBUG_POS("SCARA IK", raw);
       DEBUG_POS("SCARA IK", delta);
       SERIAL_ECHOLNPAIR("  SCARA (x,y) ", spos.x, ",", spos.y, " C2=", C2, " S2=", S2, " Theta=", THETA, " Psi=", PSI);

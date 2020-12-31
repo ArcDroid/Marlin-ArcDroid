@@ -117,6 +117,7 @@
     planner.set_machine_position_mm(target);
     set_current_from_steppers_for_axis(ALL_AXES);
     do_blocking_move_to(pos, homing_feedrate(X_AXIS));
+    report_current_position();
   }
 
 #endif
