@@ -843,9 +843,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       #endif
 
       #if HAS_CLOSEDLOOP_CONFIG
+        case 924: M924(); break;                                   // M924: Set CL_S42B encoder pulses per step count
         case 925: M925(); break;                                   // M925: Configure CL_S42B driver
         case 926: M926(); break;                                   // M926: Start CL_S42B calibration
-        case 927: M927(); break;                                   // M926: Send CL_S42B raw command
+        case 927: M927(); break;                                   // M927: Send CL_S42B raw command
       #endif
 
       #if HAS_MICROSTEPS

@@ -2751,7 +2751,8 @@
   #define HAS_CLOSEDLOOP_HW_SERIAL 1
   #ifdef X_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
-    #define X_ENCODER_PPS -2.0
+    // encoder 16384 pulses/rev, stepper 8192 steps/rev
+    #define X_ENCODER_PPS (-16384.0/8192.0)
     #else
     #define X_ENCODER_PPS 2.0
     #endif
@@ -2763,7 +2764,7 @@
   #endif
   #ifdef Y_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
-    #define Y_ENCODER_PPS 2.0
+    #define Y_ENCODER_PPS (16384.0/8192.0)
     #else
     #define Y_ENCODER_PPS 2.0
     #endif

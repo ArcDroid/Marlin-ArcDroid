@@ -54,7 +54,7 @@
 #endif
 
 
-#if HAS_DRIVER(CLOSEDLOOP)
+#if HAS_CLOSEDLOOP_CONFIG
   #if X_ENCODER_TYPE == _CL_S42B
     #ifdef X_ENCODER_HARDWARE_SERIAL
       CLOSEDLOOP_UART_DEFINE(HW, X, X);
@@ -103,7 +103,7 @@
   }
 #endif
 
-#if HAS_DRIVER(CLOSEDLOOP)
+#if HAS_CLOSEDLOOP_CONFIG
   template<char AXIS_LETTER, char DRIVER_ID, AxisEnum AXIS_ID>
   void closedloop_init(ClosedLoopMarlin<AXIS_LETTER, DRIVER_ID, AXIS_ID> &st, float encoder_counts_per_step) {
     st.encoder_counts_per_step = encoder_counts_per_step;
@@ -214,7 +214,35 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
     return valid_position;
 }
 
+void closedloop_reset_pps() {
+    #if AXIS_IS_CLOSEDLOOP(X)
+		encoderX.encoder_counts_per_step = X_ENCODER_PPS;
+	#endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+		encoderY.encoder_counts_per_step = Y_ENCODER_PPS;
+	#endif
+}
 
+void closedloop_set_pps(abce_float_t pps) {
+    #if AXIS_IS_CLOSEDLOOP(X)
+		encoderX.encoder_counts_per_step = pps.x;
+	#endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+		encoderY.encoder_counts_per_step = pps.y;
+	#endif
+}
+
+abce_float_t closedloop_get_pps() {
+	abce_float_t res;
+    #if AXIS_IS_CLOSEDLOOP(X)
+		res.x = encoderX.encoder_counts_per_step;
+	#endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+		res.y = encoderY.encoder_counts_per_step;
+	#endif
+
+	return res;
+}
 
 
 S42BClosedLoop::S42BClosedLoop(Stream * SerialPort) {

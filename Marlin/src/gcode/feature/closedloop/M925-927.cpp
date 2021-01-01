@@ -187,4 +187,43 @@ void GcodeSuite::M925() {
   }
 }
 
+/**
+ * M924: Set CL_S42B encoder pulses per step count
+ *
+ *   XYZE pulses per count on axis
+ */
+void GcodeSuite::M924() {
+  LOOP_XYZE(i) if (parser.intval(axis_codes[i])) {
+    float pps = parser.floatval(axis_codes[i]);
+    switch (i) {
+      case X_AXIS:
+        #if AXIS_IS_CLOSEDLOOP(X)
+          encoderX.encoder_counts_per_step = pps;
+        #endif
+        break;
+      case Y_AXIS:
+        #if AXIS_IS_CLOSEDLOOP(Y)
+          encoderY.encoder_counts_per_step = pps;
+        #endif
+        break;
+    }
+  }
+
+  SERIAL_ECHOLNPAIR_P(
+    PSTR(" M924 X"),
+    #if AXIS_IS_CLOSEDLOOP(X)
+      encoderX.encoder_counts_per_step
+    #else
+      0
+    #endif
+    , SP_Y_STR,
+    #if AXIS_IS_CLOSEDLOOP(Y)
+      encoderY.encoder_counts_per_step
+    #else
+      0
+    #endif
+  );
+
+}
+
 #endif // HAS_STEALTHCHOP

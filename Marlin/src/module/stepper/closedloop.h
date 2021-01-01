@@ -184,6 +184,11 @@ bool closedloop_has_aligned();
 bool closedloop_need_restore();
 bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
 
+
+void closedloop_reset_pps();
+void closedloop_set_pps(abce_float_t pps);
+abce_float_t closedloop_get_pps();
+
 // X Stepper
 #if AXIS_IS_CLOSEDLOOP(X)
   extern CLOSEDLOOP_CLASS(X, X) encoderX;

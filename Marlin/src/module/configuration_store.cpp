@@ -417,6 +417,10 @@ typedef struct SettingsDataStruct {
     millis_t cutter_powerdown_delay;
   #endif
 
+  #if HAS_CLOSEDLOOP_CONFIG
+    abce_float_t encoder_pps;
+  #endif
+
 } SettingsData;
 
 //static_assert(sizeof(SettingsData) <= MARLIN_EEPROM_SIZE, "EEPROM too small to contain SettingsData!");
@@ -1367,6 +1371,12 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(cutter_powerdown_delay);
     #endif
 
+    #if HAS_CLOSEDLOOP_CONFIG
+      abce_float_t encoder_pps = closedloop_get_pps();
+      _FIELD_TEST(encoder_pps);
+      EEPROM_WRITE(encoder_pps);
+    #endif
+
     //
     // Validate CRC and Data Size
     //
@@ -2215,8 +2225,19 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(cutter_powerup_delay);
         _FIELD_TEST(cutter_powerdown_delay);
         EEPROM_READ(cutter_powerdown_delay);
-        cutter.powerup_delay = cutter_powerup_delay;
-        cutter.powerdown_delay = cutter_powerdown_delay;
+
+        if (!validating) {
+          cutter.powerup_delay = cutter_powerup_delay;
+          cutter.powerdown_delay = cutter_powerdown_delay;
+        }
+      #endif
+
+      #if HAS_CLOSEDLOOP_CONFIG
+        abce_float_t encoder_pps;
+        _FIELD_TEST(encoder_pps);
+        EEPROM_READ(encoder_pps);
+
+        if (!validating) closedloop_set_pps(encoder_pps);
       #endif
 
       eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
@@ -2812,6 +2833,10 @@ void MarlinSettings::reset() {
   #if HAS_CUTTER
     cutter.powerup_delay = SPINDLE_LASER_POWERUP_DELAY;
     cutter.powerdown_delay = SPINDLE_LASER_POWERUP_DELAY;
+  #endif
+
+  #if HAS_CLOSEDLOOP_CONFIG
+    closedloop_reset_pps();
   #endif
 
   postprocess();
@@ -3668,6 +3693,25 @@ void MarlinSettings::reset() {
       #endif // HAS_STEALTHCHOP
 
     #endif // HAS_TRINAMIC_CONFIG
+
+    #ifdef HAS_CLOSEDLOOP_CONFIG
+      CONFIG_ECHO_HEADING("ClosedLoop pulses per step");
+      CONFIG_ECHO_START();
+      SERIAL_ECHOLNPAIR_P(
+        PSTR("  M924 X"),
+        #if AXIS_IS_CLOSEDLOOP(X)
+          encoderX.encoder_counts_per_step
+        #else
+          0
+        #endif
+        , SP_Y_STR,
+        #if AXIS_IS_CLOSEDLOOP(Y)
+          encoderY.encoder_counts_per_step
+        #else
+          0
+        #endif
+      );
+    #endif
 
     /**
      * Linear Advance
