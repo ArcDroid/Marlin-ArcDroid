@@ -331,6 +331,12 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
     if (closedloop_need_restore()) {
       planner.synchronize();
       abce_pos_t pos = planner.get_axis_positions_mm();
+      if (enable_motors) {
+        // enable motors before reading position
+        // open loop drivers will snap to their last microstep position
+        enable_all_steppers();
+        delay(10);
+      }
       bool valid_pos = closedloop_restore_position(&pos, enable_motors);
       if (!valid_pos) {
         return;
