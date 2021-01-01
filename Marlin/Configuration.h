@@ -738,6 +738,7 @@
  *          CL_S42B
  * :['A4988', 'A5984', 'DRV8825', 'LV8729', 'L6470', 'L6474', 'POWERSTEP01', 'TB6560', 'TB6600', 'TMC2100', 'TMC2130', 'TMC2130_STANDALONE', 'TMC2160', 'TMC2160_STANDALONE', 'TMC2208', 'TMC2208_STANDALONE', 'TMC2209', 'TMC2209_STANDALONE', 'TMC26X', 'TMC26X_STANDALONE', 'TMC2660', 'TMC2660_STANDALONE', 'TMC5130', 'TMC5130_STANDALONE', 'TMC5160', 'TMC5160_STANDALONE', 'CL_S42B']
  */
+#define TMC_XY_2AM
 
 #ifdef TMC_XY_2AM
 #define X_DRIVER_TYPE  TMC2209
@@ -805,7 +806,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
 #ifdef MINI_MODEL_2AM
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 8192.0/360.0*4.0, 8192.0/360.0*4.0, 200/1.25, 1000 }  // default steps per unit for SCARA
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 32.0*200.0/360.0*4.0, 32.0*200.0/360.0*4.0, 200/1.25, 1000 }  // default steps per unit for SCARA
 #else
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 38508.0/90.0/2.0, 38508.0/90.0/2.0, 200/1.25, 1000 }  // default steps per unit for SCARA
 #endif
@@ -1153,8 +1154,8 @@
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #ifdef MINI_MODEL_2AM
-#define INVERT_X_DIR true
-#define INVERT_Y_DIR false
+#define INVERT_X_DIR false
+#define INVERT_Y_DIR true
 #else
 #define INVERT_X_DIR true
 #define INVERT_Y_DIR true
