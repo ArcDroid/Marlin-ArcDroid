@@ -27,6 +27,7 @@
 #include "../gcode.h"
 #include "../../module/scara.h"
 #include "../../module/motion.h"
+#include "../../module/planner.h"
 #include "../../MarlinCore.h" // for IsRunning()
 
 inline bool SCARA_move_to_cal(const uint8_t delta_a, const uint8_t delta_b) {
@@ -42,8 +43,42 @@ inline bool SCARA_move_to_cal(const uint8_t delta_a, const uint8_t delta_b) {
  * M360: SCARA calibration: Move to cal-position ThetaA (0 deg calibration)
  */
 bool GcodeSuite::M360() {
-  SERIAL_ECHOLNPGM(" Cal: Theta 0");
-  return SCARA_move_to_cal(0, 120);
+
+  bool setAny = false;
+  abce_pos_t target = planner.get_axis_positions_mm();
+  const bool hasA = parser.seenval('A'), hasP = parser.seenval('P'), hasX = parser.seenval('X');
+  const uint8_t sumAPX = hasA + hasP + hasX;
+  if (sumAPX) {
+    if (sumAPX == 1) {
+      target.a = parser.value_float();
+      setAny = true;
+    }
+    else {
+      SERIAL_ERROR_MSG("Only one of A, P, or X is allowed.");
+      return false;
+    }
+  }
+
+  const bool hasB = parser.seenval('B'), hasT = parser.seenval('T'), hasY = parser.seenval('Y');
+  const uint8_t sumBTY = hasB + hasT + hasY;
+  if (sumBTY) {
+    if (sumBTY == 1) {
+      target.b = parser.value_float();
+      setAny = true;
+    }
+    else {
+      SERIAL_ERROR_MSG("Only one of B, T, or Y is allowed.");
+      return false;
+    }
+  }
+
+  if (setAny) {
+    return SCARA_move_to_cal(target.a, target.b);
+  }
+  else {
+    SERIAL_ECHOLNPGM(" Cal: Theta 0");
+    return SCARA_move_to_cal(0, 120);
+  }
 }
 
 /**
