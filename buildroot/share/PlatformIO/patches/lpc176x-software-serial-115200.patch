@@ -1,0 +1,4 @@
+37c37
+< #define FORCE_BAUD_RATE 19200
+---
+> #define FORCE_BAUD_RATE 115200

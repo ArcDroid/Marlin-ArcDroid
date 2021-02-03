@@ -2754,10 +2754,10 @@
     // encoder 16384 pulses/rev, stepper 8192 steps/rev
     #define X_ENCODER_PPS (16384.0/6400.0)
     #else
-    #define X_ENCODER_PPS 2.0
+    #define X_ENCODER_PPS (16384.0/6400.0)
     #endif
-    //#define X_SERIAL_RX_PIN P1_23
-    //#define X_SERIAL_TX_PIN P1_22
+    ////#define X_ENCODER_SERIAL_RX_PIN P1_23
+    ////#define X_ENCODER_SERIAL_TX_PIN P1_22
 
     // EXP2 0.15 = TXD1, 0.16 = RXD1
     #define X_ENCODER_HARDWARE_SERIAL Serial1
@@ -2766,10 +2766,10 @@
     #ifdef MINI_MODEL_2AM
     #define Y_ENCODER_PPS (-16384.0/6400.0)
     #else
-    #define Y_ENCODER_PPS 2.0
+    #define Y_ENCODER_PPS (16384.0/6400.0)
     #endif
-    //#define Y_SERIAL_RX_PIN P1_21
-    //#define Y_SERIAL_TX_PIN P1_20
+    ////#define Y_ENCODER_SERIAL_RX_PIN P1_21
+    ////#define Y_ENCODER_SERIAL_TX_PIN P1_20
 
     // WiFi 4.28 = TXD3, 4.29 = RXD3
     ////#define LPC_PINCFG_UART3_P4_28
