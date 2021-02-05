@@ -2774,7 +2774,8 @@
     ////#define Y_ENCODER_SERIAL_RX_PIN P1_21
     ////#define Y_ENCODER_SERIAL_TX_PIN P1_20
 
-    // WiFi 4.28 = TXD3, 4.29 = RXD3
+    // Serial3 WiFi 4.28 = TXD3, 4.29 = RXD3
+    // Serial2 0.11 = RXD2 on E0-CLS, 0.10 = TXD2 on PROBE
     ////#define LPC_PINCFG_UART3_P4_28
     #define Y_ENCODER_HARDWARE_SERIAL Serial2
   #endif
