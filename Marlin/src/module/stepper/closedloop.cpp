@@ -50,7 +50,11 @@
 
 
 #ifndef CLOSEDLOOP_BAUD_RATE
+#ifdef MINI_MODEL_2AM
   #define CLOSEDLOOP_BAUD_RATE 115200
+#else
+  #define CLOSEDLOOP_BAUD_RATE 115200
+#endif
 #endif
 
 
