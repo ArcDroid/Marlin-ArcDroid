@@ -2211,8 +2211,13 @@
   #define INTERPOLATE       true  // Interpolate X/Y/Z_MICROSTEPS to 256
 
   #if AXIS_IS_TMC(X)
+    #ifdef MINI_MODEL_2AM
     #define X_CURRENT       800        // (mA) RMS current. Multiply by 1.414 for peak current.
-    #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for sensorless homing
+    #define X_CURRENT_HOME  400  // (mA) RMS current for sensorless homing
+    #else
+    #define X_CURRENT       1600        // (mA) RMS current. Multiply by 1.414 for peak current.
+    #define X_CURRENT_HOME   400  // (mA) RMS current for sensorless homing
+    #endif
     #define X_MICROSTEPS     32    // 0..256
     #define X_RSENSE          0.11
     #define X_CHAIN_POS      -1    // <=0 : Not chained. 1 : MCU MOSI connected. 2 : Next in chain, ...
@@ -2227,8 +2232,13 @@
   #endif
 
   #if AXIS_IS_TMC(Y)
-    #define Y_CURRENT       800
-    #define Y_CURRENT_HOME  Y_CURRENT
+    #ifdef MINI_MODEL_2AM
+    #define Y_CURRENT       800        // (mA) RMS current. Multiply by 1.414 for peak current.
+    #define Y_CURRENT_HOME  400  // (mA) RMS current for sensorless homing
+    #else
+    #define Y_CURRENT       1600        // (mA) RMS current. Multiply by 1.414 for peak current.
+    #define Y_CURRENT_HOME   400  // (mA) RMS current for sensorless homing
+    #endif
     #define Y_MICROSTEPS     32
     #define Y_RSENSE          0.11
     #define Y_CHAIN_POS      -1
