@@ -140,6 +140,10 @@ void GcodeSuite::get_destination_from_command() {
     constexpr bool skip_move = false;
   #endif
 
+  #if HAS_CLOSEDLOOP_CONFIG
+    set_position_from_encoders_if_lost(false);
+  #endif
+
   // Get new XYZ position, whether absolute or relative
   LOOP_XYZ(i) {
     if ( (seen[i] = parser.seenval(XYZ_CHAR(i))) ) {
