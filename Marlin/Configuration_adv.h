@@ -2420,7 +2420,11 @@
    * Define you own with
    * { <off_time[1..15]>, <hysteresis_end[-3..12]>, hysteresis_start[1..8] }
    */
+  #ifdef MINI_MODEL_2AM
   #define CHOPPER_TIMING CHOPPER_DEFAULT_12V
+  #else
+  #define CHOPPER_TIMING CHOPPER_DEFAULT_24V
+  #endif
 
   /**
    * Monitor Trinamic drivers
@@ -2755,7 +2759,7 @@
   #ifdef X_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
     // encoder 16384 pulses/rev, stepper 8192 steps/rev
-    #define X_ENCODER_PPS (16384.0/6400.0)
+    #define X_ENCODER_PPS (-16384.0/6400.0)
     #else
     #define X_ENCODER_PPS (16384.0/6400.0)
     #endif
@@ -2767,7 +2771,7 @@
   #endif
   #ifdef Y_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
-    #define Y_ENCODER_PPS (-16384.0/6400.0)
+    #define Y_ENCODER_PPS (16384.0/6400.0)
     #else
     #define Y_ENCODER_PPS (16384.0/6400.0)
     #endif
