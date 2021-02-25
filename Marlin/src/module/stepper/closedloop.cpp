@@ -161,6 +161,15 @@ bool closedloop_need_restore() {
     ;
 }
 
+void closedloop_unhome() {
+    #if AXIS_IS_CLOSEDLOOP(X)
+        encoderX.homed = false;
+    #endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+        encoderY.homed = false;
+    #endif
+}
+
 bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
     bool enabled_any = false;
     bool valid_position = true;

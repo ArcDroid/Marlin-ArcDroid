@@ -327,6 +327,9 @@ void GcodeSuite::G28() {
                home_all = homeX == homeY && homeX == homeZ, // All or None
                doX = home_all || homeX, doY = home_all || homeY, doZ = home_all || homeZ;
 
+
+    TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_unhome());
+
     destination = current_position;
 
     #if Z_HOME_DIR > 0  // If homing away from BED do Z first
