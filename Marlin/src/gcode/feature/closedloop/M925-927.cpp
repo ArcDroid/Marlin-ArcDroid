@@ -93,10 +93,11 @@ void GcodeSuite::M926() {
  *   F set PID FF
  *   U set PID I Unwinding
  *   S set Microstep resolution
+ *   T set direcTion polarity
  */
 void GcodeSuite::M925() {
-  uint8_t keys[7] = {0};
-  uint16_t values[7];
+  uint8_t keys[10] = {0};
+  uint16_t values[10];
   byte set_value = 0;
   uint16_t val = 0;
 
@@ -118,8 +119,8 @@ void GcodeSuite::M925() {
   if (parser.seen('R')) {
     keys[set_value] = 0xA3;
     val = parser.intval('R', 100);
-    if (val > 3200) {
-        val = 3200;
+    if (val > 3100) {
+        val = 3100;
     }
     values[set_value++] = val;
   }
@@ -156,6 +157,11 @@ void GcodeSuite::M925() {
         break;
     }
     values[set_value++] = val;
+  }
+
+  if (parser.seen('T')) {
+    keys[set_value] = 0xA6;
+    values[set_value++] = parser.value_bool() ? 34 : 17;
   }
 
   if (set_value == 0) {
