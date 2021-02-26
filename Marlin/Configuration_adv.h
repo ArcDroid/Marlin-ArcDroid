@@ -2216,7 +2216,7 @@
     #define X_CURRENT_HOME  400  // (mA) RMS current for sensorless homing
     #else
     #define X_CURRENT       1600        // (mA) RMS current. Multiply by 1.414 for peak current.
-    #define X_CURRENT_HOME   400  // (mA) RMS current for sensorless homing
+    #define X_CURRENT_HOME  1600  // (mA) RMS current for sensorless homing
     #endif
     #define X_MICROSTEPS     32    // 0..256
     #define X_RSENSE          0.11
@@ -2237,7 +2237,7 @@
     #define Y_CURRENT_HOME  400  // (mA) RMS current for sensorless homing
     #else
     #define Y_CURRENT       1600        // (mA) RMS current. Multiply by 1.414 for peak current.
-    #define Y_CURRENT_HOME   400  // (mA) RMS current for sensorless homing
+    #define Y_CURRENT_HOME  1600  // (mA) RMS current for sensorless homing
     #endif
     #define Y_MICROSTEPS     32
     #define Y_RSENSE          0.11
@@ -2768,10 +2768,10 @@
   #define HAS_CLOSEDLOOP_HW_SERIAL 1
   #ifdef X_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
-    // encoder 16384 pulses/rev, stepper 8192 steps/rev
-    #define X_ENCODER_PPS (-16384.0/6400.0)
+    // encoder 4096 pulses/step, stepper 32 usteps/step
+    #define X_ENCODER_PPS (-4096.0/32.0)
     #else
-    #define X_ENCODER_PPS (16384.0/6400.0)
+    #define X_ENCODER_PPS (4096.0/32.0)
     #endif
     ////#define X_ENCODER_SERIAL_RX_PIN P1_23
     ////#define X_ENCODER_SERIAL_TX_PIN P1_22
@@ -2781,9 +2781,9 @@
   #endif
   #ifdef Y_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
-    #define Y_ENCODER_PPS (16384.0/6400.0)
+    #define Y_ENCODER_PPS (4096.0/32.0)
     #else
-    #define Y_ENCODER_PPS (16384.0/6400.0)
+    #define Y_ENCODER_PPS (4096.0/32.0)
     #endif
     ////#define Y_ENCODER_SERIAL_RX_PIN P1_21
     ////#define Y_ENCODER_SERIAL_TX_PIN P1_20
