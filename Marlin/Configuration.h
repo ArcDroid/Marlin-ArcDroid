@@ -681,7 +681,7 @@
 // extra connectors. Leave undefined any used for non-endstop and non-probe purposes.
 #define USE_XMIN_PLUG
 ////#define USE_YMIN_PLUG
-#define USE_ZMIN_PLUG
+////#define USE_ZMIN_PLUG
 ////#define USE_XMAX_PLUG
 #define USE_YMAX_PLUG
 #define USE_ZMAX_PLUG
@@ -695,7 +695,7 @@
   #define ENDSTOPPULLUP_ZMAX
   #define ENDSTOPPULLUP_XMIN
   ////#define ENDSTOPPULLUP_YMIN
-  #define ENDSTOPPULLUP_ZMIN
+  ////#define ENDSTOPPULLUP_ZMIN
   //#define ENDSTOPPULLUP_ZMIN_PROBE
 #endif
 
@@ -746,7 +746,7 @@
 #define X_DRIVER_TYPE  TB6600
 #define Y_DRIVER_TYPE  TB6600
 #endif
-#define Z_DRIVER_TYPE  TB6600
+#define Z_DRIVER_TYPE  TMC2209
 //#define X2_DRIVER_TYPE A4988
 //#define Y2_DRIVER_TYPE A4988
 //#define Z2_DRIVER_TYPE A4988
@@ -1189,7 +1189,7 @@
 #define SCARA_Y_HOME_NEEDS_X
 #define X_HOME_DIR -1
 #define Y_HOME_DIR 1
-#define Z_HOME_DIR -1
+#define Z_HOME_DIR 1
 
 // @section machine
 
@@ -1200,10 +1200,10 @@
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS -(SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
 #define Y_MIN_POS -(SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
-#define Z_MIN_POS MANUAL_Z_HOME_POS
+#define Z_MIN_POS -300.0
 #define X_MAX_POS (SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
 #define Y_MAX_POS (SCARA_LINKAGE_1 + SCARA_LINKAGE_2)
-#define Z_MAX_POS 225
+#define Z_MAX_POS MANUAL_Z_HOME_POS
 
 /**
  * Software Endstops
@@ -1455,7 +1455,7 @@
 #define SCARA_A_HOME -40.00
 #define SCARA_B_HOME 110.00
 #endif
-#define MANUAL_Z_HOME_POS 0.1
+#define MANUAL_Z_HOME_POS 0.0
 
 // Use "Z Safe Homing" to avoid homing with a Z probe outside the bed area.
 //
