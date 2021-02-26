@@ -161,12 +161,14 @@ bool closedloop_need_restore() {
     ;
 }
 
-void closedloop_unhome() {
+void closedloop_unhome(AxisEnum axis) {
     #if AXIS_IS_CLOSEDLOOP(X)
-        encoderX.homed = false;
+        if (axis && _BV(X_AXIS))
+            encoderX.homed = false;
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        encoderY.homed = false;
+        if (axis && _BV(Y_AXIS))
+            encoderY.homed = false;
     #endif
 }
 

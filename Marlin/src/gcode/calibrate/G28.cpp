@@ -99,8 +99,9 @@
 
     #if IS_SCARA
       abce_pos_t target = planner.get_axis_positions_mm();
-      target.x += x_axis_home_dir * 360.0f;
-      target.y += x_axis_home_dir * 360.0f;
+      float distance = (TERN(HOME_Y_BEFORE_X, 1, 0) ? y_axis_home_dir : x_axis_home_dir) * 360.0f;
+      target.x += distance;
+      target.y += distance;
       planner.buffer_segment(target.a, target.b, target.c, target.e, homing_feedrate(X_AXIS), active_extruder);
       planner.synchronize();
 
@@ -323,12 +324,13 @@ void GcodeSuite::G28() {
     const bool homeZ = parser.seen('Z'),
                needX = homeZ && TERN0(Z_SAFE_HOMING, axes_need_homing(_BV(X_AXIS))),
                needY = homeZ && TERN0(Z_SAFE_HOMING, axes_need_homing(_BV(Y_AXIS))),
-               homeX = needX || parser.seen('X'), homeY = needY || parser.seen('Y'),
+               homeX = needX || parser.seen('X') TERN_(IS_SCARA, || parser.seen('Y')),
+               homeY = needY || parser.seen('Y') TERN_(IS_SCARA, || homeX),
                home_all = homeX == homeY && homeX == homeZ, // All or None
                doX = home_all || homeX, doY = home_all || homeY, doZ = home_all || homeZ;
 
 
-    TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_unhome());
+    TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_unhome( (AxisEnum)((homeX << X_AXIS) | (homeY << Y_AXIS) | (homeZ << Z_AXIS)) ));
 
     destination = current_position;
 
