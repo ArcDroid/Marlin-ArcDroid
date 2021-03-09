@@ -354,7 +354,9 @@ bool Probe::set_deployed(const bool deploy) {
   #endif
 
   // For beds that fall when Z is powered off only raise for trusted Z
-  #if ENABLED(UNKNOWN_Z_NO_RAISE)
+  #if ENABLED(NO_RAISE_PROBE)
+    constexpr float unknown_condition = false;
+  #elif ENABLED(UNKNOWN_Z_NO_RAISE)
     const bool unknown_condition = TEST(axis_known_position, Z_AXIS);
   #else
     constexpr float unknown_condition = true;
