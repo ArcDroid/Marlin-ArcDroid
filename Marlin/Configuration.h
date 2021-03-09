@@ -1152,6 +1152,8 @@
 #define DISABLE_Y false
 #define DISABLE_Z false
 
+#define LOOSE_Z_KNOWN_POSITION    // Z position is not important, and when motors turn off, it's assumed the position stays the same
+
 // Warn on display about possibly reduced accuracy
 //#define DISABLE_REDUCED_ACCURACY_WARNING
 
