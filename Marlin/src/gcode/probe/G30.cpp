@@ -39,6 +39,9 @@
  *   E   Engage the probe for each probe (default 1)
  */
 void GcodeSuite::G30() {
+  #if HAS_CLOSEDLOOP_CONFIG
+    set_position_from_encoders_if_lost(true);
+  #endif
 
   const xy_pos_t pos = { parser.linearval('X', current_position.x + probe.offset_xy.x),
                          parser.linearval('Y', current_position.y + probe.offset_xy.y) };
