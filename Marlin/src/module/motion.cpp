@@ -1510,7 +1510,7 @@ void set_axis_is_at_home(const AxisEnum axis) {
 
   TERN_(BABYSTEP_DISPLAY_TOTAL, babystep.reset_total(axis));
 
-  #if HAS_POSITION_SHIFT
+  #if HAS_POSITION_SHIFT && DISABLED(CNC_COORDINATE_SYSTEMS)
     position_shift[axis] = 0;
     update_workspace_offset(axis);
   #endif
