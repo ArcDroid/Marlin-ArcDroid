@@ -183,6 +183,7 @@ xyz_pos_t cartes;
 #if HAS_POSITION_SHIFT
   // The distance that XYZ has been offset by G92. Reset by G28.
   xyz_pos_t position_shift{0};
+  coordinate_rotation_t offset_rotation = OFFSET_ROTATION_0;
 #endif
 #if HAS_HOME_OFFSET
   // This offset is added to the configured home position.
@@ -209,10 +210,14 @@ inline void report_more_positions() {
   #endif
   #if ENABLED(CNC_COORDINATE_SYSTEMS)
     if (WITHIN(gcode.active_coordinate_system, 0, MAX_COORDINATE_SYSTEMS - 1)) {
-      xyz_pos_t* o = &gcode.coordinate_system[gcode.active_coordinate_system];
-      SERIAL_ECHOPAIR(" CS:", gcode.active_coordinate_system + 54, " OX:", o->x, " OY:", o->y, " OZ:", o->z);
+      coordinate_system_t o = gcode.coordinate_system[gcode.active_coordinate_system];
+      if (o.rotation == OFFSET_ROTATION_180) {
+        o.offset.x = -o.offset.x;
+        o.offset.y = -o.offset.y;
+      }
+      SERIAL_ECHOPAIR(" CS:", gcode.active_coordinate_system + 54, " OX:", o.offset.x, " OY:", o.offset.y, " OZ:", o.offset.z, " OR:", o.rotation * 180);
     } else {
-      SERIAL_ECHO(" CS:53 OX:0 OY:0 OZ:0");
+      SERIAL_ECHO(" CS:53 OX:0 OY:0 OZ:0 OR:0");
     }
   #endif
   TERN_(IS_SCARA, scara_report_positions());
@@ -1914,7 +1919,10 @@ void homeaxis(const AxisEnum axis) {
 #if HAS_WORKSPACE_OFFSET
   void update_workspace_offset(const AxisEnum axis) {
     workspace_offset[axis] = home_offset[axis] + position_shift[axis];
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Axis ", XYZ_CHAR(axis), " home_offset = ", home_offset[axis], " position_shift = ", position_shift[axis]);
+    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Axis ", XYZ_CHAR(axis),
+      " home_offset = ", home_offset[axis],
+      " position_shift = ", position_shift[axis],
+      " rotation = ", offset_rotation * 180);
   }
 #endif
 

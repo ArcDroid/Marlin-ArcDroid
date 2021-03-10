@@ -500,5 +500,17 @@ struct XYZEval {
 #undef _RS
 #undef FI
 
+#if ENABLED(CNC_COORDINATE_SYSTEMS)
+  typedef enum : uint8_t {
+    OFFSET_ROTATION_0 = 0,
+    OFFSET_ROTATION_180 = 1,
+  } coordinate_rotation_t;
+
+  typedef struct {
+    xyz_pos_t offset;
+    coordinate_rotation_t rotation;
+  } coordinate_system_t;
+#endif
+
 const xyze_char_t axis_codes { 'X', 'Y', 'Z', 'E' };
 #define XYZ_CHAR(A) ((char)('X' + A))

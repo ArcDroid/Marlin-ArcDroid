@@ -364,7 +364,7 @@ typedef struct SettingsDataStruct {
   //
   // CNC_COORDINATE_SYSTEMS
   //
-  xyz_pos_t coordinate_system[MAX_COORDINATE_SYSTEMS];  // G54-G59.3
+  coordinate_system_t coordinate_system[MAX_COORDINATE_SYSTEMS];  // G54-G59.3
 
   //
   // SKEW_CORRECTION
@@ -1279,7 +1279,7 @@ void MarlinSettings::postprocess() {
     _FIELD_TEST(coordinate_system);
 
     #if DISABLED(CNC_COORDINATE_SYSTEMS)
-      const xyz_pos_t coordinate_system[MAX_COORDINATE_SYSTEMS] = { { 0 } };
+      const coordinate_system_t coordinate_system[MAX_COORDINATE_SYSTEMS] = { { 0 } };
     #endif
     EEPROM_WRITE(TERN(CNC_COORDINATE_SYSTEMS, gcode.coordinate_system, coordinate_system));
 
@@ -2123,7 +2123,7 @@ void MarlinSettings::postprocess() {
           if (!validating) (void)gcode.select_coordinate_system(-1); // Go back to machine space
           EEPROM_READ(gcode.coordinate_system);
         #else
-          xyz_pos_t coordinate_system[MAX_COORDINATE_SYSTEMS];
+          coordinate_system_t coordinate_system[MAX_COORDINATE_SYSTEMS];
           EEPROM_READ(coordinate_system);
         #endif
       }

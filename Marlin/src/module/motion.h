@@ -271,6 +271,7 @@ void homeaxis(const AxisEnum axis);
   #endif
   #if HAS_POSITION_SHIFT
     extern xyz_pos_t position_shift;
+    extern coordinate_rotation_t offset_rotation;
   #endif
   #if HAS_HOME_OFFSET && HAS_POSITION_SHIFT
     extern xyz_pos_t workspace_offset;
@@ -280,14 +281,14 @@ void homeaxis(const AxisEnum axis);
   #else
     #define _WS position_shift
   #endif
-  #define NATIVE_TO_LOGICAL(POS, AXIS) ((POS) + _WS[AXIS])
-  #define LOGICAL_TO_NATIVE(POS, AXIS) ((POS) - _WS[AXIS])
-  FORCE_INLINE void toLogical(xy_pos_t &raw)   { raw += _WS; }
-  FORCE_INLINE void toLogical(xyz_pos_t &raw)  { raw += _WS; }
-  FORCE_INLINE void toLogical(xyze_pos_t &raw) { raw += _WS; }
-  FORCE_INLINE void toNative(xy_pos_t &raw)    { raw -= _WS; }
-  FORCE_INLINE void toNative(xyz_pos_t &raw)   { raw -= _WS; }
-  FORCE_INLINE void toNative(xyze_pos_t &raw)  { raw -= _WS; }
+  #define NATIVE_TO_LOGICAL(POS, AXIS) ( offset_rotation == OFFSET_ROTATION_0 ? (POS) + _WS[AXIS] : -((POS) + _WS[AXIS]) )
+  #define LOGICAL_TO_NATIVE(POS, AXIS) ( (offset_rotation == OFFSET_ROTATION_0 ? (POS) : -(POS)) - _WS[AXIS] )
+  FORCE_INLINE void toLogical(xy_pos_t &raw)   { raw += _WS; if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } }
+  FORCE_INLINE void toLogical(xyz_pos_t &raw)  { raw += _WS; if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } }
+  FORCE_INLINE void toLogical(xyze_pos_t &raw) { raw += _WS; if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } }
+  FORCE_INLINE void toNative(xy_pos_t &raw)    { if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } raw -= _WS; }
+  FORCE_INLINE void toNative(xyz_pos_t &raw)   { if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } raw -= _WS; }
+  FORCE_INLINE void toNative(xyze_pos_t &raw)  { if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } raw -= _WS; }
 #else
   #define NATIVE_TO_LOGICAL(POS, AXIS) (POS)
   #define LOGICAL_TO_NATIVE(POS, AXIS) (POS)

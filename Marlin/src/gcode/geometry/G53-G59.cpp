@@ -36,12 +36,13 @@
 bool GcodeSuite::select_coordinate_system(const int8_t _new) {
   if (active_coordinate_system == _new) return false;
   active_coordinate_system = _new;
-  xyz_float_t new_offset{0};
+  coordinate_system_t new_offset{0};
   if (WITHIN(_new, 0, MAX_COORDINATE_SYSTEMS - 1))
     new_offset = coordinate_system[_new];
   LOOP_XYZ(i) {
-    if (position_shift[i] != new_offset[i]) {
-      position_shift[i] = new_offset[i];
+    if (position_shift[i] != new_offset.offset[i] || offset_rotation != new_offset.rotation) {
+      position_shift[i] = new_offset.offset[i];
+      offset_rotation = new_offset.rotation;
       update_workspace_offset((AxisEnum)i);
     }
   }

@@ -48,6 +48,7 @@ void GcodeSuite::G92() {
         // Zero the G92 values and restore current position
         LOOP_XYZ(i) if (position_shift[i]) {
           position_shift[i] = 0;
+          offset_rotation = OFFSET_ROTATION_0;
           update_workspace_offset((AxisEnum)i);
         }
       } break;
@@ -89,13 +90,21 @@ void GcodeSuite::G92() {
           }
         }
       }
+        #if HAS_POSITION_SHIFT
+          if (parser.seenval('R')) {
+            bool rotate = parser.value_bool();
+            offset_rotation = rotate ? OFFSET_ROTATION_180 : OFFSET_ROTATION_0;
+          }
+        #endif
     } break;
   }
 
   #if ENABLED(CNC_COORDINATE_SYSTEMS)
     // Apply workspace offset to the active coordinate system
-    if (WITHIN(active_coordinate_system, 0, MAX_COORDINATE_SYSTEMS - 1))
-      coordinate_system[active_coordinate_system] = position_shift;
+    if (WITHIN(active_coordinate_system, 0, MAX_COORDINATE_SYSTEMS - 1)) {
+      coordinate_system[active_coordinate_system].offset = position_shift;
+      coordinate_system[active_coordinate_system].rotation = offset_rotation;
+    }
   #endif
 
   if    (sync_XYZ) sync_plan_position();
