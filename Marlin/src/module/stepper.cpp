@@ -2449,7 +2449,7 @@ void Stepper::init() {
     if (!X_ENABLE_ON) X_ENABLE_WRITE(HIGH);
     #if EITHER(DUAL_X_CARRIAGE, X_DUAL_STEPPER_DRIVERS) && HAS_X2_ENABLE
       X2_ENABLE_INIT();
-      if (!X_ENABLE_ON) X2_ENABLE_WRITE(HIGH);
+      if (!X2_ENABLE_ON) X2_ENABLE_WRITE(HIGH);
     #endif
   #endif
   #if HAS_Y_ENABLE
@@ -2457,7 +2457,7 @@ void Stepper::init() {
     if (!Y_ENABLE_ON) Y_ENABLE_WRITE(HIGH);
     #if BOTH(Y_DUAL_STEPPER_DRIVERS, HAS_Y2_ENABLE)
       Y2_ENABLE_INIT();
-      if (!Y_ENABLE_ON) Y2_ENABLE_WRITE(HIGH);
+      if (!Y2_ENABLE_ON) Y2_ENABLE_WRITE(HIGH);
     #endif
   #endif
   #if HAS_Z_ENABLE
