@@ -108,7 +108,7 @@ void GcodeSuite::M925() {
 
   if (parser.seen('F')) {
     keys[set_value] = 0xA7;
-    values[set_value++] = parser.value_bool() ? 1 : 0;
+    values[set_value++] = parser.intval('F', 0);
   }
 
   if (parser.seen('U')) {
