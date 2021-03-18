@@ -1145,16 +1145,6 @@
 #define Z_ENABLE_ON 0
 #define E_ENABLE_ON 0 // For all extruders
 
-#define X2_ENABLE_ON 1
-#define X2_ENABLE_PIN P0_28
-#define X2_STEP_PIN   P1_19
-#define X2_DIR_PIN    P1_21
-
-#define Y2_ENABLE_ON 1
-#define Y2_ENABLE_PIN P1_30
-#define Y2_STEP_PIN   P1_18
-#define Y2_DIR_PIN    P1_20
-
 // Disables axis stepper immediately when it's not being used.
 // WARNING: When motors turn off there is a chance of losing position accuracy!
 #define DISABLE_X false

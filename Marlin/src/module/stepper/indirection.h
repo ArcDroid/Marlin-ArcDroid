@@ -618,14 +618,14 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
 
 #ifndef ENABLE_STEPPER_X2
   #if HAS_X2_ENABLE
-    #define  ENABLE_STEPPER_X2() X2_ENABLE_WRITE( X2_ENABLE_ON)
+    #define  ENABLE_STEPPER_X2() X2_ENABLE_WRITE( X_ENABLE_ON)
   #else
     #define  ENABLE_STEPPER_X2() NOOP
   #endif
 #endif
 #ifndef DISABLE_STEPPER_X2
   #if HAS_X2_ENABLE
-    #define DISABLE_STEPPER_X2() X2_ENABLE_WRITE(!X2_ENABLE_ON)
+    #define DISABLE_STEPPER_X2() X2_ENABLE_WRITE(!X_ENABLE_ON)
   #else
     #define DISABLE_STEPPER_X2() NOOP
   #endif
@@ -648,14 +648,14 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
 
 #ifndef ENABLE_STEPPER_Y2
   #if HAS_Y2_ENABLE
-    #define  ENABLE_STEPPER_Y2() Y2_ENABLE_WRITE( Y2_ENABLE_ON)
+    #define  ENABLE_STEPPER_Y2() Y2_ENABLE_WRITE( Y_ENABLE_ON)
   #else
     #define  ENABLE_STEPPER_Y2() NOOP
   #endif
 #endif
 #ifndef DISABLE_STEPPER_Y2
   #if HAS_Y2_ENABLE
-    #define DISABLE_STEPPER_Y2() Y2_ENABLE_WRITE(!Y2_ENABLE_ON)
+    #define DISABLE_STEPPER_Y2() Y2_ENABLE_WRITE(!Y_ENABLE_ON)
   #else
     #define DISABLE_STEPPER_Y2() NOOP
   #endif
@@ -845,11 +845,11 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
 // Axis steppers enable / disable macros
 //
 
-#define  ENABLE_AXIS_X() do{ ENABLE_STEPPER_X2(); delay(2); ENABLE_STEPPER_X(); }while(0)
-#define DISABLE_AXIS_X() do{ DISABLE_STEPPER_X(); delay(2); DISABLE_STEPPER_X2(); CBI(axis_known_position, X_AXIS); }while(0)
+#define  ENABLE_AXIS_X() do{ ENABLE_STEPPER_X(); ENABLE_STEPPER_X2(); }while(0)
+#define DISABLE_AXIS_X() do{ DISABLE_STEPPER_X(); DISABLE_STEPPER_X2(); CBI(axis_known_position, X_AXIS); }while(0)
 
-#define  ENABLE_AXIS_Y() do{ ENABLE_STEPPER_Y2(); delay(2); ENABLE_STEPPER_Y(); }while(0)
-#define DISABLE_AXIS_Y() do{ DISABLE_STEPPER_Y(); delay(2); DISABLE_STEPPER_Y2(); CBI(axis_known_position, Y_AXIS); }while(0)
+#define  ENABLE_AXIS_Y() do{ ENABLE_STEPPER_Y(); ENABLE_STEPPER_Y2(); }while(0)
+#define DISABLE_AXIS_Y() do{ DISABLE_STEPPER_Y(); DISABLE_STEPPER_Y2(); CBI(axis_known_position, Y_AXIS); }while(0)
 
 #define  ENABLE_AXIS_Z() do{ ENABLE_STEPPER_Z();  ENABLE_STEPPER_Z2();  ENABLE_STEPPER_Z3();  ENABLE_STEPPER_Z4(); }while(0)
 #define DISABLE_AXIS_Z() do{ DISABLE_STEPPER_Z(); DISABLE_STEPPER_Z2(); DISABLE_STEPPER_Z3(); DISABLE_STEPPER_Z4(); TERN(LOOSE_Z_KNOWN_POSITION, , CBI(axis_known_position, Z_AXIS)); }while(0)
