@@ -281,8 +281,8 @@ void homeaxis(const AxisEnum axis);
   #else
     #define _WS position_shift
   #endif
-  #define NATIVE_TO_LOGICAL(POS, AXIS) ( offset_rotation == OFFSET_ROTATION_0 ? (POS) + _WS[AXIS] : -((POS) + _WS[AXIS]) )
-  #define LOGICAL_TO_NATIVE(POS, AXIS) ( (offset_rotation == OFFSET_ROTATION_0 ? (POS) : -(POS)) - _WS[AXIS] )
+  #define NATIVE_TO_LOGICAL(POS, AXIS) (   (offset_rotation == OFFSET_ROTATION_0 || AXIS == Z_AXIS) ? (POS) + _WS[AXIS] : -((POS) + _WS[AXIS] ) )
+  #define LOGICAL_TO_NATIVE(POS, AXIS) ( ( (offset_rotation == OFFSET_ROTATION_0 || AXIS == Z_AXIS) ? (POS) : -(POS) ) - _WS[AXIS] )
   FORCE_INLINE void toLogical(xy_pos_t &raw)   { raw += _WS; if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } }
   FORCE_INLINE void toLogical(xyz_pos_t &raw)  { raw += _WS; if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } }
   FORCE_INLINE void toLogical(xyze_pos_t &raw) { raw += _WS; if(offset_rotation != OFFSET_ROTATION_0) { raw.x = -raw.x; raw.y = -raw.y; } }
