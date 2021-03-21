@@ -318,6 +318,13 @@ void GcodeSuite::G2_G3(const bool clockwise) {
       if (parser.seenval(bchar)) arc_offset.b = parser.value_linear_units();
     }
 
+    #if HAS_POSITION_SHIFT
+    if (offset_rotation == OFFSET_ROTATION_180) {
+      arc_offset.a = -arc_offset.a;
+      arc_offset.b = -arc_offset.b;
+    }
+    #endif
+
     if (arc_offset) {
 
       #if ENABLED(ARC_P_CIRCLES)
