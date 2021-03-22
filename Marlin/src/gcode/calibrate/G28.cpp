@@ -330,7 +330,7 @@ void GcodeSuite::G28() {
                doX = home_all || homeX, doY = home_all || homeY, doZ = home_all || homeZ;
 
 
-    TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_unhome( (AxisEnum)((homeX << X_AXIS) | (homeY << Y_AXIS) | (homeZ << Z_AXIS)) ));
+    TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_unhome( (AxisEnum)((doX << X_AXIS) | (doY << Y_AXIS) | (doZ << Z_AXIS)) ));
 
     destination = current_position;
 
@@ -521,6 +521,6 @@ void GcodeSuite::G28() {
     }
   #endif
 
-  TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_home_encoders(planner.get_axis_positions_mm()));
+  TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_home_encoders( (AxisEnum)((doX << X_AXIS) | (doY << Y_AXIS) | (doZ << Z_AXIS)) , planner.get_axis_positions_mm()));
 
 }

@@ -126,12 +126,22 @@ void restore_closedloop_drivers() {
   stepper.set_directions();
 }
 
-void closedloop_home_encoders(abce_pos_t motor_pos) {
+void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos) {
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+        DEBUG_ECHOPAIR("closedloop_home_encoders axis: ", axis);
+        DEBUG_EOL();
+    }
+    #endif
     #if AXIS_IS_CLOSEDLOOP(X)
+      if (axis && _BV(X_AXIS)) {
         encoderX.touch_off_encoder(motor_pos.x);
+      }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
+      if (axis && _BV(Y_AXIS)) {
         encoderY.touch_off_encoder(motor_pos.y);
+      }
     #endif
 }
 

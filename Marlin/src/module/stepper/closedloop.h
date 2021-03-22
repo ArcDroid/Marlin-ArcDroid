@@ -179,7 +179,7 @@ void closedloop_serial_begin();
 
 void restore_closedloop_drivers();
 
-void closedloop_home_encoders(abce_pos_t motor_pos);
+void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos);
 bool closedloop_has_aligned();
 bool closedloop_need_restore();
 bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
