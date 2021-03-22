@@ -521,6 +521,12 @@ void GcodeSuite::G28() {
     }
   #endif
 
-  TERN_(HAS_CLOSEDLOOP_CONFIG, closedloop_home_encoders( (AxisEnum)((doX << X_AXIS) | (doY << Y_AXIS) | (doZ << Z_AXIS)) , planner.get_axis_positions_mm()));
+  #if HAS_CLOSEDLOOP_CONFIG
+    closedloop_home_encoders(
+      (AxisEnum)((doX << X_AXIS) | (doY << Y_AXIS) | (doZ << Z_AXIS)),
+      planner.get_axis_positions_mm(),
+      parser.seen("K")
+    );
+  #endif
 
 }

@@ -127,7 +127,7 @@ void restore_closedloop_drivers() {
   stepper.set_directions();
 }
 
-void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos) {
+void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos, bool calibrate_home) {
     #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
         DEBUG_ECHOPAIR("closedloop_home_encoders axis: ", axis);
@@ -136,14 +136,14 @@ void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos) {
     #endif
     #if AXIS_IS_CLOSEDLOOP(X)
       if (axis && _BV(X_AXIS)) {
-        encoderX.touch_off_encoder(motor_pos.x);
+        encoderX.touch_off_encoder(motor_pos.x, calibrate_home);
         // set_position_from_encoders_force will pick it back up
         CBI(axis_known_position, X_AXIS);
       }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
       if (axis && _BV(Y_AXIS)) {
-        encoderY.touch_off_encoder(motor_pos.y);
+        encoderY.touch_off_encoder(motor_pos.y, calibrate_home);
         CBI(axis_known_position, Y_AXIS);
       }
     #endif
@@ -271,6 +271,35 @@ abce_float_t closedloop_get_pps() {
 	return res;
 }
 
+void closedloop_reset_home_pulse() {
+    #if AXIS_IS_CLOSEDLOOP(X)
+		encoderX.home_pulse = -1;
+	#endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+		encoderY.home_pulse = -1;
+	#endif
+}
+
+void closedloop_set_home_pulse(abc_long_t home) {
+    #if AXIS_IS_CLOSEDLOOP(X)
+		encoderX.home_pulse = home.x;
+	#endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+		encoderY.home_pulse = home.y;
+	#endif
+}
+
+abc_long_t closedloop_get_home_pulse() {
+	abc_long_t res;
+    #if AXIS_IS_CLOSEDLOOP(X)
+		res.x = encoderX.home_pulse;
+	#endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+		res.y = encoderY.home_pulse;
+	#endif
+
+	return res;
+}
 
 S42BClosedLoop::S42BClosedLoop(Stream * SerialPort) {
     HWSerial = SerialPort;

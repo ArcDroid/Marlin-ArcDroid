@@ -418,7 +418,8 @@ typedef struct SettingsDataStruct {
   #endif
 
   #if HAS_CLOSEDLOOP_CONFIG
-    abce_float_t encoder_pps;
+    abc_float_t encoder_pps;
+    abc_long_t encoder_home_pulse;
   #endif
 
 } SettingsData;
@@ -1372,9 +1373,13 @@ void MarlinSettings::postprocess() {
     #endif
 
     #if HAS_CLOSEDLOOP_CONFIG
-      abce_float_t encoder_pps = closedloop_get_pps();
+      abc_float_t encoder_pps = closedloop_get_pps();
       _FIELD_TEST(encoder_pps);
       EEPROM_WRITE(encoder_pps);
+
+      abc_long_t encoder_home_pulse = closedloop_get_home_pulse();
+      _FIELD_TEST(encoder_home_pulse);
+      EEPROM_WRITE(encoder_home_pulse);
     #endif
 
     //
@@ -2233,11 +2238,17 @@ void MarlinSettings::postprocess() {
       #endif
 
       #if HAS_CLOSEDLOOP_CONFIG
-        abce_float_t encoder_pps;
+        abc_float_t encoder_pps;
         _FIELD_TEST(encoder_pps);
         EEPROM_READ(encoder_pps);
 
         if (!validating) closedloop_set_pps(encoder_pps);
+
+        abc_long_t encoder_home_pulse;
+        _FIELD_TEST(encoder_home_pulse);
+        EEPROM_READ(encoder_home_pulse);
+
+        if (!validating) closedloop_set_home_pulse(encoder_home_pulse);
       #endif
 
       eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
@@ -2837,6 +2848,7 @@ void MarlinSettings::reset() {
 
   #if HAS_CLOSEDLOOP_CONFIG
     closedloop_reset_pps();
+    closedloop_reset_home_pulse();
   #endif
 
   postprocess();
@@ -3695,20 +3707,25 @@ void MarlinSettings::reset() {
     #endif // HAS_TRINAMIC_CONFIG
 
     #ifdef HAS_CLOSEDLOOP_CONFIG
-      CONFIG_ECHO_HEADING("ClosedLoop pulses per step");
+      CONFIG_ECHO_HEADING("ClosedLoop pulses per step, home pulse");
       CONFIG_ECHO_START();
       SERIAL_ECHOLNPAIR_P(
-        PSTR("  M924 X"),
+        PSTR("  M924"), ""
         #if AXIS_IS_CLOSEDLOOP(X)
+          , SP_X_STR,
           encoderX.encoder_counts_per_step
-        #else
-          0
         #endif
-        , SP_Y_STR,
         #if AXIS_IS_CLOSEDLOOP(Y)
+          , SP_Y_STR,
           encoderY.encoder_counts_per_step
-        #else
-          0
+        #endif
+        #if AXIS_IS_CLOSEDLOOP(X)
+          , " I",
+          encoderX.home_pulse
+        #endif
+        #if AXIS_IS_CLOSEDLOOP(Y)
+          , " J",
+          encoderY.home_pulse
         #endif
       );
     #endif

@@ -107,6 +107,7 @@ class ClosedLoopMarlin : public S42BClosedLoop {
     float encoder_counts_per_step;
     int32_t encoder_counts_per_rev;
     int32_t encoder_offset;
+    int32_t home_pulse;
     bool homed;
     void check_comms();
 
@@ -114,7 +115,7 @@ class ClosedLoopMarlin : public S42BClosedLoop {
         return planner.settings.axis_steps_per_mm[AXIS_ID] * encoder_counts_per_step;
     }
 
-    void touch_off_encoder(float new_position) {
+    void touch_off_encoder(float new_position, bool calibrate_home) {
         int32_t pos = new_position * encoder_counts_per_unit();
         int32_t raw_read = readPosition();
         int32_t error = S42BClosedLoop::positionIsError(raw_read);
@@ -129,24 +130,23 @@ class ClosedLoopMarlin : public S42BClosedLoop {
             kill(PSTR("touch_off_encoder could not read encoder"));
         }
 
+        // measured offset from switch position to expected encoder count
         int32_t switch_offset = pos - raw_read;
         int32_t switch_revolutions = switch_offset / encoder_counts_per_rev;
 
-        int32_t cal_data[3] = {50645, 75008};
-        int32_t expected_offset = cal_data[AXIS_ID] + switch_revolutions * encoder_counts_per_rev;
+        // expected offset for home
+        int32_t expected_offset = home_pulse + switch_revolutions * encoder_counts_per_rev;
+
+        // if calibrating, we'll use the new offset as home
+        if (calibrate_home) {
+            expected_offset = switch_offset;
+        }
 
         int32_t delta = switch_offset - expected_offset;
 
         int32_t half = encoder_counts_per_rev / 2;
-        int32_t margin = encoder_counts_per_rev / 32;
 
-        #if ENABLED(DEBUG_LEVELING_FEATURE)
-        if (DEBUGGING(LEVELING)) {
-            DEBUG_ECHOPAIR(" delta: ", delta);
-            DEBUG_EOL();
-        }
-        #endif
-
+        // fix up any encoder rollover
         if (delta >= half) {
             delta -= encoder_counts_per_rev;
             expected_offset += encoder_counts_per_rev;
@@ -158,23 +158,41 @@ class ClosedLoopMarlin : public S42BClosedLoop {
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
         if (DEBUGGING(LEVELING)) {
-            DEBUG_ECHOPAIR(" deltaadj       : ", delta);
+            DEBUG_ECHO("touch_off_encoder axis:");
+            DEBUG_CHAR(AXIS_LETTER);
+            DEBUG_ECHOPAIR(" delta: ", delta);
             DEBUG_ECHOPAIR(" expected_offset: ", expected_offset);
-            DEBUG_ECHOPAIR(" switch_offset  : ", switch_offset);
+            DEBUG_ECHOPAIR(" switch_offset: ", switch_offset);
             DEBUG_EOL();
         }
         #endif
 
+        int32_t margin = encoder_counts_per_rev / 64;
         if (delta > margin || delta < -margin) {
-            SERIAL_ECHO("touch_off_encoder err: encoder position doesn't match home ");
-            SERIAL_ECHO("axis:");
-            SERIAL_ECHO(AXIS_LETTER);
-            SERIAL_ECHO("delta:");
+            SERIAL_ECHO("warn: touch_off_encoder encoder position doesn't match expected axis:");
+            SERIAL_CHAR(AXIS_LETTER);
+            SERIAL_ECHO(" error: ");
             SERIAL_ECHOLN(delta);
         }
 
         encoder_offset = expected_offset;
         homed = true;
+
+        if (calibrate_home) {
+            // remove any extra revolutions
+            expected_offset = expected_offset % encoder_counts_per_rev;
+            // fix negative
+            if (expected_offset < 0) {
+                expected_offset += encoder_counts_per_rev;
+            }
+            // save new offset
+            home_pulse = expected_offset;
+
+            SERIAL_ECHO("INFO: touch_off_encoder calibrated ");
+            SERIAL_CHAR(AXIS_LETTER);
+            SERIAL_ECHO(" offset: ");
+            SERIAL_ECHOLN(home_pulse);
+        }
     }
 
     float to_mm(int32_t enc_count_noscale) {
@@ -247,7 +265,7 @@ void closedloop_serial_begin();
 
 void restore_closedloop_drivers();
 
-void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos);
+void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos, bool calibrate_home);
 bool closedloop_has_aligned();
 bool closedloop_need_restore();
 bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
@@ -257,6 +275,10 @@ void closedloop_unhome(AxisEnum axis);
 void closedloop_reset_pps();
 void closedloop_set_pps(abce_float_t pps);
 abce_float_t closedloop_get_pps();
+
+void closedloop_reset_home_pulse();
+void closedloop_set_home_pulse(abc_long_t home);
+abc_long_t closedloop_get_home_pulse();
 
 // X Stepper
 #if AXIS_IS_CLOSEDLOOP(X)

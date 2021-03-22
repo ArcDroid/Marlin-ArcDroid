@@ -29,7 +29,7 @@
 #include "../../../module/stepper/indirection.h"
 
 void send_axis_commands(uint8_t function, uint16_t data) {
-  LOOP_XYZE(i) if (parser.intval(axis_codes[i])) {
+  LOOP_XYZE(i) if (parser.seen(axis_codes[i])) {
     switch (i) {
       case X_AXIS:
         #if AXIS_IS_CLOSEDLOOP(X)
@@ -171,7 +171,7 @@ void GcodeSuite::M925() {
   }
 
   // write parameters
-  LOOP_XYZE(i) if (parser.intval(axis_codes[i])) {
+  LOOP_XYZE(i) if (parser.seen(axis_codes[i])) {
     switch (i) {
       case X_AXIS:
         #if AXIS_IS_CLOSEDLOOP(X)
@@ -196,11 +196,13 @@ void GcodeSuite::M925() {
 /**
  * M924: Set CL_S42B encoder pulses per step count
  *
- *   XYZE pulses per count on axis
+ *   XYZ pulses per count on axis
+ *   IJK encoder home position
  */
 void GcodeSuite::M924() {
-  LOOP_XYZE(i) if (parser.intval(axis_codes[i])) {
-    float pps = parser.floatval(axis_codes[i]);
+  // XYZ are steps/mm
+  LOOP_XYZ(i) if (parser.seenval(axis_codes[i])) {
+    float pps = parser.value_float();
     switch (i) {
       case X_AXIS:
         #if AXIS_IS_CLOSEDLOOP(X)
@@ -215,18 +217,41 @@ void GcodeSuite::M924() {
     }
   }
 
+  // encoder homing positions
+  LOOP_XYZ(i) if (parser.seen('I' + i)) {
+    // can be zero
+    int offset = parser.longval('I' + i, 0);
+    switch (i) {
+      case X_AXIS:
+        #if AXIS_IS_CLOSEDLOOP(X)
+          encoderX.home_pulse = offset;
+        #endif
+        break;
+      case Y_AXIS:
+        #if AXIS_IS_CLOSEDLOOP(Y)
+          encoderY.home_pulse = offset;
+        #endif
+        break;
+    }
+  }
+
   SERIAL_ECHOLNPAIR_P(
-    PSTR(" M924 X"),
+    PSTR(" M924"), ""
     #if AXIS_IS_CLOSEDLOOP(X)
+      , SP_X_STR,
       encoderX.encoder_counts_per_step
-    #else
-      0
     #endif
-    , SP_Y_STR,
     #if AXIS_IS_CLOSEDLOOP(Y)
+      , SP_Y_STR,
       encoderY.encoder_counts_per_step
-    #else
-      0
+    #endif
+    #if AXIS_IS_CLOSEDLOOP(X)
+      , " I",
+      encoderX.home_pulse
+    #endif
+    #if AXIS_IS_CLOSEDLOOP(Y)
+      , " J",
+      encoderY.home_pulse
     #endif
   );
 
