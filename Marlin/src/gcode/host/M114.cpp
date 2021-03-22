@@ -97,7 +97,7 @@
       int32_t pos_temp;
       int32_t error;
       #if AXIS_IS_CLOSEDLOOP(X)
-        pos_temp = encoderX.readPosition(true);
+        pos_temp = encoderX.read_encoder_noscale();
         error = S42BClosedLoop::positionIsError(pos_temp);
         if (error != 0) {
             SERIAL_ECHOPAIR(" X: readerr ", error);
@@ -105,10 +105,13 @@
             SERIAL_ECHOPAIR(" X:", pos_temp);
             SERIAL_ECHOPAIR_F(" (", encoderX.to_mm(pos_temp));
             SERIAL_CHAR(')');
+
+            SERIAL_ECHOPAIR_F(" [o:", encoderX.get_home_offset());
+            SERIAL_CHAR(']');
         }
       #endif
       #if AXIS_IS_CLOSEDLOOP(Y)
-        pos_temp = encoderY.readPosition(true);
+        pos_temp = encoderY.read_encoder_noscale();
         error = S42BClosedLoop::positionIsError(pos_temp);
         if (error != 0) {
             SERIAL_ECHOPAIR(" Y: readerr ", error);
@@ -116,6 +119,9 @@
             SERIAL_ECHOPAIR(" Y:", pos_temp);
             SERIAL_ECHOPAIR_F(" (", encoderY.to_mm(pos_temp));
             SERIAL_CHAR(')');
+
+            SERIAL_ECHOPAIR_F(" [o:", encoderY.get_home_offset());
+            SERIAL_CHAR(']');
         }
       #endif
       SERIAL_EOL();

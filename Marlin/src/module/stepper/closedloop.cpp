@@ -35,7 +35,7 @@
 
 #include <HardwareSerial.h>
 
-#define CLOSEDLOOP_INIT(ST) closedloop_init(encoder##ST, ST##_ENCODER_PPS)
+#define CLOSEDLOOP_INIT(ST) closedloop_init(encoder##ST, ST##_ENCODER_PPS, ST##_ENCODER_PPR)
 
 #define CLOSEDLOOP_UART_HW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> encoder##ST(&ST##_ENCODER_HARDWARE_SERIAL)
 #define CLOSEDLOOP_UART_SW_DEFINE(ST, L, AI) ClosedLoopMarlin<L, AI> encoder##ST(ST##_ENCODER_SERIAL_RX_PIN, ST##_ENCODER_SERIAL_TX_PIN)
@@ -105,8 +105,9 @@
 
 #if HAS_CLOSEDLOOP_CONFIG
   template<char AXIS_LETTER, char DRIVER_ID, AxisEnum AXIS_ID>
-  void closedloop_init(ClosedLoopMarlin<AXIS_LETTER, DRIVER_ID, AXIS_ID> &st, float encoder_counts_per_step) {
+  void closedloop_init(ClosedLoopMarlin<AXIS_LETTER, DRIVER_ID, AXIS_ID> &st, float encoder_counts_per_step, int32_t encoder_counts_per_rev) {
     st.encoder_counts_per_step = encoder_counts_per_step;
+    st.encoder_counts_per_rev = encoder_counts_per_rev;
     st.homed = false;
     st.check_comms();
     delay(200);
@@ -136,13 +137,18 @@ void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos) {
     #if AXIS_IS_CLOSEDLOOP(X)
       if (axis && _BV(X_AXIS)) {
         encoderX.touch_off_encoder(motor_pos.x);
+        // set_position_from_encoders_force will pick it back up
+        CBI(axis_known_position, X_AXIS);
       }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
       if (axis && _BV(Y_AXIS)) {
         encoderY.touch_off_encoder(motor_pos.y);
+        CBI(axis_known_position, Y_AXIS);
       }
     #endif
+
+    set_position_from_encoders_force(false);
 }
 
 bool closedloop_has_aligned() {

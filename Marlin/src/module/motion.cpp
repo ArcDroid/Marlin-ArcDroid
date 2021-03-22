@@ -332,23 +332,27 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
 
 
 #if HAS_CLOSEDLOOP_CONFIG
+  void set_position_from_encoders_force(bool enable_motors) {
+    planner.synchronize();
+    abce_pos_t pos = planner.get_axis_positions_mm();
+    if (enable_motors) {
+      // enable motors before reading position
+      // open loop drivers will snap to their last microstep position
+      enable_all_steppers();
+      delay(100);
+    }
+    bool valid_pos = closedloop_restore_position(&pos, enable_motors);
+    if (!valid_pos) {
+      return;
+    }
+    planner.set_machine_position_mm(pos);
+    set_current_from_steppers_for_axis(ALL_AXES);
+    planner.position_cart = cartes;
+  }
+
   void set_position_from_encoders_if_lost(bool enable_motors) {
     if (closedloop_need_restore()) {
-      planner.synchronize();
-      abce_pos_t pos = planner.get_axis_positions_mm();
-      if (enable_motors) {
-        // enable motors before reading position
-        // open loop drivers will snap to their last microstep position
-        enable_all_steppers();
-        delay(10);
-      }
-      bool valid_pos = closedloop_restore_position(&pos, enable_motors);
-      if (!valid_pos) {
-        return;
-      }
-      planner.set_machine_position_mm(pos);
-      set_current_from_steppers_for_axis(ALL_AXES);
-      planner.position_cart = cartes;
+      set_position_from_encoders_force(enable_motors);
     }
   }
 

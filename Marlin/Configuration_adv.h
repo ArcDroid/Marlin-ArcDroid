@@ -2773,6 +2773,7 @@
     #else
     #define X_ENCODER_PPS (4096.0/32.0)
     #endif
+    #define X_ENCODER_PPR 819200
     ////#define X_ENCODER_SERIAL_RX_PIN P1_23
     ////#define X_ENCODER_SERIAL_TX_PIN P1_22
 
@@ -2785,6 +2786,7 @@
     #else
     #define Y_ENCODER_PPS (4096.0/32.0)
     #endif
+    #define Y_ENCODER_PPR 819200
     ////#define Y_ENCODER_SERIAL_RX_PIN P1_21
     ////#define Y_ENCODER_SERIAL_TX_PIN P1_20
 

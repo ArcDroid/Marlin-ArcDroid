@@ -105,7 +105,8 @@ class ClosedLoopMarlin : public S42BClosedLoop {
     }
 
     float encoder_counts_per_step;
-    float encoder_offset;
+    int32_t encoder_counts_per_rev;
+    int32_t encoder_offset;
     bool homed;
     void check_comms();
 
@@ -127,12 +128,57 @@ class ClosedLoopMarlin : public S42BClosedLoop {
             idle();
             kill(PSTR("touch_off_encoder could not read encoder"));
         }
-        encoder_offset = pos - raw_read;
+
+        int32_t switch_offset = pos - raw_read;
+        int32_t switch_revolutions = switch_offset / encoder_counts_per_rev;
+
+        int32_t cal_data[3] = {50645, 75008};
+        int32_t expected_offset = cal_data[AXIS_ID] + switch_revolutions * encoder_counts_per_rev;
+
+        int32_t delta = switch_offset - expected_offset;
+
+        int32_t half = encoder_counts_per_rev / 2;
+        int32_t margin = encoder_counts_per_rev / 32;
+
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+            DEBUG_ECHOPAIR(" delta: ", delta);
+            DEBUG_EOL();
+        }
+        #endif
+
+        if (delta >= half) {
+            delta -= encoder_counts_per_rev;
+            expected_offset += encoder_counts_per_rev;
+        }
+        else if (delta < -half) {
+            delta += encoder_counts_per_rev;
+            expected_offset -= encoder_counts_per_rev;
+        }
+
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+            DEBUG_ECHOPAIR(" deltaadj       : ", delta);
+            DEBUG_ECHOPAIR(" expected_offset: ", expected_offset);
+            DEBUG_ECHOPAIR(" switch_offset  : ", switch_offset);
+            DEBUG_EOL();
+        }
+        #endif
+
+        if (delta > margin || delta < -margin) {
+            SERIAL_ECHO("touch_off_encoder err: encoder position doesn't match home ");
+            SERIAL_ECHO("axis:");
+            SERIAL_ECHO(AXIS_LETTER);
+            SERIAL_ECHO("delta:");
+            SERIAL_ECHOLN(delta);
+        }
+
+        encoder_offset = expected_offset;
         homed = true;
     }
 
-    float to_mm(int32_t enc_count) {
-        return (enc_count + encoder_offset) / encoder_counts_per_unit();
+    float to_mm(int32_t enc_count_noscale) {
+        return (enc_count_noscale) / encoder_counts_per_unit();
     }
 
     float read_encoder() {
@@ -142,6 +188,28 @@ class ClosedLoopMarlin : public S42BClosedLoop {
             return NAN;
         }
         return (raw_read + encoder_offset) / encoder_counts_per_unit();
+    }
+
+    int32_t read_encoder_noscale() {
+        int32_t raw_read = readPosition(true);
+        int32_t error = S42BClosedLoop::positionIsError(raw_read);
+        if (error != 0) {
+            return raw_read;
+        }
+        return (raw_read + encoder_offset);
+    }
+
+    int32_t get_home_offset() {
+        int32_t offset = encoder_offset;
+        int32_t half = (encoder_counts_per_rev>>1);
+
+        offset = offset % encoder_counts_per_rev;
+        if (offset > half) {
+            offset -= encoder_counts_per_rev;
+        } else if (offset <= -half) {
+            offset += encoder_counts_per_rev;
+        }
+        return offset;
     }
 
 };

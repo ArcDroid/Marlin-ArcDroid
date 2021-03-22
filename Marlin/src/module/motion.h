@@ -176,6 +176,7 @@ void set_current_from_steppers_for_axis(const AxisEnum axis);
 
 #if HAS_CLOSEDLOOP_CONFIG
   void set_position_from_encoders_if_lost(bool enable_motors);
+  void set_position_from_encoders_force(bool enable_motors);
   void report_closedloop_alignment();
 #endif
 
