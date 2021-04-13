@@ -2065,8 +2065,8 @@ static_assert(hbm[Z_AXIS] >= 0, "HOMING_BUMP_MM.Z must be greater than or equal 
 #if ENABLED(G38_PROBE_TARGET)
   #if !HAS_BED_PROBE
     #error "G38_PROBE_TARGET requires a bed probe."
-  #elif !IS_CARTESIAN
-    #error "G38_PROBE_TARGET requires a Cartesian machine."
+  #elif !IS_CARTESIAN && !IS_SCARA
+    #error "G38_PROBE_TARGET requires a Cartesian or SCARA machine."
   #endif
 #endif
 
