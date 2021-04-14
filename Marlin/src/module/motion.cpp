@@ -233,6 +233,9 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
 // Report the real current position according to the steppers.
 // Forward kinematics and un-leveling are applied.
 void report_real_position() {
+  #if HAS_CLOSEDLOOP_CONFIG
+    set_position_from_encoders_if_lost(false);
+  #endif
   get_cartesian_from_steppers();
   xyze_pos_t npos = cartes;
   npos.e = planner.get_axis_position_mm(E_AXIS);

@@ -142,6 +142,16 @@ public:
   static void ok_to_send();
 
   /**
+   * Send an "ok" message to the host in response
+   * to commands that skip queue
+   *
+   * If ADVANCED_OK is enabled also include:
+   *   P<int>  Planner space remaining
+   *   B<int>  Block queue space remaining
+   */
+  static void ok_instant();
+
+  /**
    * Clear the serial line and request a resend of
    * the next expected line number.
    */

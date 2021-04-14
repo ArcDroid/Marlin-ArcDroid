@@ -249,7 +249,10 @@ void GcodeSuite::M114() {
   #endif
 
   #if ENABLED(M114_REALTIME)
-    if (parser.seen('R')) { report_real_position(); return; }
+    if (parser.seen('R')) {
+      // handled in queue.cpp
+      return;
+    }
   #endif
 
   TERN_(M114_LEGACY, planner.synchronize());

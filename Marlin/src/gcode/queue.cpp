@@ -295,6 +295,16 @@ void GCodeQueue::ok_to_send() {
   SERIAL_EOL();
 }
 
+void GCodeQueue::ok_instant() {
+  SERIAL_ECHOPGM(STR_OK);
+  #if ENABLED(ADVANCED_OK)
+    SERIAL_ECHO(' ');
+    SERIAL_ECHOPAIR_P(SP_P_STR, int(planner.moves_free()),
+                      SP_B_STR, int(BUFSIZE - length));
+  #endif
+  SERIAL_EOL();
+}
+
 /**
  * Send a "Resend: nnn" message to the host to
  * indicate that a command needs to be re-sent.
@@ -528,6 +538,16 @@ void GCodeQueue::get_serial_commands() {
           }
           if (strcmp_P(command, PSTR("M112")) == 0) kill(M112_KILL_STR, nullptr, true);
           if (strcmp_P(command, PSTR("M410")) == 0) quickstop_stepper();
+          #ifdef M114_REALTIME
+            if (strcmp_P(command, PSTR("M114R")) == 0) {
+              #if HAS_MULTI_SERIAL
+                PORT_REDIRECT(i);
+              #endif
+              report_real_position();
+              ok_instant();
+              continue;
+            }
+          #endif
         #endif
 
         #if defined(NO_TIMEOUTS) && NO_TIMEOUTS > 0
