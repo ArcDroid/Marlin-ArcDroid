@@ -417,3 +417,10 @@ void homeaxis(const AxisEnum axis);
 #if HAS_M206_COMMAND
   void set_home_offset(const AxisEnum axis, const float v);
 #endif
+
+
+#ifdef AUTO_REPORT_POSITION
+extern uint32_t auto_report_position_interval;
+extern uint32_t next_position_report_ms;
+void auto_report_position();
+#endif

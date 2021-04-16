@@ -3129,6 +3129,8 @@
  */
 #define AUTO_REPORT_TEMPERATURES
 
+#define AUTO_REPORT_POSITION
+
 /**
  * Include capabilities in M115 output
  */
