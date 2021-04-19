@@ -52,7 +52,7 @@ class Endstops {
         static float z4_endstop_adj;
       #endif
     #else
-      typedef uint8_t esbits_t;
+      typedef uint16_t esbits_t;
     #endif
 
   private:

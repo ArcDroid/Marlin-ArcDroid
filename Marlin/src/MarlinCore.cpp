@@ -146,6 +146,7 @@
 
 #if ENABLED(G38_PROBE_TARGET)
   uint8_t G38_move; // = 0
+  uint8_t G38_axis_enabled; // = 0
   bool G38_did_trigger; // = false
 #endif
 

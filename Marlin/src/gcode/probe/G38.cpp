@@ -31,9 +31,10 @@
 #include "../../module/stepper.h"
 #include "../../module/probe.h"
 
-inline void G38_single_probe(const uint8_t move_value) {
+inline void G38_single_probe(const uint8_t move_value, const uint8_t probe_axis) {
   endstops.enable(true);
   G38_move = move_value;
+  G38_axis_enabled = probe_axis;
   prepare_line_to_destination();
   planner.synchronize();
   G38_move = 0;
@@ -64,10 +65,34 @@ inline bool G38_run_probe() {
     constexpr uint8_t move_value = 1;
   #endif
 
+  // by default probe using Z probe only
+  uint8_t probe_axis = 0;
+  SBI(probe_axis, Z_AXIS);
+
+  // enable/disable appropriate axis if specified I->X, J->Y, K->Z
+  if (parser.seenval('I')) {
+    if (parser.value_bool())
+      SBI(probe_axis, X_AXIS);
+    else
+      CBI(probe_axis, X_AXIS);
+  }
+  if (parser.seenval('J')) {
+    if (parser.value_bool())
+      SBI(probe_axis, Y_AXIS);
+    else
+      CBI(probe_axis, Y_AXIS);
+  }
+  if (parser.seenval('K')) {
+    if (parser.value_bool())
+      SBI(probe_axis, Z_AXIS);
+    else
+      CBI(probe_axis, Z_AXIS);
+  }
+
   G38_did_trigger = false;
 
   // Move until destination reached or target hit
-  G38_single_probe(move_value);
+  G38_single_probe(move_value, probe_axis);
 
   if (G38_did_trigger) {
 
@@ -85,7 +110,7 @@ inline bool G38_run_probe() {
       // Bump the target more slowly
       destination -= retract_mm * 2;
 
-      G38_single_probe(move_value);
+      G38_single_probe(move_value, probe_axis);
     #endif
   }
 

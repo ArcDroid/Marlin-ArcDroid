@@ -732,6 +732,10 @@
 ////#define X_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 ////#define Y_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 
+// Calibration probe pins
+#define X2_MIN_ENDSTOP_INVERTING true
+#define X2_MAX_ENDSTOP_INVERTING true
+
 /**
  * Stepper Drivers
  *
@@ -950,6 +954,12 @@
  */
 // E0DET connector on SKR 1.4
 #define Z_MIN_PROBE_PIN P1_26 // Pin 32 is the RAMPS default
+
+// Used as calibration probe pins
+// E1DET connector on SKR 1.4
+#define X2_MIN_PIN P1_25
+// PWRDET connector on SKR 1.4
+#define X2_MAX_PIN P1_00
 
 /**
  * Probe Type

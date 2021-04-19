@@ -509,7 +509,11 @@ void Endstops::update() {
 
   #if ENABLED(G38_PROBE_TARGET) && PIN_EXISTS(Z_MIN_PROBE) && !(CORE_IS_XY || CORE_IS_XZ)
     // If G38 command is active check Z_MIN_PROBE for ALL movement
-    if (G38_move) UPDATE_ENDSTOP_BIT(Z, MIN_PROBE);
+    if (G38_move) {
+      UPDATE_ENDSTOP_BIT(Z, MIN_PROBE);
+      UPDATE_ENDSTOP_BIT(X2, MIN);
+      UPDATE_ENDSTOP_BIT(X2, MAX);
+    }
   #endif
 
   // With Dual X, endstops are only checked in the homing direction for the active extruder
@@ -756,7 +760,11 @@ void Endstops::update() {
       #define _G38_OPEN_STATE LOW
     #endif
     // If G38 command is active check Z_MIN_PROBE for ALL movement
-    if (G38_move && TEST_ENDSTOP(_ENDSTOP(Z, MIN_PROBE)) != _G38_OPEN_STATE) {
+    if (G38_move && ( 0
+        || ( G38_axis_enabled & _BV(Z_AXIS) && TEST_ENDSTOP(_ENDSTOP(Z, MIN_PROBE)) != _G38_OPEN_STATE )
+        || ( G38_axis_enabled & _BV(X_AXIS) && (TEST_ENDSTOP(_ENDSTOP(X2, MIN)) || TEST_ENDSTOP(_ENDSTOP(X2, MAX))) )
+      )
+    ) {
            if (stepper.axis_is_moving(X_AXIS)) { _ENDSTOP_HIT(X, MIN); planner.endstop_triggered(X_AXIS); }
       else if (stepper.axis_is_moving(Y_AXIS)) { _ENDSTOP_HIT(Y, MIN); planner.endstop_triggered(Y_AXIS); }
       else if (stepper.axis_is_moving(Z_AXIS)) { _ENDSTOP_HIT(Z, MIN); planner.endstop_triggered(Z_AXIS); }

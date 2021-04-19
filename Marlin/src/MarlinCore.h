@@ -44,6 +44,7 @@ inline void idle_no_sleep() { idle(TERN_(ADVANCED_PAUSE_FEATURE, true)); }
 
 #if ENABLED(G38_PROBE_TARGET)
   extern uint8_t G38_move;          // Flag to tell the ISR that G38 is in progress, and the type
+  extern uint8_t G38_axis_enabled;  // Bit field defining which axis endstops/probes to watch for
   extern bool G38_did_trigger;      // Flag from the ISR to indicate the endstop changed
 #endif
 
