@@ -323,6 +323,7 @@ void protected_pin_err() {
 
 void quickstop_stepper() {
   planner.quick_stop();
+  TERN_(HAS_CUTTER, cutter.kill()); // Full cutter shutdown including ISR control
   planner.synchronize();
   set_current_from_steppers_for_axis(ALL_AXES);
   sync_plan_position();
