@@ -2127,6 +2127,10 @@ void MarlinSettings::postprocess() {
         #if ENABLED(CNC_COORDINATE_SYSTEMS)
           if (!validating) (void)gcode.select_coordinate_system(-1); // Go back to machine space
           EEPROM_READ(gcode.coordinate_system);
+          #ifdef ARCDROID
+            // don't want to save offsets on portable machine
+            ZERO(gcode.coordinate_system);
+          #endif
         #else
           coordinate_system_t coordinate_system[MAX_COORDINATE_SYSTEMS];
           EEPROM_READ(coordinate_system);
