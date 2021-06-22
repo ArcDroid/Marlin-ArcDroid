@@ -28,6 +28,7 @@
 #include "../MarlinCore.h"
 #include "../module/planner.h"
 #include "../module/stepper.h"
+#include "../module/endstops.h"
 
 #if ENABLED(BABYSTEP_ALWAYS_AVAILABLE)
   #include "../gcode/gcode.h"
@@ -44,6 +45,16 @@ int16_t Babystep::accum;
 void Babystep::step_axis(const AxisEnum axis) {
   const int16_t curTodo = steps[BS_AXIS_IND(axis)]; // get rid of volatile for performance
   if (curTodo) {
+
+    if (axis == Z_AXIS && (
+         (curTodo > 0 && TEST(endstops.state(), Z_MAX))
+      || (curTodo < 0 && (endstops.state() & (_BV(Z_MIN) | _BV(Z_MIN_PROBE)) ))
+    )) {
+      // don't babystep Z past endstops
+      steps[BS_AXIS_IND(axis)] = 0;
+      return;
+    }
+
     stepper.do_babystep((AxisEnum)axis, curTodo > 0);
     if (curTodo > 0) steps[BS_AXIS_IND(axis)]--; else steps[BS_AXIS_IND(axis)]++;
   }
