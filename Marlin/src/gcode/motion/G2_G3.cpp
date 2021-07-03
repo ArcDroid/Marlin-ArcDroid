@@ -81,17 +81,17 @@ void plan_arc(
   // CCW angle of rotation between position and target from the circle center. Only one atan2() trig computation required.
   float angular_travel = ATAN2(rvec.a * rt_Y - rvec.b * rt_X, rvec.a * rt_X + rvec.b * rt_Y);
   if (angular_travel < 0) angular_travel += RADIANS(360);
+  if (clockwise) angular_travel -= RADIANS(360);
   #ifdef MIN_ARC_SEGMENTS
-    uint16_t min_segments = CEIL((MIN_ARC_SEGMENTS) * (angular_travel / RADIANS(360)));
+    uint16_t min_segments = CEIL((MIN_ARC_SEGMENTS) * (fabs(angular_travel) / RADIANS(360)));
     NOLESS(min_segments, 1U);
   #else
     constexpr uint16_t min_segments = 1;
   #endif
-  if (clockwise) angular_travel -= RADIANS(360);
 
   // Make a circle if the angular rotation is 0 and the target is current position
-  if (angular_travel == 0 && current_position[p_axis] == cart[p_axis] && current_position[q_axis] == cart[q_axis]) {
-    angular_travel = RADIANS(360);
+  if (fabs(angular_travel) <= 1e-6f && current_position[p_axis] == cart[p_axis] && current_position[q_axis] == cart[q_axis]) {
+    angular_travel = (clockwise ? -1 : +1) * RADIANS(360);
     #ifdef MIN_ARC_SEGMENTS
       min_segments = MIN_ARC_SEGMENTS;
     #endif
