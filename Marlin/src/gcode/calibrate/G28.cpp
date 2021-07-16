@@ -234,7 +234,7 @@ void GcodeSuite::G28() {
   #endif
 
   #if ENABLED(MARLIN_DEV_MODE)
-    if (parser.seen('S')) {
+    if (parser.seen_test('S')) {
       LOOP_XYZ(a) set_axis_is_at_home((AxisEnum)a);
       sync_plan_position();
       SERIAL_ECHOLNPGM("Simulated Homing");
@@ -336,11 +336,11 @@ void GcodeSuite::G28() {
 
   #else
 
-    const bool homeZ = parser.seen('Z'),
+    const bool homeZ = parser.seen_test('Z'),
                needX = homeZ && TERN0(Z_SAFE_HOMING, axes_should_home(_BV(X_AXIS))),
                needY = homeZ && TERN0(Z_SAFE_HOMING, axes_should_home(_BV(Y_AXIS))),
-               homeX = needX || parser.seen('X') TERN_(IS_SCARA, || parser.seen('Y')),
-               homeY = needY || parser.seen('Y') TERN_(IS_SCARA, || homeX),
+               homeX = needX || parser.seen_test('X') TERN_(IS_SCARA, || parser.seen_test('Y')),
+               homeY = needY || parser.seen_test('Y') TERN_(IS_SCARA, || homeX),
                home_all = homeX == homeY && homeX == homeZ, // All or None
                doX = home_all || homeX, doY = home_all || homeY, doZ = home_all || homeZ;
 

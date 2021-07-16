@@ -410,6 +410,14 @@ void Endstops::event_handler() {
     SERIAL_EOL();
 
     TERN_(HAS_STATUS_MESSAGE, ui.status_printf_P(0, PSTR(S_FMT " %c %c %c %c"), GET_TEXT(MSG_LCD_ENDSTOPS), chrX, chrY, chrZ, chrP));
+    #if BOTH(SD_ABORT_ON_ENDSTOP_HIT, SDSUPPORT) && !defined(ARCDROID)
+      if (planner.abort_on_endstop_hit) {
+        card.abortFilePrintNow();
+        quickstop_stepper();
+        thermalManager.disable_all_heaters();
+        print_job_timer.stop();
+      }
+    #endif
   }
 }
 
@@ -484,7 +492,7 @@ void _O2 Endstops::report_states() {
       uint8_t state;
       switch (i) {
         default: continue;
-        REPEAT_S(1, INCREMENT(NUM_RUNOUT_SENSORS), _CASE_RUNOUT)
+        REPEAT_1(NUM_RUNOUT_SENSORS, _CASE_RUNOUT)
       }
       SERIAL_ECHOPGM(STR_FILAMENT_RUNOUT_SENSOR);
       if (i > 1) SERIAL_CHAR(' ', '0' + i);
