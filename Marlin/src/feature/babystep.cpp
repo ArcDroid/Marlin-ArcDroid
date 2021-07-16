@@ -49,8 +49,8 @@ void Babystep::step_axis(const AxisEnum axis) {
 
     if (axis == Z_AXIS && (
          (curTodo > 0 && TEST(endstops.state(), Z_MAX))
-      || (curTodo < 0 && (endstops.state() & (_BV(Z_MIN) | _BV(Z_MIN_PROBE)) ))
-    )) {
+      || (curTodo < 0 && (0 TERN_(HAS_Z_MIN, || TEST(endstops.state(), Z_MIN)) TERN_(HAS_BED_PROBE, || TEST(endstops.state(), Z_MIN_PROBE)))
+    ))) {
       // don't babystep Z past endstops
       steps[BS_AXIS_IND(axis)] = 0;
       return;

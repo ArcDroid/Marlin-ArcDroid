@@ -41,9 +41,9 @@ enum EndstopEnum : char {
   _ES_ITEM(HAS_Z_MAX, Z_MAX)
 
   // Extra Endstops for XYZ
-  #if ENABLED(X_DUAL_ENDSTOPS)
-    _ES_ITEM(HAS_X_MIN, X2_MIN)
-    _ES_ITEM(HAS_X_MAX, X2_MAX)
+  #if ENABLED(X_DUAL_ENDSTOPS) || HAS_X2_MIN || HAS_X2_MAX
+    _ES_ITEM(HAS_X2_MIN, X2_MIN)
+    _ES_ITEM(HAS_X2_MAX, X2_MAX)
   #endif
   #if ENABLED(Y_DUAL_ENDSTOPS)
     _ES_ITEM(HAS_Y_MIN, Y2_MIN)

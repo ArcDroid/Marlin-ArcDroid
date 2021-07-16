@@ -29,7 +29,7 @@
 #include "../../../module/stepper/indirection.h"
 
 void send_axis_commands(uint8_t function, uint16_t data) {
-  LOOP_XYZE(i) if (parser.seen(axis_codes[i])) {
+  LOOP_LINEAR_AXES(i) if (parser.seen(axis_codes[i])) {
     switch (i) {
       case X_AXIS:
         #if AXIS_IS_CLOSEDLOOP(X)
@@ -171,7 +171,7 @@ void GcodeSuite::M925() {
   }
 
   // write parameters
-  LOOP_XYZE(i) if (parser.seen(axis_codes[i])) {
+  LOOP_LINEAR_AXES(i) if (parser.seen(axis_codes[i])) {
     switch (i) {
       case X_AXIS:
         #if AXIS_IS_CLOSEDLOOP(X)
@@ -201,7 +201,7 @@ void GcodeSuite::M925() {
  */
 void GcodeSuite::M924() {
   // XYZ are steps/mm
-  LOOP_XYZ(i) if (parser.seenval(axis_codes[i])) {
+  LOOP_LINEAR_AXES(i) if (parser.seenval(axis_codes[i])) {
     float pps = parser.value_float();
     switch (i) {
       case X_AXIS:
@@ -218,7 +218,7 @@ void GcodeSuite::M924() {
   }
 
   // encoder homing positions
-  LOOP_XYZ(i) if (parser.seen('I' + i)) {
+  LOOP_LINEAR_AXES(i) if (parser.seen('I' + i)) {
     // can be zero
     int offset = parser.longval('I' + i, 0);
     switch (i) {

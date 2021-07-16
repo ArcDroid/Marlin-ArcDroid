@@ -44,6 +44,6 @@ private:
       SERIAL_ECHOPGM_P(the_msg);
     }
     SERIAL_CHAR(' ');
-    print_pos(current_position);
+    ///FIXME///print_pos(current_position);
   }
 };

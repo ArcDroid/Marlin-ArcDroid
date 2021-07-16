@@ -411,7 +411,7 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
       return;
     }
     planner.set_machine_position_mm(pos);
-    set_current_from_steppers_for_axis(ALL_AXES);
+    set_current_from_steppers_for_axis(ALL_AXES_ENUM);
     planner.position_cart = cartes;
   }
 

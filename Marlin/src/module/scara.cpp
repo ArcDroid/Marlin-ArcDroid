@@ -48,7 +48,7 @@ void scara_set_arm_length(float l1, float l2) {
   scara_L12 = 2.0f * scara_L1 * scara_L2;
 
   // update cartesian position from kinematic
-  set_current_from_steppers_for_axis(ALL_AXES);
+  set_current_from_steppers_for_axis(ALL_AXES_ENUM);
   report_current_position();
 }
 
@@ -99,7 +99,7 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
        * SCARA homes XY at the same time
        */
       xyz_pos_t homeposition;
-      LOOP_XYZ(i) homeposition[i] = base_home_pos((AxisEnum)i);
+      LOOP_LINEAR_AXES(i) homeposition[i] = base_home_pos((AxisEnum)i);
 
       #if ENABLED(MORGAN_SCARA)
         // MORGAN_SCARA uses arm angles for AB home position

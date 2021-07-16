@@ -786,9 +786,9 @@ void Endstops::update() {
         || ( G38_axis_enabled & _BV(X_AXIS) && (TEST_ENDSTOP(_ENDSTOP(X2, MIN)) || TEST_ENDSTOP(_ENDSTOP(X2, MAX))) )
       )
     ) {
-           if (stepper.axis_is_moving(X_AXIS)) { _ENDSTOP_HIT(X, MIN); planner.endstop_triggered(X_AXIS); }
-      else if (stepper.axis_is_moving(Y_AXIS)) { _ENDSTOP_HIT(Y, MIN); planner.endstop_triggered(Y_AXIS); }
-      else if (stepper.axis_is_moving(Z_AXIS)) { _ENDSTOP_HIT(Z, MIN); planner.endstop_triggered(Z_AXIS); }
+           if (stepper.axis_is_moving(X_AXIS)) { _ENDSTOP_HIT(X, TERN(X_HOME_TO_MAX, MAX, MIN)); planner.endstop_triggered(X_AXIS); }
+      else if (stepper.axis_is_moving(Y_AXIS)) { _ENDSTOP_HIT(Y, TERN(Y_HOME_TO_MAX, MAX, MIN)); planner.endstop_triggered(Y_AXIS); }
+      else if (stepper.axis_is_moving(Z_AXIS)) { _ENDSTOP_HIT(Z, TERN(Z_HOME_TO_MAX, MAX, MIN)); planner.endstop_triggered(Z_AXIS); }
       G38_did_trigger = true;
     }
   #endif

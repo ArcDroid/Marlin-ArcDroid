@@ -115,7 +115,7 @@
     target = target - scara_home_offset + offset_new;
     scara_home_offset = offset_new;
     planner.set_machine_position_mm(target);
-    set_current_from_steppers_for_axis(ALL_AXES);
+    set_current_from_steppers_for_axis(ALL_AXES_ENUM);
     do_blocking_move_to(pos, homing_feedrate(X_AXIS));
     report_current_position();
   }
