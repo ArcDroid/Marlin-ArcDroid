@@ -138,13 +138,13 @@ void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos, bool calibrat
       if (axis && _BV(X_AXIS)) {
         encoderX.touch_off_encoder(motor_pos.x, calibrate_home);
         // set_position_from_encoders_force will pick it back up
-        CBI(axis_known_position, X_AXIS);
+        set_axis_untrusted(X_AXIS);
       }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
       if (axis && _BV(Y_AXIS)) {
         encoderY.touch_off_encoder(motor_pos.y, calibrate_home);
-        CBI(axis_known_position, Y_AXIS);
+        set_axis_untrusted(Y_AXIS);
       }
     #endif
 
@@ -165,10 +165,10 @@ bool closedloop_has_aligned() {
 bool closedloop_need_restore() {
     return false
     #if AXIS_IS_CLOSEDLOOP(X)
-        || (!TEST(axis_known_position, X_AXIS) && encoderX.homed)
+        || (!axis_is_trusted(X_AXIS) && encoderX.homed)
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        || (!TEST(axis_known_position, Y_AXIS) && encoderY.homed)
+        || (!axis_is_trusted(Y_AXIS) && encoderY.homed)
     #endif
     ;
 }
@@ -188,7 +188,7 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
     bool enabled_any = false;
     bool valid_position = true;
     #if AXIS_IS_CLOSEDLOOP(X)
-        if (!TEST(axis_known_position, X_AXIS) && encoderX.homed) {
+        if (!axis_is_trusted(X_AXIS) && encoderX.homed) {
             motor_pos->x = encoderX.read_encoder();
             if (isnan(motor_pos->x)) {
                 valid_position = false;
@@ -197,13 +197,13 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
             }
             else if (enable) {
                 ENABLE_STEPPER_X();
-                SBI(axis_known_position, X_AXIS);
+                set_axis_trusted(X_AXIS);
                 enabled_any = true;
             }
         }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        if (!TEST(axis_known_position, Y_AXIS) && encoderY.homed) {
+        if (!axis_is_trusted(Y_AXIS) && encoderY.homed) {
             motor_pos->y = encoderY.read_encoder();
             if (isnan(motor_pos->y)) {
                 valid_position = false;
@@ -212,7 +212,7 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
             }
             else if (enable) {
                 ENABLE_STEPPER_Y();
-                SBI(axis_known_position, Y_AXIS);
+                set_axis_trusted(Y_AXIS);
                 enabled_any = true;
             }
         }

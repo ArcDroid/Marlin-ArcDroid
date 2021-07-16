@@ -55,7 +55,6 @@
   }
 
   void report_current_position_detail() {
-
     // Position as sent by G-code
     SERIAL_ECHOPGM("\nLogical:");
     report_xyz(current_position.asLogical());
@@ -81,11 +80,7 @@
 
     #if IS_KINEMATIC
       // Kinematics applied to the leveled position
-      #if IS_SCARA
-        SERIAL_ECHOPGM("ScaraK: ");
-      #else
-        SERIAL_ECHOPGM("DeltaK: ");
-      #endif
+      SERIAL_ECHOPGM(TERN(IS_SCARA, "ScaraK: ", "DeltaK: "));
       inverse_kinematics(leveled);  // writes delta[]
       report_xyz(delta);
     #endif
@@ -106,7 +101,7 @@
             SERIAL_ECHOPAIR_F(" (", encoderX.to_mm(pos_temp));
             SERIAL_CHAR(')');
 
-            SERIAL_ECHOPAIR_F(" [o:", encoderX.get_home_offset());
+            SERIAL_ECHOPAIR(" [o:", encoderX.get_home_offset());
             SERIAL_CHAR(']');
         }
       #endif
@@ -120,7 +115,7 @@
             SERIAL_ECHOPAIR_F(" (", encoderY.to_mm(pos_temp));
             SERIAL_CHAR(')');
 
-            SERIAL_ECHOPAIR_F(" [o:", encoderY.get_home_offset());
+            SERIAL_ECHOPAIR(" [o:", encoderY.get_home_offset());
             SERIAL_CHAR(']');
         }
       #endif
@@ -216,6 +211,8 @@
     const xyze_float_t diff = from_steppers - leveled;
     SERIAL_ECHOPGM("Diff:   ");
     report_xyze(diff);
+
+    TERN_(FULL_REPORT_TO_HOST_FEATURE, report_current_grblstate_moving());
   }
 
 #endif // M114_DETAIL
@@ -268,4 +265,6 @@ void GcodeSuite::M114() {
     set_position_from_encoders_if_lost(false);
   #endif
   report_current_position_projected();
+
+  TERN_(FULL_REPORT_TO_HOST_FEATURE, report_current_grblstate_moving());
 }
