@@ -217,7 +217,7 @@ void report_current_position_projected();
 
 #if ENABLED(AUTO_REPORT_POSITION)
   #include "../libs/autoreport.h"
-  struct PositionReport { static void report() { report_current_position_projected(); } };
+  struct PositionReport { static void report() { report_real_position(); } };
   extern AutoReporter<PositionReport> position_auto_reporter;
 #endif
 
@@ -560,16 +560,4 @@ FORCE_INLINE bool all_axes_trusted()                        { return xyz_bits ==
 
 #if HAS_M206_COMMAND
   void set_home_offset(const AxisEnum axis, const float v);
-#endif
-
-
-#ifdef AUTO_REPORT_POSITION
-extern uint32_t auto_report_position_interval;
-extern uint32_t next_position_report_ms;
-void auto_report_position();
-#endif
-#if USE_SENSORLESS
-  struct sensorless_t;
-  sensorless_t start_sensorless_homing_per_axis(const AxisEnum axis);
-  void end_sensorless_homing_per_axis(const AxisEnum axis, sensorless_t enable_stealth);
 #endif

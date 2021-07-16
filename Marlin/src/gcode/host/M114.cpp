@@ -226,14 +226,6 @@
  *   R - Report the realtime position instead of projected.
  */
 void GcodeSuite::M114() {
-  #if ENABLED(AUTO_REPORT_POSITION)
-    if (parser.seen('S') && parser.has_value()) {
-      auto_report_position_interval = parser.value_int();
-      SERIAL_ECHOLNPAIR("auto_report_position_interval:", auto_report_position_interval);
-      next_position_report_ms = millis() + auto_report_position_interval;
-      return;
-    }
-  #endif
 
   #if ENABLED(M114_DETAIL)
     if (parser.seen_test('D')) {

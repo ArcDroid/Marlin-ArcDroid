@@ -35,6 +35,8 @@ void GcodeSuite::M154() {
   if (parser.seenval('S'))
     position_auto_reporter.set_interval(parser.value_byte());
 
+  if (parser.seenval('P'))
+    position_auto_reporter.set_intervalms(parser.value_ushort());
 }
 
 #endif // AUTO_REPORT_POSITION

@@ -219,21 +219,6 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
   SERIAL_ECHOPAIR_P(X_LBL, lpos.x, SP_Y_LBL, lpos.y, SP_Z_LBL, lpos.z, SP_E_LBL, lpos.e);
 }
 
-#ifdef AUTO_REPORT_POSITION
-
-uint32_t auto_report_position_interval = 0;
-uint32_t next_position_report_ms = 0;
-
-void auto_report_position() {
-  if (auto_report_position_interval && ELAPSED(millis(), next_position_report_ms)) {
-    next_position_report_ms = millis() + auto_report_position_interval;
-    PORT_REDIRECT(SerialMask::All);
-    report_real_position();
-    SERIAL_EOL();
-  }
-}
-#endif
-
 // Report the real current position according to the steppers.
 // Forward kinematics and un-leveling are applied.
 void report_real_position() {
