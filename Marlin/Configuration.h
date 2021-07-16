@@ -1019,8 +1019,10 @@
 // Used as calibration probe pins
 // E1DET connector on SKR 1.4
 #define X2_MIN_PIN P1_25
+#define HAS_X2_MIN 1
 // PWRDET connector on SKR 1.4
 #define X2_MAX_PIN P1_00
+#define HAS_X2_MAX 1
 
 /**
  * Probe Type

@@ -489,10 +489,10 @@
   #undef Z_MIN_PIN
   #define Z_MIN_PIN          -1
 #endif
-#if DISABLED(X_DUAL_ENDSTOPS) || X_HOME_DIR > 0
+#if !HAS_X2_MIN && (DISABLED(X_DUAL_ENDSTOPS) || X_HOME_DIR > 0)
   #undef X2_MIN_PIN
 #endif
-#if DISABLED(X_DUAL_ENDSTOPS) || X_HOME_DIR < 0
+#if !HAS_X2_MAX && (DISABLED(X_DUAL_ENDSTOPS) || X_HOME_DIR < 0)
   #undef X2_MAX_PIN
 #endif
 #if DISABLED(Y_DUAL_ENDSTOPS) || Y_HOME_DIR > 0
