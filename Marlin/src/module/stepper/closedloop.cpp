@@ -193,7 +193,7 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
             if (isnan(motor_pos->x)) {
                 valid_position = false;
                 encoderX.homed = false;
-                set_axis_not_trusted(X_AXIS);
+                set_axis_never_homed(X_AXIS);
             }
             else if (enable) {
                 ENABLE_STEPPER_X();
@@ -208,7 +208,7 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
             if (isnan(motor_pos->y)) {
                 valid_position = false;
                 encoderY.homed = false;
-                set_axis_not_trusted(Y_AXIS);
+                set_axis_never_homed(Y_AXIS);
             }
             else if (enable) {
                 ENABLE_STEPPER_Y();

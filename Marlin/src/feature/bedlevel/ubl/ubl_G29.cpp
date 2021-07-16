@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -28,8 +28,8 @@
 
   #include "../../../MarlinCore.h"
   #include "../../../HAL/shared/eeprom_api.h"
-  #include "../../../libs/hex_print_routines.h"
-  #include "../../../module/configuration_store.h"
+  #include "../../../libs/hex_print.h"
+  #include "../../../module/settings.h"
   #include "../../../lcd/ultralcd.h"
   #include "../../../module/stepper.h"
   #include "../../../module/planner.h"
@@ -321,7 +321,7 @@
     // Check for commands that require the printer to be homed
     if (may_move) {
       planner.synchronize();
-      if (axes_need_homing()) gcode.home_all_axes();
+      if (axes_should_home()) gcode.home_all_axes();
       TERN_(HAS_MULTI_HOTEND, if (active_extruder) tool_change(0));
     }
 
@@ -462,7 +462,7 @@
             // Manually Probe Mesh in areas that can't be reached by the probe
             //
             SERIAL_ECHOLNPGM("Manually probing unreachable points.");
-            do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+            do_z_clearance(Z_CLEARANCE_BETWEEN_PROBES);
 
             if (parser.seen('C') && !xy_seen) {
 
@@ -736,6 +736,7 @@
       uint8_t count = GRID_MAX_POINTS;
 
       mesh_index_pair best;
+      TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(best.pos, ExtUI::MESH_START));
       do {
         if (do_ubl_mesh_map) display_map(g29_map_type);
 
@@ -775,14 +776,14 @@
 
       } while (best.pos.x >= 0 && --count);
 
+      TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(best.pos, ExtUI::MESH_FINISH));
+
       // Release UI during stow to allow for PAUSE_BEFORE_DEPLOY_STOW
       TERN_(HAS_LCD_MENU, ui.release());
       probe.stow();
       TERN_(HAS_LCD_MENU, ui.capture());
 
-      #ifdef Z_AFTER_PROBING
-        probe.move_z_after_probing();
-      #endif
+      probe.move_z_after_probing();
 
       restore_ubl_active_state_and_leave();
 
@@ -858,7 +859,6 @@
       echo_and_take_a_measurement();
 
       const float z2 = measure_point_with_encoder();
-
       do_blocking_move_to_z(current_position.z + Z_CLEARANCE_BETWEEN_PROBES);
 
       const float thickness = ABS(z1 - z2);
@@ -899,7 +899,7 @@
         LCD_MESSAGEPGM(MSG_UBL_MOVING_TO_NEXT);
 
         do_blocking_move_to(ppos);
-        do_blocking_move_to_z(z_clearance);
+        do_z_clearance(z_clearance);
 
         KEEPALIVE_STATE(PAUSED_FOR_USER);
         ui.capture();
@@ -915,7 +915,7 @@
 
         if (click_and_hold()) {
           SERIAL_ECHOLNPGM("\nMesh only partially populated.");
-          do_blocking_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
+          do_z_clearance(Z_CLEARANCE_DEPLOY_PROBE);
           return restore_ubl_active_state_and_leave();
         }
 
@@ -940,7 +940,7 @@
 
     void abort_fine_tune() {
       ui.return_to_status();
-      do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+      do_z_clearance(Z_CLEARANCE_BETWEEN_PROBES);
       set_message_with_feedback(GET_TEXT(MSG_EDITING_STOPPED));
     }
 
@@ -996,6 +996,10 @@
         KEEPALIVE_STATE(PAUSED_FOR_USER);
 
         if (do_ubl_mesh_map) display_map(g29_map_type);     // Display the current point
+
+        #if IS_TFTGLCD_PANEL
+          ui.ubl_plot(lpos.x, lpos.y);   // update plot screen
+        #endif
 
         ui.refresh();
 
@@ -1415,9 +1419,7 @@
         }
 
         probe.stow();
-        #ifdef Z_AFTER_PROBING
-          probe.move_z_after_probing();
-        #endif
+        probe.move_z_after_probing();
 
         if (abort_flag) {
           SERIAL_ECHOLNPGM("?Error probing point. Aborting operation.");
@@ -1478,9 +1480,7 @@
         }
       }
       probe.stow();
-      #ifdef Z_AFTER_PROBING
-        probe.move_z_after_probing();
-      #endif
+      probe.move_z_after_probing();
 
       if (abort_flag || finish_incremental_LSF(&lsf_results)) {
         SERIAL_ECHOPGM("Could not complete LSF!");

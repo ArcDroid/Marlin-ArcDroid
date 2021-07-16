@@ -13,14 +13,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #ifdef __STM32F1__
 
 #include "../../../inc/MarlinConfig.h"
 
-#if BOTH(HAS_GRAPHICAL_LCD, FORCE_SOFT_SPI)
+#if BOTH(HAS_MARLINUI_U8GLIB, FORCE_SOFT_SPI)
 
 #include "../HAL.h"
 #include <U8glib.h>
@@ -161,5 +161,5 @@ uint8_t u8g_com_HAL_STM32F1_sw_spi_fn(u8g_t *u8g, uint8_t msg, uint8_t arg_val, 
   return 1;
 }
 
-#endif // HAS_GRAPHICAL_LCD
+#endif // HAS_MARLINUI_U8GLIB
 #endif // STM32F1

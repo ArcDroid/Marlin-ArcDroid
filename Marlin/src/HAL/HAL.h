@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #pragma once
@@ -24,6 +24,12 @@
 #include "platforms.h"
 
 #include HAL_PATH(.,HAL.h)
+
+#ifdef SERIAL_PORT_2
+  #define NUM_SERIAL 2
+#else
+  #define NUM_SERIAL 1
+#endif
 
 #define HAL_ADC_RANGE _BV(HAL_ADC_RESOLUTION)
 
@@ -38,7 +44,7 @@
 
 // String helper
 #ifndef PGMSTR
-  #define PGMSTR(NAM,STR) constexpr char NAM[] = STR
+  #define PGMSTR(NAM,STR) const char NAM[] = STR
 #endif
 
 inline void watchdog_refresh() {

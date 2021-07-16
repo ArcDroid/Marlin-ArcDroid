@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -40,7 +40,7 @@ millis_t SpindleLaser::powerup_delay = SPINDLE_LASER_POWERUP_DELAY,
          SpindleLaser::powerdown_delay = SPINDLE_LASER_POWERDOWN_DELAY;
 
 #if ENABLED(MARLIN_DEV_MODE)
-  cutter_frequency_t SpindleLaser::frequency;                         // setting PWM frequency; range: 2K - 50K
+  cutter_frequency_t SpindleLaser::frequency;                         // PWM frequency setting; range: 2K - 50K
 #endif
 #define SPINDLE_LASER_PWM_OFF ((SPINDLE_LASER_PWM_INVERT) ? 255 : 0)
 
@@ -48,13 +48,13 @@ millis_t SpindleLaser::powerup_delay = SPINDLE_LASER_POWERUP_DELAY,
 // Init the cutter to a safe OFF state
 //
 void SpindleLaser::init() {
-  OUT_WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_HIGH);       // Init spindle to off
+  OUT_WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);      // Init spindle to off
   #if ENABLED(SPINDLE_CHANGE_DIR)
     OUT_WRITE(SPINDLE_DIR_PIN, SPINDLE_INVERT_DIR ? 255 : 0);         // Init rotation to clockwise (M3)
   #endif
   #if ENABLED(SPINDLE_LASER_PWM)
     SET_PWM(SPINDLE_LASER_PWM_PIN);
-    analogWrite(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // set to lowest speed
+    analogWrite(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
   #endif
   #if ENABLED(SPINDLE_LASER_PWM) && ENABLED(HAL_CAN_SET_PWM_FREQ) && defined(SPINDLE_LASER_FREQUENCY)
     set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_FREQUENCY);
@@ -67,11 +67,14 @@ void SpindleLaser::init() {
    * Set the cutter PWM directly to the given ocr value
    */
   void SpindleLaser::set_ocr(const uint8_t ocr) {
-    WRITE(SPINDLE_LASER_ENA_PIN, SPINDLE_LASER_ACTIVE_HIGH);        // turn spindle on
+    WRITE(SPINDLE_LASER_ENA_PIN, SPINDLE_LASER_ACTIVE_STATE);         // Turn spindle on
     analogWrite(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
+    #if NEEDS_HARDWARE_PWM && SPINDLE_LASER_FREQUENCY
+      set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
+    #endif
   }
   void SpindleLaser::ocr_off() {
-    WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_HIGH);       // Turn spindle off
+    WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);        // Turn spindle off
     analogWrite(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Only write low byte
   }
 #endif
@@ -98,7 +101,7 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
       isReady = false;
     }
   #else
-    WRITE(SPINDLE_LASER_ENA_PIN, enabled() == SPINDLE_LASER_ACTIVE_HIGH);
+    WRITE(SPINDLE_LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
     isReady = true;
   #endif
   power_delay(enabled());

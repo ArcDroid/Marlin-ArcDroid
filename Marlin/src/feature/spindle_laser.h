@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #pragma once
@@ -227,7 +227,7 @@ public:
      */
 
     // Force disengage planner power control
-    static inline void inline_disable()	{
+    static inline void inline_disable() {
       isReady = false;
       unitPower = 0;
       planner.laser_inline.status.isPlanned = false;

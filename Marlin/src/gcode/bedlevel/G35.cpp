@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -28,6 +28,10 @@
 #include "../../module/planner.h"
 #include "../../module/probe.h"
 #include "../../feature/bedlevel/bedlevel.h"
+
+#if HAS_MULTI_HOTEND
+  #include "../../module/tool_change.h"
+#endif
 
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../../core/debug_out.h"
@@ -75,10 +79,9 @@ static_assert(G35_PROBE_COUNT > 2, "TRAMMING_POINT_XY requires at least 3 XY pos
  *               51 - Counter-Clockwise M5
  **/
 void GcodeSuite::G35() {
-  if (DEBUGGING(LEVELING)) {
-    DEBUG_ECHOLNPGM(">>> G35");
-    log_machine_info();
-  }
+  DEBUG_SECTION(log_G35, "G35", DEBUGGING(LEVELING));
+
+  if (DEBUGGING(LEVELING)) log_machine_info();
 
   float z_measured[G35_PROBE_COUNT] = { 0 };
 
@@ -155,7 +158,7 @@ void GcodeSuite::G35() {
 
       SERIAL_ECHOPAIR("Turn ", tramming_point_name[i],
              " ", (screw_thread & 1) == (adjust > 0) ? "Counter-Clockwise" : "Clockwise",
-             "by ", abs(full_turns), " turns");
+             " by ", abs(full_turns), " turns");
       if (minutes) SERIAL_ECHOPAIR(" and ", abs(minutes), " minutes");
       SERIAL_EOL();
     }
@@ -177,12 +180,10 @@ void GcodeSuite::G35() {
   probe.stow();
 
   // After this operation the Z position needs correction
-  set_axis_not_trusted(Z_AXIS);
+  set_axis_never_homed(Z_AXIS);
 
   // Home Z after the alignment procedure
   process_subcommands_now_P(PSTR("G28Z"));
-
-  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("<<< G35");
 }
 
 #endif // ASSISTED_TRAMMING

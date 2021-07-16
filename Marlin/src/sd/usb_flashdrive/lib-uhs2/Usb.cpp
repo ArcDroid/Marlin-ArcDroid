@@ -19,7 +19,7 @@
  * -------------------
  *
  * Circuits At Home, LTD
- * Web      :  http://www.circuitsathome.com
+ * Web      :  https://www.circuitsathome.com
  * e-mail   :  support@circuitsathome.com
  */
 /* USB functions */
@@ -640,7 +640,6 @@ again:
  * 7: for (each driver) {
  *      7a: Ask device if it knows this VID/PID. Acts exactly like 6a, but using VID/PID
  * 8: if we get here, no driver likes the device plugged in, so exit failure.
- *
  */
 uint8_t USB::Configuring(uint8_t parent, uint8_t port, bool lowspeed) {
   //uint8_t bAddress = 0;

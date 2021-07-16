@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -28,12 +28,12 @@
 
 #if BOTH(HAS_LCD_MENU, AUTO_BED_LEVELING_UBL)
 
-#include "menu.h"
+#include "menu_item.h"
 #include "../../gcode/gcode.h"
 #include "../../gcode/queue.h"
 #include "../../module/motion.h"
 #include "../../module/planner.h"
-#include "../../module/configuration_store.h"
+#include "../../module/settings.h"
 #include "../../feature/bedlevel/bedlevel.h"
 
 static int16_t ubl_storage_slot = 0,
@@ -59,15 +59,20 @@ inline float rounded_mesh_value() {
 static void _lcd_mesh_fine_tune(PGM_P const msg) {
   ui.defer_status_screen();
   if (ubl.encoder_diff) {
-    mesh_edit_accumulator += ubl.encoder_diff > 0 ? 0.005f : -0.005f;
+    mesh_edit_accumulator += TERN(IS_TFTGLCD_PANEL,
+      ubl.encoder_diff * 0.005f / ENCODER_PULSES_PER_STEP,
+      ubl.encoder_diff > 0 ? 0.005f : -0.005f
+    );
     ubl.encoder_diff = 0;
-    ui.refresh(LCDVIEW_CALL_REDRAW_NEXT);
+    TERN(IS_TFTGLCD_PANEL,,ui.refresh(LCDVIEW_CALL_REDRAW_NEXT));
   }
+  TERN_(IS_TFTGLCD_PANEL, ui.refresh(LCDVIEW_CALL_REDRAW_NEXT));
 
   if (ui.should_draw()) {
     const float rounded_f = rounded_mesh_value();
     MenuEditItemBase::draw_edit_screen(msg, ftostr43sign(rounded_f));
     TERN_(MESH_EDIT_GFX_OVERLAY, _lcd_zoffset_overlay_gfx(rounded_f));
+    TERN_(HAS_GRAPHICAL_TFT, ui.refresh(LCDVIEW_NONE));
   }
 }
 
@@ -77,6 +82,7 @@ static void _lcd_mesh_fine_tune(PGM_P const msg) {
 float lcd_mesh_edit() { return rounded_mesh_value(); }
 
 void lcd_mesh_edit_setup(const float &initial) {
+  TERN_(HAS_GRAPHICAL_TFT, ui.clear_lcd());
   mesh_edit_accumulator = initial;
   ui.goto_screen([]{ _lcd_mesh_fine_tune(GET_TEXT(MSG_MESH_EDIT_Z)); });
 }
@@ -196,21 +202,36 @@ void _lcd_ubl_edit_mesh() {
    * UBL Validate Mesh submenu
    *
    * << UBL Tools
-   *    Mesh Validation with Material 1
-   *    Mesh Validation with Material 2
+   *    Mesh Validation with Material 1 up to 5
    *    Validate Custom Mesh
    * << Info Screen
    */
   void _lcd_ubl_validate_mesh() {
     START_MENU();
     BACK_ITEM(MSG_UBL_TOOLS);
-    #if HAS_HEATED_BED
-      GCODES_ITEM(MSG_UBL_VALIDATE_MESH_M1, PSTR("G28\nG26 C B" STRINGIFY(PREHEAT_1_TEMP_BED) " H" STRINGIFY(PREHEAT_1_TEMP_HOTEND) " P"));
-      GCODES_ITEM(MSG_UBL_VALIDATE_MESH_M2, PSTR("G28\nG26 C B" STRINGIFY(PREHEAT_2_TEMP_BED) " H" STRINGIFY(PREHEAT_2_TEMP_HOTEND) " P"));
-    #else
-      GCODES_ITEM(MSG_UBL_VALIDATE_MESH_M1, PSTR("G28\nG26 C B0 H" STRINGIFY(PREHEAT_1_TEMP_HOTEND) " P"));
-      GCODES_ITEM(MSG_UBL_VALIDATE_MESH_M2, PSTR("G28\nG26 C B0 H" STRINGIFY(PREHEAT_2_TEMP_HOTEND) " P"));
-    #endif
+    #if PREHEAT_COUNT
+      #if HAS_HEATED_BED
+        #define VALIDATE_MESH_GCODE_ITEM(M) \
+          GCODES_ITEM_N_S(M, ui.get_preheat_label(M), MSG_UBL_VALIDATE_MESH_M, PSTR("G28\nG26 C P I" STRINGIFY(M)))
+      #else
+        #define VALIDATE_MESH_GCODE_ITEM(M) \
+          GCODES_ITEM_N_S(M, ui.get_preheat_label(M), MSG_UBL_VALIDATE_MESH_M, PSTR("G28\nG26 C P B0 I" STRINGIFY(M)))
+      #endif
+
+      VALIDATE_MESH_GCODE_ITEM(0);
+      #if PREHEAT_COUNT > 1
+        VALIDATE_MESH_GCODE_ITEM(1);
+        #if PREHEAT_COUNT > 2
+          VALIDATE_MESH_GCODE_ITEM(2);
+          #if PREHEAT_COUNT > 3
+            VALIDATE_MESH_GCODE_ITEM(3);
+            #if PREHEAT_COUNT > 4
+              VALIDATE_MESH_GCODE_ITEM(4);
+            #endif
+          #endif
+        #endif
+      #endif
+    #endif // PREHEAT_COUNT
     ACTION_ITEM(MSG_UBL_VALIDATE_CUSTOM_MESH, _lcd_ubl_validate_custom_mesh);
     ACTION_ITEM(MSG_INFO_SCREEN, ui.return_to_status);
     END_MENU();
@@ -292,8 +313,7 @@ void _lcd_ubl_invalidate() {
  * UBL Build Mesh submenu
  *
  * << UBL Tools
- *    Build Mesh with Material 1
- *    Build Mesh with Material 2
+ *    Build Mesh with Material 1 up to 5
  *  - Build Custom Mesh >>
  *    Build Cold Mesh
  *  - Fill-in Mesh >>
@@ -305,37 +325,36 @@ void _lcd_ubl_invalidate() {
 void _lcd_ubl_build_mesh() {
   START_MENU();
   BACK_ITEM(MSG_UBL_TOOLS);
-  #if HAS_HEATED_BED
-    GCODES_ITEM(MSG_UBL_BUILD_MESH_M1, PSTR(
-      "G28\n"
-      "M190 S" STRINGIFY(PREHEAT_1_TEMP_BED) "\n"
-      "M109 S" STRINGIFY(PREHEAT_1_TEMP_HOTEND) "\n"
-      "G29 P1\n"
-      "M104 S0\n"
-      "M140 S0"
-    ));
-    GCODES_ITEM(MSG_UBL_BUILD_MESH_M2, PSTR(
-      "G28\n"
-      "M190 S" STRINGIFY(PREHEAT_2_TEMP_BED) "\n"
-      "M109 S" STRINGIFY(PREHEAT_2_TEMP_HOTEND) "\n"
-      "G29 P1\n"
-      "M104 S0\n"
-      "M140 S0"
-    ));
-  #else
-    GCODES_ITEM(MSG_UBL_BUILD_MESH_M1, PSTR(
-      "G28\n"
-      "M109 S" STRINGIFY(PREHEAT_1_TEMP_HOTEND) "\n"
-      "G29 P1\n"
-      "M104 S0"
-    ));
-    GCODES_ITEM(MSG_UBL_BUILD_MESH_M2, PSTR(
-      "G28\n"
-      "M109 S" STRINGIFY(PREHEAT_2_TEMP_HOTEND) "\n"
-      "G29 P1\n"
-      "M104 S0"
-    ));
-  #endif
+  #if PREHEAT_COUNT
+    #if HAS_HEATED_BED
+      #define PREHEAT_BED_GCODE(M) "M190 I" STRINGIFY(M) "\n"
+    #else
+      #define PREHEAT_BED_GCODE(M) ""
+    #endif
+    #define BUILD_MESH_GCODE_ITEM(M) GCODES_ITEM_S(ui.get_preheat_label(M), MSG_UBL_BUILD_MESH_M, \
+      PSTR( \
+        "G28\n" \
+        PREHEAT_BED_GCODE(M) \
+        "M109 I" STRINGIFY(M) "\n" \
+        "G29 P1\n" \
+        "M104 S0\n" \
+        "M140 S0" \
+      ) )
+    BUILD_MESH_GCODE_ITEM(0);
+    #if PREHEAT_COUNT > 1
+      BUILD_MESH_GCODE_ITEM(1);
+      #if PREHEAT_COUNT > 2
+        BUILD_MESH_GCODE_ITEM(2);
+        #if PREHEAT_COUNT > 3
+          BUILD_MESH_GCODE_ITEM(3);
+          #if PREHEAT_COUNT > 4
+            BUILD_MESH_GCODE_ITEM(4);
+          #endif
+        #endif
+      #endif
+    #endif
+  #endif // PREHEAT_COUNT
+
   SUBMENU(MSG_UBL_BUILD_CUSTOM_MESH, _lcd_ubl_custom_mesh);
   GCODES_ITEM(MSG_UBL_BUILD_COLD_MESH, PSTR("G28\nG29 P1"));
   SUBMENU(MSG_UBL_FILLIN_MESH, _menu_ubl_fillin);
@@ -436,15 +455,15 @@ void ubl_map_screen() {
 
     #if IS_KINEMATIC
       // Index of the mesh point upon entry
-      const uint32_t old_pos_index = grid_index(x_plot, y_plot);
+      const int32_t old_pos_index = grid_index(x_plot, y_plot);
       // Direction from new (unconstrained) encoder value
       const int8_t step_dir = int32_t(ui.encoderPosition) < old_pos_index ? -1 : 1;
     #endif
 
     do {
       // Now, keep the encoder position within range
-      if (int32_t(ui.encoderPosition) < 0) ui.encoderPosition = GRID_MAX_POINTS - 1;
-      if (int32_t(ui.encoderPosition) > GRID_MAX_POINTS - 1) ui.encoderPosition = 0;
+      if (int32_t(ui.encoderPosition) < 0) ui.encoderPosition = GRID_MAX_POINTS + TERN(TOUCH_SCREEN, ui.encoderPosition, -1);
+      if (int32_t(ui.encoderPosition) > GRID_MAX_POINTS - 1) ui.encoderPosition = TERN(TOUCH_SCREEN, ui.encoderPosition - GRID_MAX_POINTS, 0);
 
       // Draw the grid point based on the encoder
       x = ui.encoderPosition % (GRID_MAX_POINTS_X);
