@@ -407,10 +407,10 @@ bool Probe::set_deployed(const bool deploy) {
   // Make room for probe to deploy (or stow)
   // Fix-mounted probe should only raise for deploy
   // unless PAUSE_BEFORE_DEPLOY_STOW is enabled
-  #if EITHER(FIX_MOUNTED_PROBE, NOZZLE_AS_PROBE) && DISABLED(PAUSE_BEFORE_DEPLOY_STOW)
-    const bool z_raise_wanted = deploy;
-  #elif ENABLED(NO_RAISE_PROBE)
+  #if ENABLED(NO_RAISE_PROBE)
     constexpr bool z_raise_wanted = false;
+  #elif EITHER(FIX_MOUNTED_PROBE, NOZZLE_AS_PROBE) && DISABLED(PAUSE_BEFORE_DEPLOY_STOW)
+    const bool z_raise_wanted = deploy;
   #else
     constexpr bool z_raise_wanted = true;
   #endif
@@ -615,6 +615,12 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
   // Stop the probe before it goes too low to prevent damage.
   // If Z isn't known then probe to -10mm.
   const float z_probe_low_point = axis_is_trusted(Z_AXIS) ? -offset.z + Z_PROBE_LOW_POINT : -10.0;
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+      DEBUG_ECHOPAIR("z_probe_low_point: ", z_probe_low_point);
+      DEBUG_EOL();
+    }
+  #endif
 
   // Double-probing does a fast probe followed by a slow probe
   #if TOTAL_PROBING == 2

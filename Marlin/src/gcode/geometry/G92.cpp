@@ -59,7 +59,7 @@ void GcodeSuite::G92() {
   switch (subcode_G92) {
     default: return;                                                  // Ignore unknown G92.x
 
-    #if ENABLED(CNC_COORDINATE_SYSTEMS) && !IS_SCARA
+    #if ENABLED(CNC_COORDINATE_SYSTEMS)
       case 1:                                                         // G92.1 - Zero the Workspace Offset
         LOOP_XYZ(i) if (position_shift[i]) {
           position_shift[i] = 0;
@@ -80,6 +80,7 @@ void GcodeSuite::G92() {
         break;
     #endif
 
+      case 0:
       #if HAS_CLOSEDLOOP_CONFIG
         set_position_from_encoders_if_lost(false);
       #endif
@@ -89,8 +90,8 @@ void GcodeSuite::G92() {
                       v = i == E_AXIS ? l : LOGICAL_TO_NATIVE(l, i),  // Axis position in NATIVE space (applying the existing offset)
                       d = v - current_position[i];                    // How much is the current axis position altered by?
           if (!NEAR_ZERO(d)) {
-            //// FIXME was: #if IS_SCARA || !HAS_POSITION_SHIFT
-            #if !HAS_POSITION_SHIFT
+
+            #if IS_KINEMATIC || !HAS_POSITION_SHIFT
               if (i == E_AXIS) {
                 sync_E = true;
                 current_position.e = v;                               // ...E is still set directly

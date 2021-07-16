@@ -67,8 +67,8 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
   void forward_kinematics(const_float_t a, const_float_t b) {
     const float a_sin = sin(RADIANS(a)) * scara_L1,
                 a_cos = cos(RADIANS(a)) * scara_L1,
-                b_sin = sin(RADIANS(SUM_TERN(MP_SCARA, b, a))) * scara_L2,
-                b_cos = cos(RADIANS(SUM_TERN(MP_SCARA, b, a))) * scara_L2;
+                b_sin = sin(RADIANS(SUM_TERN(MP_SCARA || ARCDROID, b, a))) * scara_L2,
+                b_cos = cos(RADIANS(SUM_TERN(MP_SCARA || ARCDROID, b, a))) * scara_L2;
 
     cartes.x = a_cos + b_cos + scara_offset.x;  // theta
     cartes.y = a_sin + b_sin + scara_offset.y;  // phi
@@ -161,7 +161,7 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
 
     //DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
 
-    delta.set(DEGREES(THETA), DEGREES(SUM_TERN(MORGAN_SCARA, PSI, THETA)), raw.z);
+    delta.set(DEGREES(THETA), DEGREES(TERN(ARCDROID, PSI, SUM_TERN(MORGAN_SCARA, PSI, THETA))), raw.z);
 
     /**
       DEBUG_POS("SCARA IK", raw);
