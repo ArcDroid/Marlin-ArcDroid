@@ -3221,6 +3221,8 @@
 //#define SPINDLE_LASER_PWM_PIN 2
 #endif
 
+#define SPINDLE_LASER_INHIBIT_PIN P1_22
+
 // disable bed heat, using that pin for torch
 #define HEATER_BED_PIN -1
 

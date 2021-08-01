@@ -93,7 +93,7 @@ void SpindleLaser::init() {
   }
 
   void SpindleLaser::set_ocr(const uint8_t ocr) {
-    WRITE(SPINDLE_LASER_ENA_PIN,  SPINDLE_LASER_ACTIVE_STATE); // Cutter ON
+    WRITE(SPINDLE_LASER_ENA_PIN, ocr > 0 ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE); // Cutter ON
     _set_ocr(ocr);
   }
 
@@ -108,9 +108,17 @@ void SpindleLaser::init() {
 //
 void SpindleLaser::apply_power(const uint8_t opwr) {
   static uint8_t last_power_applied = 0;
-  if (opwr == last_power_applied) return;
-  last_power_applied = opwr;
-  power = opwr;
+  uint8_t req_pwr = opwr;
+  #ifdef SPINDLE_LASER_INHIBIT_PIN
+    static bool last_inhibit = 0;
+    const bool inhibit = READ(SPINDLE_LASER_INHIBIT_PIN);
+    if (inhibit) {
+      req_pwr = 0;
+    }
+  #endif
+  if (req_pwr == last_power_applied) return;
+  last_power_applied = req_pwr;
+  power = req_pwr;
   #if ENABLED(SPINDLE_LASER_PWM)
     if (cutter.unitPower == 0 && CUTTER_UNIT_IS(RPM)) {
       ocr_off();
