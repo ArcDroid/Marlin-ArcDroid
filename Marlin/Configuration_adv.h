@@ -3086,7 +3086,7 @@
     // encoder 4096 pulses/step, stepper 32 usteps/step
     #define X_ENCODER_PPS (-4096.0/32.0)
     #else
-    #define X_ENCODER_PPS (4096.0/64.0)
+    #define X_ENCODER_PPS (4096.0/32.0)
     #endif
     #define X_ENCODER_PPR 819200
     ////#define X_ENCODER_SERIAL_RX_PIN P1_23
@@ -3099,7 +3099,7 @@
     #ifdef MINI_MODEL_2AM
     #define Y_ENCODER_PPS (4096.0/32.0)
     #else
-    #define Y_ENCODER_PPS (4096.0/64.0)
+    #define Y_ENCODER_PPS (4096.0/32.0)
     #endif
     #define Y_ENCODER_PPR 819200
     ////#define Y_ENCODER_SERIAL_RX_PIN P1_21
