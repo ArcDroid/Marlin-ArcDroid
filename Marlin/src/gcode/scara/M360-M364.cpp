@@ -120,7 +120,7 @@ void GcodeSuite::M365() {
 
   const bool hasA = parser.seenval('A'), hasP = parser.seenval('P'), hasX = parser.seenval('X');
   const uint8_t sumAPX = hasA + hasP + hasX;
-  float l1 = scara_L1, l2 = scara_L2;
+  float l1 = scara_L1_base, l2 = scara_L2_base;
   bool setAny = false;
   if (sumAPX) {
     if (sumAPX == 1) {
@@ -150,7 +150,7 @@ void GcodeSuite::M365() {
     scara_set_arm_length(l1, l2);
   }
 
-  SERIAL_ECHOLNPAIR("SCARA L1:", scara_L1, " L2:", scara_L2);
+  SERIAL_ECHOLNPAIR("SCARA L1:", scara_L1_base, " L2:", scara_L2_base);
 }
 
 #endif // MORGAN_SCARA

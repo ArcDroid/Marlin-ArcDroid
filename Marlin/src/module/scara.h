@@ -40,7 +40,7 @@ extern float segments_per_second;
 
 #else
 
-  extern float scara_L1, scara_L2, scara_L1_2_2, scara_L12;
+  extern float scara_L1_base, scara_L2_base;
 
   void forward_kinematics(const_float_t a, const_float_t b);
 
@@ -49,5 +49,6 @@ extern float segments_per_second;
 void inverse_kinematics(const xyz_pos_t &raw);
 void scara_set_axis_is_at_home(const AxisEnum axis);
 void scara_report_positions();
+void kinematics_apply_tool_offset(uint8_t new_tool, uint8_t old_tool);
 
 void scara_set_arm_length(float l1, float l2);

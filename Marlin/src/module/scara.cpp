@@ -37,19 +37,33 @@
   #include "../MarlinCore.h"
 #endif
 
+float scara_L1_base = SCARA_LINKAGE_1,
+      scara_L2_base = SCARA_LINKAGE_2;
+
 float scara_L1 = SCARA_LINKAGE_1, scara_L2 = SCARA_LINKAGE_2,
       scara_L1_2_2 = sq(float(scara_L1)) + sq(float(scara_L2)),
       scara_L12 = 2.0f * scara_L1 * scara_L2;
 
-void scara_set_arm_length(float l1, float l2) {
-  scara_L1 = l1;
-  scara_L2 = l2;
-  scara_L1_2_2 = sq(scara_L1) + sq(scara_L2),
+float scara_tool_offset_B = 0;
+
+void scara_cache_geometry(uint8_t tool_number) {
+  scara_L1 = scara_L1_base;
+  scara_L2 = scara_L2_base + hotend_offset[tool_number].a;
+  scara_L1_2_2 = sq(scara_L1) + sq(scara_L2);
   scara_L12 = 2.0f * scara_L1 * scara_L2;
+
+  scara_tool_offset_B = hotend_offset[tool_number].b;
 
   // update cartesian position from kinematic
   set_current_from_steppers_for_axis(ALL_AXES_ENUM);
   report_current_position();
+}
+
+void scara_set_arm_length(float l1, float l2) {
+  scara_L1_base = l1;
+  scara_L2_base = l2;
+
+  scara_cache_geometry(active_extruder);
 }
 
 
@@ -67,8 +81,8 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
   void forward_kinematics(const_float_t a, const_float_t b) {
     const float a_sin = sin(RADIANS(a)) * scara_L1,
                 a_cos = cos(RADIANS(a)) * scara_L1,
-                b_sin = sin(RADIANS(SUM_TERN(MP_SCARA || ARCDROID, b, a))) * scara_L2,
-                b_cos = cos(RADIANS(SUM_TERN(MP_SCARA || ARCDROID, b, a))) * scara_L2;
+                b_sin = sin(RADIANS(SUM_TERN(MP_SCARA || ARCDROID, b, a) + scara_tool_offset_B)) * scara_L2,
+                b_cos = cos(RADIANS(SUM_TERN(MP_SCARA || ARCDROID, b, a) + scara_tool_offset_B)) * scara_L2;
 
     cartes.x = a_cos + b_cos + scara_offset.x;  // theta
     cartes.y = a_sin + b_sin + scara_offset.y;  // phi
@@ -161,13 +175,17 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
 
     //DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
 
-    delta.set(DEGREES(THETA), DEGREES(TERN(ARCDROID, PSI, SUM_TERN(MORGAN_SCARA, PSI, THETA))), raw.z);
+    delta.set(DEGREES(THETA), DEGREES(TERN(ARCDROID, PSI, SUM_TERN(MORGAN_SCARA, PSI, THETA))) - scara_tool_offset_B, raw.z);
 
     /**
       DEBUG_POS("SCARA IK", raw);
       DEBUG_POS("SCARA IK", delta);
       DEBUG_ECHOLNPAIR("  SCARA (x,y) ", spos.x, ",", spos.y, " C2=", C2, " S2=", S2, " Theta=", THETA, " Psi=", PSI);
       //*/
+  }
+
+  void kinematics_apply_tool_offset(uint8_t new_tool, uint8_t old_tool) {
+    scara_cache_geometry(new_tool);
   }
 
 #elif ENABLED(MP_SCARA)

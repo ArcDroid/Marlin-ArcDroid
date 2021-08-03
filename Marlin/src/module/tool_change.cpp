@@ -1174,8 +1174,12 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
       (void)check_tool_sensor_stats(active_extruder, true);
 
       // The newly-selected extruder XYZ is actually at...
-      DEBUG_ECHOLNPAIR("Offset Tool XYZ by { ", diff.x, ", ", diff.y, ", ", diff.z, " }");
-      current_position += diff;
+      #if defined(KINEMATIC_TOOL_OFFSET) && defined(HAS_HOTEND_OFFSET) && HAS_HOTEND_OFFSET
+        kinematics_apply_tool_offset(new_tool, old_tool);
+      #else
+        DEBUG_ECHOLNPAIR("Offset Tool XYZ by { ", diff.x, ", ", diff.y, ", ", diff.z, " }");
+        current_position += diff;
+      #endif
 
       // Tell the planner the new "current position"
       sync_plan_position();

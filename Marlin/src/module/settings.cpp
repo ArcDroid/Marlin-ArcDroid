@@ -1417,8 +1417,8 @@ void MarlinSettings::postprocess() {
 
 
     #if IS_SCARA
-      float scara_l1 = scara_L1;
-      float scara_l2 = scara_L2;
+      float scara_l1 = scara_L1_base;
+      float scara_l2 = scara_L2_base;
       _FIELD_TEST(scara_l1);
       EEPROM_WRITE(scara_l1);
       _FIELD_TEST(scara_l2);
@@ -3463,8 +3463,8 @@ void MarlinSettings::reset() {
       CONFIG_ECHO_HEADING("SCARA geometry: X<L1-length> Y<L2-length>");
       CONFIG_ECHO_START();
       SERIAL_ECHOLNPAIR_P(
-          PSTR("  M365 X"), scara_L1
-        , SP_Y_STR, scara_L2
+          PSTR("  M365 X"), scara_L1_base
+        , SP_Y_STR, scara_L2_base
       );
 
     #elif ENABLED(DELTA)

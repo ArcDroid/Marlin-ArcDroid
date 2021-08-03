@@ -65,6 +65,9 @@ void GcodeSuite::M218() {
   #if ENABLED(DELTA)
     if (target_extruder == active_extruder)
       do_blocking_move_to_xy(current_position, planner.settings.max_feedrate_mm_s[X_AXIS]);
+  #elif defined(KINEMATIC_TOOL_OFFSET)
+    if (target_extruder == active_extruder)
+      kinematics_apply_tool_offset(active_extruder, active_extruder);
   #endif
 }
 

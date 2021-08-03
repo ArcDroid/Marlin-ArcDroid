@@ -719,6 +719,7 @@ void restore_feedrate_and_scaling() {
       //DEBUG_ECHOLNPAIR("delta_max_radius", SCARA_PRINTABLE_RADIUS);
       delta_max_radius = SCARA_PRINTABLE_RADIUS;
       delta_max_radius_2 = sq(SCARA_PRINTABLE_RADIUS);
+      //// PPR-FIXME: use programmable arm length here
 
     #elif HAS_HOTEND_OFFSET
 
