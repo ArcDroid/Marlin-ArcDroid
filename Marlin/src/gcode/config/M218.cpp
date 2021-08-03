@@ -44,11 +44,14 @@ void GcodeSuite::M218() {
   const int8_t target_extruder = get_target_extruder_from_command();
   if (target_extruder < 0) return;
 
-  if (parser.seenval('X')) hotend_offset[target_extruder].x = parser.value_linear_units();
-  if (parser.seenval('Y')) hotend_offset[target_extruder].y = parser.value_linear_units();
-  if (parser.seenval('Z')) hotend_offset[target_extruder].z = parser.value_linear_units();
+  // tool 0 always has zero offset
+  if (target_extruder >= 0) {
+    if (parser.seenval('X')) hotend_offset[target_extruder].x = parser.value_linear_units();
+    if (parser.seenval('Y')) hotend_offset[target_extruder].y = parser.value_linear_units();
+    if (parser.seenval('Z')) hotend_offset[target_extruder].z = parser.value_linear_units();
+  }
 
-  if (!parser.seen("XYZ")) {
+  if (!parser.seen("XYZ") || target_extruder == 0) {
     SERIAL_ECHO_START();
     SERIAL_ECHOPGM(STR_HOTEND_OFFSET);
     HOTEND_LOOP() {
