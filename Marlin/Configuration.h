@@ -125,6 +125,8 @@
 #define STRING_CONFIG_H_AUTHOR "(igor.yeremin@gmail.com)" // Who made the changes.
 //#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
+#define SHORT_BUILD_VERSION AUTO_VERSION
+
 /**
  * *** VENDORS PLEASE READ ***
  *
