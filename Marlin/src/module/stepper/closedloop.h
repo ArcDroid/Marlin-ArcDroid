@@ -115,19 +115,16 @@ class ClosedLoopMarlin : public S42BClosedLoop {
         return planner.settings.axis_steps_per_mm[AXIS_ID] * encoder_counts_per_step;
     }
 
-    void touch_off_encoder(float new_position, bool calibrate_home) {
+    bool touch_off_encoder(float new_position, bool calibrate_home) {
         int32_t pos = new_position * encoder_counts_per_unit();
         int32_t raw_read = readPosition();
         int32_t error = S42BClosedLoop::positionIsError(raw_read);
         if (error != 0) {
-            SERIAL_ECHO("touch_off_encoder err:");
-            SERIAL_ECHO(error);
-            SERIAL_ECHO("axis:");
-            SERIAL_ECHO(AXIS_LETTER);
-            idle();
-            idle();
-            idle();
-            kill(PSTR("touch_off_encoder could not read encoder"));
+            homed = false;
+            SERIAL_ERROR_MSG("touch_off_encoder Axis:", ((const char[]){ AXIS_LETTER, '\0'})
+                ,"Error:", error
+                );
+            return false;
         }
 
         // measured offset from switch position to expected encoder count
@@ -188,11 +185,12 @@ class ClosedLoopMarlin : public S42BClosedLoop {
             // save new offset
             home_pulse = expected_offset;
 
-            SERIAL_ECHO("INFO: touch_off_encoder calibrated ");
+            SERIAL_ECHO("debug: touch_off_encoder calibrated ");
             SERIAL_CHAR(AXIS_LETTER);
             SERIAL_ECHO(" offset: ");
             SERIAL_ECHOLN(home_pulse);
         }
+        return true;
     }
 
     float to_mm(int32_t enc_count_noscale) {

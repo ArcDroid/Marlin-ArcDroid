@@ -1176,6 +1176,7 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
       // The newly-selected extruder XYZ is actually at...
       #if defined(KINEMATIC_TOOL_OFFSET) && defined(HAS_HOTEND_OFFSET) && HAS_HOTEND_OFFSET
         kinematics_apply_tool_offset(new_tool, old_tool);
+        UNUSED(diff);
       #else
         DEBUG_ECHOLNPAIR("Offset Tool XYZ by { ", diff.x, ", ", diff.y, ", ", diff.z, " }");
         current_position += diff;

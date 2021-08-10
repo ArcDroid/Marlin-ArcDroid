@@ -231,11 +231,6 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
             ,"Y:", encoderY.last_error
         #endif
             );
-        SERIAL_FLUSHTX();
-        idle();
-        if (enable) {
-            kill(PSTR("encoder error"), PSTR("failed read"), true);
-        }
     }
 
     return valid_position;
