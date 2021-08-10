@@ -144,7 +144,7 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
    * Integrated into Marlin and slightly restructured by Joachim Cerny.
    */
   void inverse_kinematics(const xyz_pos_t &raw) {
-    float C2, S2, SK1, SK2, THETA, PSI;
+    double C2, S2, SK1, SK2, THETA, PSI;
 
     // Translate SCARA to standard XY with scaling factor
     const xy_pos_t spos = raw - scara_offset;
@@ -153,25 +153,25 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
     //DEBUG_ECHOLNPAIR("raw  = ", raw.x, ",", raw.y);
     //DEBUG_ECHOLNPAIR("spos = ", spos.x, ",", spos.y);
 
-    const float H2 = HYPOT2(spos.x, spos.y);
+    const double H2 = (double)spos.x*spos.x + (double)spos.y*spos.y;
     // cosine position of spos relative to arm1
-    C2 = (H2 - scara_L1_2_2) / scara_L12;
+    C2 = (H2 - (double)scara_L1_2_2) / (double)scara_L12;
 
     // sine position of spos relative to arm1
 
-    S2 = SQRT(1.0f - sq(C2));
+    S2 = sqrt(1.0 - sq(C2));
 
     // Unrotated Arm1 plus rotated Arm2 gives the distance from Center to End
-    SK1 = scara_L1 + scara_L2 * C2;
+    SK1 = (double)scara_L1 + (double)scara_L2 * C2;
 
     // Rotated Arm2 gives the distance from Arm1 to Arm2
-    SK2 = scara_L2 * S2;
+    SK2 = (double)scara_L2 * S2;
 
     // Angle of Arm1 is the difference between Center-to-End angle and the Center-to-Elbow
-    THETA = ATAN2(spos.y, spos.x) - ATAN2(SK2, SK1);
+    THETA = atan2((double)spos.y, (double)spos.x) - atan2(SK2, SK1);
 
     // Angle of Arm2
-    PSI = ATAN2(S2, C2) + THETA;
+    PSI = acos(C2) + THETA; //// atan2(S2, C2) + THETA;
 
     //DEBUG_ECHOLNPAIR("THETA = ", DEGREES(THETA), " PSI = ", DEGREES(PSI));
 
