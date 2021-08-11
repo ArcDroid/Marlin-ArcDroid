@@ -30,10 +30,14 @@
 #include "../../module/planner.h"
 #include "../../MarlinCore.h" // for IsRunning()
 
-inline bool SCARA_move_to_cal(const uint8_t delta_a, const uint8_t delta_b) {
+bool SCARA_move_to_cal(const uint8_t delta_a, const uint8_t delta_b) {
   if (IsRunning()) {
-    forward_kinematics(delta_a, delta_b);
-    do_blocking_move_to_xy(cartes);
+
+    abce_pos_t target = planner.get_axis_positions_mm();
+    target.a = delta_a;
+    target.b = delta_b;
+    planner.buffer_segment(target.a, target.b, target.c, target.e, homing_feedrate(X_AXIS), active_extruder);
+    planner.synchronize();
     return true;
   }
   return false;

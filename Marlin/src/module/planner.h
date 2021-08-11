@@ -745,6 +745,7 @@ class Planner {
       // Allow do_homing_move to access internal functions, such as buffer_segment.
       friend void do_homing_move(const AxisEnum, const float, const feedRate_t, const bool);
       friend void quick_home_xy();
+      friend bool SCARA_move_to_cal(const uint8_t delta_a, const uint8_t delta_b);
   #endif
 
     /**
