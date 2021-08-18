@@ -86,7 +86,7 @@ void plan_arc(
   float angular_travel;
 
   // Do a full circle if starting and ending positions are "identical"
-  if (NEAR(current_position[p_axis], cart[p_axis]) && NEAR(current_position[q_axis], cart[q_axis])) {
+  if (WITHIN(current_position[p_axis] - cart[p_axis], -0.005f, 0.005f) && WITHIN(current_position[q_axis] - cart[q_axis], -0.005f, 0.005f)) {
     // Preserve direction for circles
     angular_travel = clockwise ? -RADIANS(360) : RADIANS(360);
   }
