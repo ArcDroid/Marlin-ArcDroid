@@ -30,7 +30,7 @@
 #include "../../module/planner.h"
 #include "../../MarlinCore.h" // for IsRunning()
 
-bool SCARA_move_to_cal(const uint8_t delta_a, const uint8_t delta_b) {
+bool SCARA_move_to_cal(const float delta_a, const float delta_b) {
   if (IsRunning()) {
 
     abce_pos_t target = planner.get_axis_positions_mm();
