@@ -241,6 +241,9 @@ void report_real_position() {
     cartes = backup_cart;
     enc_xyz.z = pos.z;
 
+    abce_pos_t expected = planner.get_axis_positions_mm();
+    float da = pos.a - expected.a;
+    float db = pos.b - expected.b;
 
   #endif
   // get_cartesian_from_steppers();
@@ -249,6 +252,7 @@ void report_real_position() {
   npos.e = planner.get_axis_position_mm(E_AXIS);
   TERN_(HAS_POSITION_MODIFIERS, planner.unapply_modifiers(npos, true));
   report_logical_position(npos);
+  SERIAL_ECHOPAIR(" ErrA:", da, " ErrB:", db);
   report_more_positions();
 }
 
