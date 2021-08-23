@@ -223,10 +223,29 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
 // Forward kinematics and un-leveling are applied.
 void report_real_position() {
   #if HAS_CLOSEDLOOP_CONFIG
-    set_position_from_encoders_if_lost(false);
+    ////set_position_from_encoders_if_lost(false);
+    abce_pos_t pos = planner.get_axis_positions_mm();
+    bool valid_pos = closedloop_restore_position(&pos, false, true);
+    // if (!valid_pos) {
+    //   return;
+    // }
+    xyz_pos_t backup_cart = cartes;
+    forward_kinematics(
+        pos.a
+      , pos.b
+      #if ENABLED(AXEL_TPARA)
+        , planner.get_axis_position_degrees(C_AXIS)
+      #endif
+    );
+    xyz_pos_t enc_xyz = cartes;
+    cartes = backup_cart;
+    enc_xyz.z = pos.z;
+
+
   #endif
-  get_cartesian_from_steppers();
-  xyze_pos_t npos = cartes;
+  // get_cartesian_from_steppers();
+  // xyze_pos_t npos = cartes;
+  xyze_pos_t npos = enc_xyz;
   npos.e = planner.get_axis_position_mm(E_AXIS);
   TERN_(HAS_POSITION_MODIFIERS, planner.unapply_modifiers(npos, true));
   report_logical_position(npos);
@@ -406,7 +425,7 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
       enable_all_steppers();
       delay(100);
     }
-    bool valid_pos = closedloop_restore_position(&pos, enable_motors);
+    bool valid_pos = closedloop_restore_position(&pos, enable_motors, false);
     if (!valid_pos) {
       return;
     }

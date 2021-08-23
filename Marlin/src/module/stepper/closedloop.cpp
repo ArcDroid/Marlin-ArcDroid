@@ -184,11 +184,11 @@ void closedloop_unhome(AxisEnum axis) {
     #endif
 }
 
-bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
+bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable, bool force_read) {
     bool enabled_any = false;
     bool valid_position = true;
     #if AXIS_IS_CLOSEDLOOP(X)
-        if (!axis_is_trusted(X_AXIS) && encoderX.homed) {
+        if ((force_read || !axis_is_trusted(X_AXIS)) && encoderX.homed) {
             motor_pos->x = encoderX.read_encoder();
             if (isnan(motor_pos->x)) {
                 valid_position = false;
@@ -203,7 +203,7 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable) {
         }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        if (!axis_is_trusted(Y_AXIS) && encoderY.homed) {
+        if ((force_read || !axis_is_trusted(Y_AXIS)) && encoderY.homed) {
             motor_pos->y = encoderY.read_encoder();
             if (isnan(motor_pos->y)) {
                 valid_position = false;

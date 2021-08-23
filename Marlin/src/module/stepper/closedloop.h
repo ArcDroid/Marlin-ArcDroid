@@ -266,7 +266,7 @@ void restore_closedloop_drivers();
 void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos, bool calibrate_home);
 bool closedloop_has_aligned();
 bool closedloop_need_restore();
-bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable);
+bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable, bool force_read);
 void closedloop_unhome(AxisEnum axis);
 
 
