@@ -246,6 +246,7 @@ void closedloop_reset_pps() {
 }
 
 void closedloop_set_pps(abce_float_t pps) {
+  DEBUG_ECHO_MSG("closedloop_set_pps x:", pps.x, " y:", pps.y, "\n");
     #if AXIS_IS_CLOSEDLOOP(X)
 		encoderX.encoder_counts_per_step = pps.x;
 	#endif
@@ -263,6 +264,7 @@ abce_float_t closedloop_get_pps() {
 		res.y = encoderY.encoder_counts_per_step;
 	#endif
 
+  DEBUG_ECHO_MSG("closedloop_get_pps x:", res.x, " y:", res.y, "\n");
 	return res;
 }
 

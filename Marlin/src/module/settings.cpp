@@ -2390,7 +2390,10 @@ void MarlinSettings::postprocess() {
       #if HAS_CLOSEDLOOP_CONFIG
         abc_float_t encoder_pps;
         _FIELD_TEST(encoder_pps);
+
+        DEBUG_ECHO_MSG("_FIELD_TEST x:", encoder_pps.x, " y:", encoder_pps.y, " s:", sizeof(abc_float_t), "\n");
         EEPROM_READ(encoder_pps);
+        DEBUG_ECHO_MSG("EEPROM_READ x:", encoder_pps.x, " y:", encoder_pps.y, "\n");
 
         if (!validating) closedloop_set_pps(encoder_pps);
 
