@@ -157,7 +157,7 @@
  *
  * :[-1, 0, 1, 2, 3, 4, 5, 6, 7]
  */
-#define SERIAL_PORT 0
+#define SERIAL_PORT 1
 
 /**
  * Serial Port Baud Rate
@@ -195,7 +195,7 @@
 
 // Choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_BTT_SKR_V1_4_TURBO
+  #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V3
 #endif
 
 // Name displayed in the LCD "Ready" message and Info menu
@@ -1021,14 +1021,14 @@
  *      - normally-open switches to 5V and D32.
  */
 // E0DET connector on SKR 1.4
-#define Z_MIN_PROBE_PIN P1_26 // Pin 32 is the RAMPS default
+#define Z_MIN_PROBE_PIN PC8 // Pin 32 is the RAMPS default
 
 // Used as calibration probe pins
 // E1DET connector on SKR 1.4
-#define X2_MIN_PIN P1_25
+#define X2_MIN_PIN PA4
 #define HAS_X2_MIN 1
 // PWRDET connector on SKR 1.4
-#define X2_MAX_PIN P1_00
+#define X2_MAX_PIN PE6
 #define HAS_X2_MAX 1
 
 /**

@@ -466,7 +466,7 @@
   // disable other fan functinos
   #define FAN_PIN -1
   #define FAN1_PIN -1
-  #define CONTROLLER_FAN_PIN P2_03        // Set a custom pin for the controller fan
+  #define CONTROLLER_FAN_PIN PB1         // Set a custom pin for the controller fan
   //#define CONTROLLER_FAN_USE_Z_ONLY    // With this option only the Z axis is considered
   //#define CONTROLLER_FAN_IGNORE_Z      // Ignore Z stepper. Useful when stepper timeout is disabled.
   #define CONTROLLERFAN_SPEED_MIN      0 // (0-255) Minimum speed. (If set below this value the fan is turned off.)
@@ -3089,11 +3089,13 @@
     #define X_ENCODER_PPS (4096.0/32.0)
     #endif
     #define X_ENCODER_PPR 819200
-    ////#define X_ENCODER_SERIAL_RX_PIN P1_23
-    ////#define X_ENCODER_SERIAL_TX_PIN P1_22
+    //#define X_ENCODER_SERIAL_RX_PIN PE14
+    //#define X_ENCODER_SERIAL_TX_PIN PE15
 
     // EXP2 0.15 = TXD1, 0.16 = RXD1
-    #define X_ENCODER_HARDWARE_SERIAL Serial1
+    #define X_ENCODER_HARDWARE_SERIAL Serial3
+    #define PIN_SERIAL3_RX          PB11
+    #define PIN_SERIAL3_TX          PB10
   #endif
   #ifdef Y_ENCODER_TYPE
     #ifdef MINI_MODEL_2AM
@@ -3102,13 +3104,15 @@
     #define Y_ENCODER_PPS (4096.0/32.0)
     #endif
     #define Y_ENCODER_PPR 819200
-    ////#define Y_ENCODER_SERIAL_RX_PIN P1_21
-    ////#define Y_ENCODER_SERIAL_TX_PIN P1_20
+    //#define Y_ENCODER_SERIAL_RX_PIN PD11
+    //#define Y_ENCODER_SERIAL_TX_PIN PD10
 
     // Serial3 WiFi 4.28 = TXD3, 4.29 = RXD3
     // Serial2 0.11 = RXD2 on E0-CLS, 0.10 = TXD2 on PROBE
-    ////#define LPC_PINCFG_UART3_P4_28
-    #define Y_ENCODER_HARDWARE_SERIAL Serial2
+    #define LPC_PINCFG_UART3_P4_28
+    #define Y_ENCODER_HARDWARE_SERIAL Serial6
+    #define PIN_SERIAL6_RX          PC7
+    #define PIN_SERIAL6_TX          PC6
   #endif
 #endif // HAS_CLOSEDLOOP_CONFIG
 
@@ -3214,14 +3218,14 @@
 //#define SPINDLE_FEATURE
 #define LASER_FEATURE
 #ifdef MINI_MODEL_2AM
-#define SPINDLE_LASER_ENA_PIN P1_31
-#define SPINDLE_LASER_PWM_PIN P2_05
+#define SPINDLE_LASER_ENA_PIN PB0
+#define SPINDLE_LASER_PWM_PIN PA0
 #else
-#define SPINDLE_LASER_ENA_PIN P2_05
+#define SPINDLE_LASER_ENA_PIN PA0
 //#define SPINDLE_LASER_PWM_PIN 2
 #endif
 
-#define SPINDLE_LASER_INHIBIT_PIN P1_22
+#define SPINDLE_LASER_INHIBIT_PIN PD13
 
 // disable bed heat, using that pin for torch
 #define HEATER_BED_PIN -1
