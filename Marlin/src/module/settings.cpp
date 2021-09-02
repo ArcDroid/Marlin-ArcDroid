@@ -1441,10 +1441,12 @@ void MarlinSettings::postprocess() {
     #if HAS_CLOSEDLOOP_CONFIG
       abc_float_t encoder_pps;
       encoder_pps = closedloop_get_pps();
+      DEBUG_ECHOLNPAIR("DEBUG: encoder_pps written a:", encoder_pps.x, " b:", encoder_pps.y);
       _FIELD_TEST(encoder_pps);
       EEPROM_WRITE(encoder_pps);
 
       abc_long_t encoder_home_pulse = closedloop_get_home_pulse();
+      DEBUG_ECHOLNPAIR("DEBUG: encoder_home_pulse written a:", encoder_home_pulse.x, " b:", encoder_home_pulse.y);
       _FIELD_TEST(encoder_home_pulse);
       EEPROM_WRITE(encoder_home_pulse);
     #endif
@@ -2397,11 +2399,20 @@ void MarlinSettings::postprocess() {
         _FIELD_TEST(encoder_pps);
         EEPROM_READ(encoder_pps);
 
+
+        DEBUG_ECHOLNPAIR("DEBUG: encoder_pps read a:", encoder_pps.a, " b:", encoder_pps.b, " validating: ", validating);
         if (!validating) closedloop_set_pps(encoder_pps);
+
+
+        encoder_pps = closedloop_get_pps();
+
+        DEBUG_ECHOLNPAIR("DEBUG: encoder_pps current a:", encoder_pps.a, " b:", encoder_pps.b, " validating: ", validating);
 
         abc_long_t encoder_home_pulse;
         _FIELD_TEST(encoder_home_pulse);
         EEPROM_READ(encoder_home_pulse);
+
+        DEBUG_ECHOLNPAIR("DEBUG: encoder_home_pulse read a:", encoder_home_pulse.a, " b:", encoder_home_pulse.b, " validating: ", validating);
 
         if (!validating) closedloop_set_home_pulse(encoder_home_pulse);
       #endif

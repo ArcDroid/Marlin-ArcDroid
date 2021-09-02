@@ -33,6 +33,9 @@
 #include "../stepper.h"
 
 
+#define DEBUG_OUT 1
+#include "../../core/debug_out.h"
+
 #include <HardwareSerial.h>
 
 #define CLOSEDLOOP_INIT(ST) closedloop_init(encoder##ST, ST##_ENCODER_PPS, ST##_ENCODER_PPR)
@@ -252,6 +255,8 @@ void closedloop_set_pps(abc_float_t pps) {
   #if AXIS_IS_CLOSEDLOOP(Y)
 		encoderY.encoder_counts_per_step = pps.y;
 	#endif
+
+  //DEBUG_ECHOLNPAIR("DEBUG: closedloop_set_pps written x:", pps.x, " y:", pps.y);
 }
 
 abc_float_t closedloop_get_pps() {
@@ -263,6 +268,8 @@ abc_float_t closedloop_get_pps() {
 		res.y = encoderY.encoder_counts_per_step;
 	#endif
 
+
+  //DEBUG_ECHOLNPAIR("DEBUG: closedloop_get_pps read x:", res.x, " y:", res.y);
   return res;
 }
 

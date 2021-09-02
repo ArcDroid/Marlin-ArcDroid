@@ -28,7 +28,31 @@
       "reset_config none"
     ],
     "openocd_target": "stm32f4x",
-    "svd_path": "STM32F40x.svd"
+    "svd_path": "STM32F40x.svd",
+    "tools": {
+      "stlink": {
+        "server": {
+          "arguments": [
+            "-f",
+            "scripts/interface/stlink.cfg",
+            "-c",
+            "transport select hla_swd",
+            "-c",
+            "adapter speed 500",
+            "-f",
+            "scripts/target/stm32f4x.cfg",
+            "-c",
+            "reset_config none",
+            "-c",
+            "adapter_khz 500",
+            "-c",
+            "adapter speed 500"
+          ],
+          "executable": "bin/openocd",
+          "package": "tool-openocd"
+        }
+      }
+    }
   },
   "frameworks": [
     "arduino",
