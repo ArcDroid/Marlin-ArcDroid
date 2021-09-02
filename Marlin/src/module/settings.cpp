@@ -124,6 +124,10 @@
   #include "../feature/tmc_util.h"
 #endif
 
+#if HAS_CLOSEDLOOP_CONFIG
+  #include "stepper/closedloop.h"
+#endif
+
 #if ENABLED(PROBE_TEMP_COMPENSATION)
   #include "../feature/probe_temp_comp.h"
 #endif
@@ -1435,7 +1439,8 @@ void MarlinSettings::postprocess() {
     #endif
 
     #if HAS_CLOSEDLOOP_CONFIG
-      abc_float_t encoder_pps = closedloop_get_pps();
+      abc_float_t encoder_pps;
+      encoder_pps = closedloop_get_pps();
       _FIELD_TEST(encoder_pps);
       EEPROM_WRITE(encoder_pps);
 

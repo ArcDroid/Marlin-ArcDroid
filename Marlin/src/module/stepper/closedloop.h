@@ -271,8 +271,8 @@ void closedloop_unhome(AxisEnum axis);
 
 
 void closedloop_reset_pps();
-void closedloop_set_pps(abce_float_t pps);
-abce_float_t closedloop_get_pps();
+void closedloop_set_pps(abc_float_t pps);
+abc_float_t closedloop_get_pps();
 
 void closedloop_reset_home_pulse();
 void closedloop_set_home_pulse(abc_long_t home);

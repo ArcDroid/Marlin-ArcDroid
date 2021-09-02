@@ -245,25 +245,25 @@ void closedloop_reset_pps() {
 	#endif
 }
 
-void closedloop_set_pps(abce_float_t pps) {
-    #if AXIS_IS_CLOSEDLOOP(X)
+void closedloop_set_pps(abc_float_t pps) {
+   #if AXIS_IS_CLOSEDLOOP(X)
 		encoderX.encoder_counts_per_step = pps.x;
 	#endif
-    #if AXIS_IS_CLOSEDLOOP(Y)
+  #if AXIS_IS_CLOSEDLOOP(Y)
 		encoderY.encoder_counts_per_step = pps.y;
 	#endif
 }
 
-abce_float_t closedloop_get_pps() {
-	abce_float_t res;
-    #if AXIS_IS_CLOSEDLOOP(X)
+abc_float_t closedloop_get_pps() {
+  abc_float_t res;
+	#if AXIS_IS_CLOSEDLOOP(X)
 		res.x = encoderX.encoder_counts_per_step;
 	#endif
-    #if AXIS_IS_CLOSEDLOOP(Y)
+  #if AXIS_IS_CLOSEDLOOP(Y)
 		res.y = encoderY.encoder_counts_per_step;
 	#endif
 
-	return res;
+  return res;
 }
 
 void closedloop_reset_home_pulse() {
