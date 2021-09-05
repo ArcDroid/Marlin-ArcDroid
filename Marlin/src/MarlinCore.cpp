@@ -1101,6 +1101,10 @@ void setup() {
     #endif
   #endif
 
+  #ifdef SPINDLE_LASER_INHIBIT_PIN
+    SET_INPUT_PULLUP(SPINDLE_LASER_INHIBIT_PIN);
+  #endif
+
   #if HAS_FREEZE_PIN
     SET_INPUT_PULLUP(FREEZE_PIN);
   #endif
