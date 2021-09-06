@@ -115,10 +115,15 @@ class ClosedLoopMarlin : public S42BClosedLoop {
         return planner.settings.axis_steps_per_mm[AXIS_ID] * encoder_counts_per_step;
     }
 
+    // correct encoder home offset when home offset is changed another way
+    void offset_encoder_home(float delta_mm) {
+        float delta_counts = delta_mm * encoder_counts_per_unit();
+        encoder_offset += delta_counts;
+    }
+
     bool touch_off_encoder(float new_position, bool calibrate_home) {
-        int32_t pos = new_position * encoder_counts_per_unit();
-        int32_t raw_read = readPosition();
-        int32_t error = S42BClosedLoop::positionIsError(raw_read);
+        int32_t measured_pulse = readPosition();
+        int32_t error = S42BClosedLoop::positionIsError(measured_pulse);
         if (error != 0) {
             homed = false;
             SERIAL_ERROR_MSG("touch_off_encoder Axis:", ((const char[]){ AXIS_LETTER, '\0'})
@@ -126,40 +131,76 @@ class ClosedLoopMarlin : public S42BClosedLoop {
                 );
             return false;
         }
-
-        // measured offset from switch position to expected encoder count
-        int32_t switch_offset = pos - raw_read;
-        int32_t switch_revolutions = switch_offset / encoder_counts_per_rev;
-
-        // expected offset for home
-        int32_t expected_offset = home_pulse + switch_revolutions * encoder_counts_per_rev;
-
-        // if calibrating, we'll use the new offset as home
-        if (calibrate_home) {
-            expected_offset = switch_offset;
-        }
-
-        int32_t delta = switch_offset - expected_offset;
-
-        int32_t half = encoder_counts_per_rev / 2;
-
-        // fix up any encoder rollover
-        if (delta >= half) {
-            delta -= encoder_counts_per_rev;
-            expected_offset += encoder_counts_per_rev;
-        }
-        else if (delta < -half) {
-            delta += encoder_counts_per_rev;
-            expected_offset -= encoder_counts_per_rev;
-        }
+        // expected pulse for this commanded position
+        int32_t expected_pulse = home_pulse;
 
         #if ENABLED(DEBUG_LEVELING_FEATURE)
         if (DEBUGGING(LEVELING)) {
-            DEBUG_ECHO("touch_off_encoder axis:");
+            DEBUG_ECHO("touch_off_encoder 001 axis:");
+            DEBUG_CHAR(AXIS_LETTER);
+            DEBUG_ECHOPAIR(" new_position: ", new_position);
+            DEBUG_ECHOPAIR(" expected_pulse: ", expected_pulse);
+            DEBUG_ECHOPAIR(" measured_pulse: ", measured_pulse);
+            DEBUG_EOL();
+        }
+        #endif
+
+        // if calibrating, we'll use the new offset as home
+        if (calibrate_home) {
+            // remove any extra revolutions
+            int32_t new_home_pulse = measured_pulse % encoder_counts_per_rev;
+            // fix negative
+            if (new_home_pulse < 0) {
+                new_home_pulse += encoder_counts_per_rev;
+            }
+
+            // adjust previous measurement
+            expected_pulse = new_home_pulse;
+
+            // save new offset
+            home_pulse = new_home_pulse;
+
+            SERIAL_ECHO("debug: touch_off_encoder calibrated ");
+            SERIAL_CHAR(AXIS_LETTER);
+            SERIAL_ECHO(" home_pulse: ");
+            SERIAL_ECHOLN(home_pulse);
+        }
+
+        int32_t delta = measured_pulse - expected_pulse;
+
+        // fix up any encoder rollover
+        int32_t half = encoder_counts_per_rev / 2;
+
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+            DEBUG_ECHO("touch_off_encoder 003 axis:");
             DEBUG_CHAR(AXIS_LETTER);
             DEBUG_ECHOPAIR(" delta: ", delta);
-            DEBUG_ECHOPAIR(" expected_offset: ", expected_offset);
-            DEBUG_ECHOPAIR(" switch_offset: ", switch_offset);
+            DEBUG_ECHOPAIR(" half: ", half);
+            DEBUG_EOL();
+        }
+        #endif
+
+        while (delta >= half) {
+            delta -= encoder_counts_per_rev;
+            expected_pulse += encoder_counts_per_rev;
+        }
+        while (delta < -half) {
+            delta += encoder_counts_per_rev;
+            expected_pulse -= encoder_counts_per_rev;
+        }
+
+        // total encoder offset after encoder index and home offset
+        encoder_offset = -expected_pulse + new_position * encoder_counts_per_unit();
+
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+            DEBUG_ECHO("touch_off_encoder 004 axis:");
+            DEBUG_CHAR(AXIS_LETTER);
+            DEBUG_ECHOPAIR(" delta: ", delta);
+            DEBUG_ECHOPAIR(" expected_pulse: ", expected_pulse);
+            DEBUG_ECHOPAIR(" measured_pulse: ", measured_pulse);
+            DEBUG_ECHOPAIR(" encoder_offset: ", encoder_offset);
             DEBUG_EOL();
         }
         #endif
@@ -172,24 +213,7 @@ class ClosedLoopMarlin : public S42BClosedLoop {
             SERIAL_ECHOLN(delta);
         }
 
-        encoder_offset = expected_offset;
         homed = true;
-
-        if (calibrate_home) {
-            // remove any extra revolutions
-            expected_offset = expected_offset % encoder_counts_per_rev;
-            // fix negative
-            if (expected_offset < 0) {
-                expected_offset += encoder_counts_per_rev;
-            }
-            // save new offset
-            home_pulse = expected_offset;
-
-            SERIAL_ECHO("debug: touch_off_encoder calibrated ");
-            SERIAL_CHAR(AXIS_LETTER);
-            SERIAL_ECHO(" offset: ");
-            SERIAL_ECHOLN(home_pulse);
-        }
         return true;
     }
 
