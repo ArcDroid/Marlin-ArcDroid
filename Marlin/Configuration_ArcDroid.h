@@ -732,8 +732,10 @@
 ////#define Y_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 
 // Calibration probe pins
-#define X2_MIN_ENDSTOP_INVERTING true
-#define X2_MAX_ENDSTOP_INVERTING true
+/// NC switches for arc radius calibration jig
+#define X2_MIN_ENDSTOP_INVERTING false
+#define X2_MAX_ENDSTOP_INVERTING false
+#define Y2_MIN_ENDSTOP_INVERTING false
 
 /**
  * Stepper Drivers
