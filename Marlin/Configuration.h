@@ -797,8 +797,10 @@
 ////#define Y_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 
 // Calibration probe pins
-#define X2_MIN_ENDSTOP_INVERTING true
-#define X2_MAX_ENDSTOP_INVERTING true
+/// NC switches for arc radius calibration jig
+#define X2_MIN_ENDSTOP_INVERTING false
+#define X2_MAX_ENDSTOP_INVERTING false
+#define Y2_MAX_ENDSTOP_INVERTING false
 
 /**
  * Stepper Drivers
@@ -1025,10 +1027,13 @@
 
 // Used as calibration probe pins
 // E1DET connector on SKR 1.4
-#define X2_MIN_PIN PA4
-#define HAS_X2_MIN 1
+#define Y2_MAX_PIN PA4
+#define HAS_Y2_MAX 1
 // PWRDET connector on SKR 1.4
-#define X2_MAX_PIN PE6
+#define X2_MIN_PIN PE6
+#define HAS_X2_MIN 1
+// P1.20 on EXP1 connector on SKR 1.4
+#define X2_MAX_PIN PA13
 #define HAS_X2_MAX 1
 
 /**

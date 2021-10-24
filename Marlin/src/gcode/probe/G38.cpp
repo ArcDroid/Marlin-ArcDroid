@@ -31,10 +31,16 @@
 #include "../../module/stepper.h"
 #include "../../module/probe.h"
 
+#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
+#include "../../core/debug_out.h"
+
 inline void G38_single_probe(const uint8_t move_value, const uint8_t probe_axis) {
   endstops.enable(true);
   G38_move = move_value;
   G38_axis_enabled = probe_axis;
+
+  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR(">>> G38_single_probe(G38_move = ", G38_move, " G38_axis_enabled = ", G38_axis_enabled, ")");
+
   prepare_line_to_destination();
   planner.synchronize();
   G38_move = 0;

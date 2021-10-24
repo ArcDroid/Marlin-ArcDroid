@@ -27,6 +27,7 @@
 #include "../gcode.h"
 #include "../../module/motion.h"
 #include "../../module/planner.h"
+#include "../../module/stepper/indirection.h"
 
 #if ENABLED(DELTA)
 
@@ -110,14 +111,28 @@
     #endif // HAS_SCARA_OFFSET
 
     // reset cartesian position to match offset motor position
-    xyze_pos_t pos = current_position;
-    abce_pos_t target = planner.get_axis_positions_mm();
-    target = target - scara_home_offset + offset_new;
-    scara_home_offset = offset_new;
-    planner.set_machine_position_mm(target);
-    set_current_from_steppers_for_axis(ALL_AXES_ENUM);
-    do_blocking_move_to(pos, homing_feedrate(X_AXIS));
-    report_current_position();
+    #ifdef MOVE_ON_M665
+        xyze_pos_t pos = current_position;
+        abce_pos_t target = planner.get_axis_positions_mm();
+        target = target - scara_home_offset + offset_new;
+    #endif
+    #ifdef HAS_CLOSEDLOOP_CONFIG
+        abc_pos_t change = offset_new - scara_home_offset;
+        #if AXIS_IS_CLOSEDLOOP(X)
+            encoderX.offset_encoder_home(change.a);
+        #endif
+        #if AXIS_IS_CLOSEDLOOP(Y)
+            encoderY.offset_encoder_home(change.b);
+        #endif
+    #endif
+        scara_home_offset = offset_new;
+    #ifdef MOVE_ON_M665
+        planner.set_machine_position_mm(target);
+        set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+        do_blocking_move_to(pos, homing_feedrate(X_AXIS));
+        report_current_position();
+    #endif
+
   }
 
 #endif
