@@ -791,6 +791,19 @@ void Endstops::update() {
            if (stepper.axis_is_moving(X_AXIS)) { _ENDSTOP_HIT(X, TERN(X_HOME_TO_MAX, MAX, MIN)); planner.endstop_triggered(X_AXIS); }
       else if (stepper.axis_is_moving(Y_AXIS)) { _ENDSTOP_HIT(Y, TERN(Y_HOME_TO_MAX, MAX, MIN)); planner.endstop_triggered(Y_AXIS); }
       else if (stepper.axis_is_moving(Z_AXIS)) { _ENDSTOP_HIT(Z, TERN(Z_HOME_TO_MAX, MAX, MIN)); planner.endstop_triggered(Z_AXIS); }
+
+      if (DEBUGGING(LEVELING)) {
+        static int G38_move_last = 0;
+        if (G38_move_last != G38_move) {
+          DEBUG_ECHOLNPAIR(">>> Endstop Update (G38_move = ", G38_move, " G38_axis_enabled = ", G38_axis_enabled,
+          " X2_MIN:", (TEST_ENDSTOP(_ENDSTOP(X2, MIN)) != _G38_OPEN_STATE),
+          " X2_MAX:", (TEST_ENDSTOP(_ENDSTOP(X2, MAX)) != _G38_OPEN_STATE),
+          " Y2_MAX:", (TEST_ENDSTOP(_ENDSTOP(Y2, MAX)) != _G38_OPEN_STATE),
+          ")");
+          G38_move_last = G38_move;
+        }
+      }
+
       G38_did_trigger = true;
     }
   #endif
