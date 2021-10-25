@@ -251,6 +251,8 @@
 #define BOARD_BTT_SKR_E3_TURBO        2510  // BigTreeTech SKR E3 Turbo (Power outputs: Hotend0, Hotend1, Bed, Fan0, Fan1)
 #define BOARD_FLY_CDY                 2511  // FLY_CDY (Power outputs: Hotend0, Hotend1, Hotend2, Bed, Fan0, Fan1, Fan2)
 
+#define BOARD_BTT_SKR_V1_4_TURBO_ARCDROID  2608
+
 //
 // SAM3X8E ARM Cortex M3
 //
@@ -387,7 +389,8 @@
 #define BOARD_ANET_ET4P               4227  // ANET ET4P V1.x (STM32F407VGT6)
 #define BOARD_FYSETC_CHEETAH_V20      4228  // FYSETC Cheetah V2.0
 
-
+#define BOARD_MKS_ROBIN_NANO_V3_ARCDROID 4325
+#define BOARD_ARCDROID_V1_2_2         4425
 //
 // ARM Cortex M7
 //

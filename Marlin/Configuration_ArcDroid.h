@@ -953,14 +953,6 @@
  *      - normally-open switches to 5V and D32.
  *
  */
-// E0DET connector on SKR 1.4
-#define Z_MIN_PROBE_PIN P1_26 // Pin 32 is the RAMPS default
-
-// Used as calibration probe pins
-// E1DET connector on SKR 1.4
-#define X2_MIN_PIN P1_25
-// PWRDET connector on SKR 1.4
-#define X2_MAX_PIN P1_00
 
 /**
  * Probe Type

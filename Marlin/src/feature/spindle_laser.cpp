@@ -110,7 +110,6 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
   static uint8_t last_power_applied = 0;
   uint8_t req_pwr = opwr;
   #ifdef SPINDLE_LASER_INHIBIT_PIN
-    static bool last_inhibit = 0;
     const bool inhibit = READ(SPINDLE_LASER_INHIBIT_PIN);
     if (inhibit) {
       req_pwr = 0;
