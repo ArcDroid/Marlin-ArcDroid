@@ -71,5 +71,8 @@
 //
 #include "pins_MKS_ROBIN_NANO_V3.h"
 
+#undef POWER_LOSS_PIN
+#undef PW_DET
+
 #undef BOARD_INFO_NAME
 #define BOARD_INFO_NAME "MKS Robin Nano V3 for ArcDroid"

@@ -538,7 +538,7 @@ void Endstops::update() {
     if (G38_move) {
       UPDATE_ENDSTOP_BIT(Z, MIN_PROBE);
       UPDATE_ENDSTOP_BIT(X2, MIN);
-      UPDATE_ENDSTOP_BIT(X2, MAX);
+      ////FIXME: UPDATE_ENDSTOP_BIT(X2, MAX);
       UPDATE_ENDSTOP_BIT(Y2, MAX);
     }
   #endif
@@ -784,7 +784,10 @@ void Endstops::update() {
     // If G38 command is active check Z_MIN_PROBE for ALL movement
     if (G38_move && ( 0
         || ( G38_axis_enabled & _BV(Z_AXIS) && TEST_ENDSTOP(_ENDSTOP(Z, MIN_PROBE)) != _G38_OPEN_STATE )
-        || ( G38_axis_enabled & _BV(X_AXIS) && ((TEST_ENDSTOP(_ENDSTOP(X2, MIN)) != _G38_OPEN_STATE) || (TEST_ENDSTOP(_ENDSTOP(X2, MAX)) != _G38_OPEN_STATE)) )
+        || ( G38_axis_enabled & _BV(X_AXIS) && ((TEST_ENDSTOP(_ENDSTOP(X2, MIN)) != _G38_OPEN_STATE)
+          ////FIXME: || (TEST_ENDSTOP(_ENDSTOP(X2, MAX)) != _G38_OPEN_STATE))
+          )
+        )
         || ( G38_axis_enabled & _BV(Y_AXIS) && (TEST_ENDSTOP(_ENDSTOP(Y2, MAX)) != _G38_OPEN_STATE) )
       )
     ) {
@@ -797,7 +800,7 @@ void Endstops::update() {
         if (G38_move_last != G38_move) {
           DEBUG_ECHOLNPAIR(">>> Endstop Update (G38_move = ", G38_move, " G38_axis_enabled = ", G38_axis_enabled,
           " X2_MIN:", (TEST_ENDSTOP(_ENDSTOP(X2, MIN)) != _G38_OPEN_STATE),
-          " X2_MAX:", (TEST_ENDSTOP(_ENDSTOP(X2, MAX)) != _G38_OPEN_STATE),
+          ////FIXME: " X2_MAX:", (TEST_ENDSTOP(_ENDSTOP(X2, MAX)) != _G38_OPEN_STATE),
           " Y2_MAX:", (TEST_ENDSTOP(_ENDSTOP(Y2, MAX)) != _G38_OPEN_STATE),
           ")");
           G38_move_last = G38_move;

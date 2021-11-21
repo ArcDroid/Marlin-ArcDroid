@@ -1781,9 +1781,13 @@
  * NOTE: This method is less reliable as it can only catch hangups while
  * interrupts are enabled.
  */
-#define USE_WATCHDOG
+/// DISABLE FOR DEBUGGING #define USE_WATCHDOG
 #if ENABLED(USE_WATCHDOG)
   //#define WATCHDOG_RESET_MANUAL
+#endif
+
+#if MOTHERBOARD == BOARD_ARCDROID_V1_2_2
+#define USE_RTC 1
 #endif
 
 // @section lcd

@@ -19,258 +19,279 @@
   ******************************************************************************
   */
 
-/* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx_ll_rcc.h"
-#include "stm32f4xx_ll_system.h"
-#include "stm32f4xx_ll_utils.h"
-#include "stm32f4xx_ll_gpio.h"
-#include "stm32f4xx_ll_rtc.h"
-#include "stm32f4xx_ll_pwr.h"
-#include "stm32f4xx_ll_cortex.h"
 
+#if defined(ARDUINO_ARCH_STM32) && !defined(STM32GENERIC)
+
+#include "../../inc/MarlinConfigPre.h"
+
+#if ENABLED(USE_RTC)
+
+#define DEBUG_OUT 1
+#include "../../core/debug_out.h"
+
+#include "../../MarlinCore.h"
+
+#include "stm32f4xx_hal.h"
+//#include "stm32f4xx_nucleo.h"
 #include <stdio.h>
 
-#define USE_TIMEOUT       0
-
-#define RTC_ERROR_NONE    0
-#define RTC_ERROR_TIMEOUT 1
-
-#define LED2_PIN                           LL_GPIO_PIN_5
-#define LED2_GPIO_PORT                     GPIOA
-#define LED2_GPIO_CLK_ENABLE()             LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA)
-
-/**
-  * @brief Toggle periods for various blinking modes
-  */
-
-#define LED_BLINK_FAST  200
-#define LED_BLINK_SLOW 500
-#define LED_BLINK_ERROR 1000
-
-
-/** @addtogroup STM32F4xx_LL_Examples
-  * @{
-  */
-
-/** @addtogroup RTC_Calendar
-  * @{
-  */
-
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Oscillator time-out values */
-#define LSI_TIMEOUT_VALUE          ((uint32_t)2)     /* 2 ms */
-#define LSE_TIMEOUT_VALUE          ((uint32_t)5000)  /* 5 s */
-#define RTC_TIMEOUT_VALUE          ((uint32_t)1000)  /* 1 s */
-
+/* Exported types ------------------------------------------------------------*/
+/* Exported constants --------------------------------------------------------*/
 /* Defines related to Clock configuration */
-/* Uncomment to enable the adequate Clock Source */
-#define RTC_CLOCK_SOURCE_LSI
-//#define RTC_CLOCK_SOURCE_LSE
+/* Uncomment to enable the adaquate Clock Source */
+#define RTC_CLOCK_SOURCE_LSE
+//#define RTC_CLOCK_SOURCE_LSI
 
 #ifdef RTC_CLOCK_SOURCE_LSI
-/* ck_apre=LSIFreq/(ASYNC prediv + 1) with LSIFreq=32 kHz RC */
-#define RTC_ASYNCH_PREDIV          ((uint32_t)0x7F)
-/* ck_spre=ck_apre/(SYNC prediv + 1) = 1 Hz */
-#define RTC_SYNCH_PREDIV           ((uint32_t)0x00F9)
+#define RTC_ASYNCH_PREDIV    0x7F
+#define RTC_SYNCH_PREDIV     0xF9
 #endif
 
 #ifdef RTC_CLOCK_SOURCE_LSE
-/* ck_apre=LSEFreq/(ASYNC prediv + 1) = 256Hz with LSEFreq=32768Hz */
-#define RTC_ASYNCH_PREDIV          ((uint32_t)0x7F)
-/* ck_spre=ck_apre/(SYNC prediv + 1) = 1 Hz */
-#define RTC_SYNCH_PREDIV           ((uint32_t)0x00FF)
+#define RTC_ASYNCH_PREDIV  0x7F
+#define RTC_SYNCH_PREDIV   0x00FF
 #endif
 
-/* Define used to indicate date/time updated */
-#define RTC_BKP_DATE_TIME_UPDTATED ((uint32_t)0x32F2)
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-/* Buffers used for displaying Time and Date */
-uint8_t aShowTime[50] = {0};
-uint8_t aShowDate[50] = {0};
+/* RTC handler declaration */
+RTC_HandleTypeDef RtcHandle;
 
-#if (USE_TIMEOUT == 1)
-uint32_t Timeout = 0; /* Variable used for Timeout management */
-#endif /* USE_TIMEOUT */
+/* Buffer used for displaying Time */
+uint8_t aShowTime[50] = {0};
 
 /* Private function prototypes -----------------------------------------------*/
-void     SystemClock_Config(void);
-void     Configure_RTC_Clock(void);
-void     Configure_RTC(void);
-void     Configure_RTC_Calendar(void);
-uint32_t Enter_RTC_InitMode(void);
-uint32_t Exit_RTC_InitMode(void);
-uint32_t WaitForSynchro_RTC(void);
-void     Show_RTC_Calendar(void);
-void     LED_Init(void);
-void     LED_On(void);
-void     LED_Blinking(uint32_t Period);
-
+static void RTC_AlarmConfig(void);
+static void RTC_TimeShow(uint8_t* showtime);
 /* Private functions ---------------------------------------------------------*/
+
+
+/**
+  * @brief RTC MSP Initialization
+  *        This function configures the hardware resources used in this example
+  * @param hrtc: RTC handle pointer
+  *
+  * @note  Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to select
+  *        the RTC clock source; in this case the Backup domain will be reset in
+  *        order to modify the RTC Clock source, as consequence RTC registers (including
+  *        the backup registers) and RCC_BDCR register are set to their reset values.
+  *
+  * @retval None
+  */
+void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc)
+{
+  RCC_OscInitTypeDef        RCC_OscInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct = {0};
+
+  __HAL_RCC_PWR_CLK_ENABLE();
+
+  bool PWREN = RCC->APB1ENR & RCC_APB1ENR_PWREN;
+
+  DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: __HAL_RCC_PWR_CLK_ENABLE PWREN = ", PWREN);
+
+  /*##-1- Enables access to the backup domain ######*/
+  /* To enable access on RTC registers */
+  HAL_PWR_EnableBkUpAccess();
+  /*##-2- Configure LSE/LSI as RTC clock source ###############################*/
+#ifdef RTC_CLOCK_SOURCE_LSE
+  RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+  HAL_StatusTypeDef res = HAL_RCC_OscConfig(&RCC_OscInitStruct);
+  if(res != HAL_OK)
+  {
+    int cr = PWR->CR;
+    int bdcr = RCC->BDCR;
+    DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: HAL_RCC_OscConfig res = ", res, " PWR.CR = ", cr, " RCC.BDCR = ", bdcr);
+
+  }
+
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+  res = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+  if(res != HAL_OK)
+  {
+    int cr = PWR->CR;
+    int bdcr = RCC->BDCR;
+    int cfgr = RCC->CFGR;
+    DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: HAL_RCCEx_PeriphCLKConfig res = ", res, " PWR.CR = ", cr, " RCC.BDCR = ", bdcr, " RCC.CFGR = ", cfgr);
+  }
+  /* Configures the External Low Speed oscillator (LSE) drive capability */
+  // __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_HIGH);
+
+#elif defined (RTC_CLOCK_SOURCE_LSI)
+  RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSE | RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+#else
+#error Please select the RTC Clock source inside the main.h file
+#endif /*RTC_CLOCK_SOURCE_LSE*/
+
+  /*##-3- Enable RTC peripheral Clocks #######################################*/
+  /* Enable RTC Clock */
+  __HAL_RCC_RTC_ENABLE();
+
+  DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: __HAL_RCC_RTC_ENABLE RCC.BDCR = ", RCC->BDCR);
+
+  /*##-4- Configure the NVIC for RTC Alarm ###################################*/
+  // HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 0x0F, 0);
+  // HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+}
+
+/**
+  * @brief RTC MSP De-Initialization
+  *        This function frees the hardware resources used in this example:
+  *          - Disable the Peripheral's clock
+  * @param hrtc: RTC handle pointer
+  * @retval None
+  */
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
+{
+  /*##-1- Reset peripherals ##################################################*/
+   __HAL_RCC_RTC_DISABLE();
+}
+
+
+void rtc_init_nohal(int force)
+{
+  RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Enable the PWR clock
+  PWR->CR |= PWR_CR_DBP;         // Allow access to RTC
+  RTC->WPR = 0xCA;         // Unlock write protection
+  RTC->WPR = 0x53;         // Unlock write protection
+  RCC->BDCR |= RCC_BDCR_BDRST;  // Make it possible to change clock source
+  RCC->BDCR &= ~RCC_BDCR_BDRST;  // Make it possible to change clock source
+
+  RCC->BDCR |= RCC_BDCR_LSEON;  // LSEON
+  while((RCC->BDCR & RCC_BDCR_LSERDY) == 0)      // Wait till LSE is ready
+   ;
+
+  RCC->BDCR |= RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0;  // RTCEN = 1, LSE, LSEON
+
+
+  while((RTC->ISR & RTC_ISR_RSF) == 0)   // Wait for RTC APB registers synchronisation
+    ;
+
+  RTC->WPR = 0xCA;         // Unlock write protection
+  RTC->WPR = 0x53;         // Unlock write protection
+  RTC->ISR |= RTC_ISR_INIT;   // Enter initialization mode
+
+  while((RTC->ISR & RTC_ISR_INITF) == 0)   // Poll INITF
+   ;
+
+  // Configure the RTC prescaler
+  RTC->PRER = 0x7F00FF;
+  RTC->PRER = 0x7F00FF;
+
+  RTC->TR = 0x221900u;      // Setting time to 12.35.00
+  RTC->DR = 0x211113u;      // Set date to  2012-07-18
+  RTC->CR &= ~RTC_CR_WUCKSEL_Msk; // Set FMT 24H format
+  RTC->ISR &= ~RTC_ISR_INIT;   // Exit initialization mode
+  RTC->WPR = 0xFF;         // Enable the write protection for RTC registers
+
+
+}
+
 
 /**
   * @brief  Main program
   * @param  None
   * @retval None
   */
-int main(void)
+void rtc_init(int force)
 {
-  /* Configure the system clock to 100 MHz */
-  SystemClock_Config();
 
-  /* Initialize LED2 */
-  LED_Init();
+  /*##-1- Configure the RTC peripheral #######################################*/
+  RtcHandle.Instance = RTC;
 
-  /*##-Configure the RTC peripheral #######################################*/
-  Configure_RTC_Clock();
-
-  /*##-Check if Data stored in BackUp register1: No Need to reconfigure RTC#*/
-  /* Read the Back Up Register 1 Data */
-  if (LL_RTC_BAK_GetRegister(RTC, LL_RTC_BKP_DR1) != RTC_BKP_DATE_TIME_UPDTATED)
-  {
-    /*##-Configure the RTC peripheral #######################################*/
-    Configure_RTC();
-
-    /* Configure RTC Calendar */
-    Configure_RTC_Calendar();
-  }
-
-  /* Turn-on LED2 to indicate that calendar has been well configured */
-  LED_On();
-
-  /* Infinite loop */
-  while (1)
-  {
-    /*##-3- Display the updated Time and Date ################################*/
-    Show_RTC_Calendar();
-  }
-}
-
-/**
-  * @brief  Configure RTC clock.
-  * @param  None
-  * @retval None
-  */
-void Configure_RTC_Clock(void)
-{
-  /*##-1- Enables the PWR Clock and Enables access to the backup domain #######*/
-  /* To change the source clock of the RTC feature (LSE, LSI), you have to:
-     - Enable the power clock
-     - Enable write access to configure the RTC clock source (to be done once after reset).
-     - Reset the Back up Domain
-     - Configure the needed RTC clock source */
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-  LL_PWR_EnableBkUpAccess();
-
-  /*##-2- Configure LSE/LSI as RTC clock source ###############################*/
-#ifdef RTC_CLOCK_SOURCE_LSE
-  /* Enable LSE only if disabled.*/
-  if (LL_RCC_LSE_IsReady() == 0)
-  {
-    LL_RCC_ForceBackupDomainReset();
-    LL_RCC_ReleaseBackupDomainReset();
-    LL_RCC_LSE_Enable();
-#if (USE_TIMEOUT == 1)
-    Timeout = LSE_TIMEOUT_VALUE;
-#endif /* USE_TIMEOUT */
-    while (LL_RCC_LSE_IsReady() != 1)
-    {
-#if (USE_TIMEOUT == 1)
-      if (LL_SYSTICK_IsActiveCounterFlag())
-      {
-        Timeout --;
-      }
-      if (Timeout == 0)
-      {
-        /* LSE activation error */
-        LED_Blinking(LED_BLINK_ERROR);
-      }
-#endif /* USE_TIMEOUT */
-    }
-    LL_RCC_SetRTCClockSource(LL_RCC_RTC_CLKSOURCE_LSE);
-  }
-#elif defined(RTC_CLOCK_SOURCE_LSI)
-  /* Enable LSI */
-  LL_RCC_LSI_Enable();
-#if (USE_TIMEOUT == 1)
-  Timeout = LSI_TIMEOUT_VALUE;
-#endif /* USE_TIMEOUT */
-  while (LL_RCC_LSI_IsReady() != 1)
-  {
-#if (USE_TIMEOUT == 1)
-    if (LL_SYSTICK_IsActiveCounterFlag())
-    {
-      Timeout --;
-    }
-    if (Timeout == 0)
-    {
-      /* LSI activation error */
-      LED_Blinking(LED_BLINK_ERROR);
-    }
-#endif /* USE_TIMEOUT */
-  }
-  /* Reset backup domain only if LSI is not yet selected as RTC clock source */
-  if (LL_RCC_GetRTCClockSource() != LL_RCC_RTC_CLKSOURCE_LSI)
-  {
-    LL_RCC_ForceBackupDomainReset();
-    LL_RCC_ReleaseBackupDomainReset();
-    LL_RCC_SetRTCClockSource(LL_RCC_RTC_CLKSOURCE_LSI);
-  }
-
-#else
-#error "configure clock for RTC"
-#endif
-}
-
-/**
-  * @brief  Configure RTC.
-  * @note   Peripheral configuration is minimal configuration from reset values.
-  *         Thus, some useless LL unitary functions calls below are provided as
-  *         commented examples - setting is default configuration from reset.
-  * @param  None
-  * @retval None
-  */
-void Configure_RTC(void)
-{
-  /*##-1- Enable RTC peripheral Clocks #######################################*/
-  /* Enable RTC Clock */
-  LL_RCC_EnableRTC();
-
-  /*##-2- Disable RTC registers write protection ##############################*/
-  LL_RTC_DisableWriteProtection(RTC);
-
-  /*##-3- Enter in initialization mode #######################################*/
-  if (Enter_RTC_InitMode() != RTC_ERROR_NONE)
-  {
-    /* Initialization Error */
-    LED_Blinking(LED_BLINK_ERROR);
-  }
-
-  /*##-4- Configure RTC ######################################################*/
   /* Configure RTC prescaler and RTC data registers */
-  /* Set Hour Format */
-  LL_RTC_SetHourFormat(RTC, LL_RTC_HOURFORMAT_AMPM);
-  /* Set Asynch Prediv (value according to source clock) */
-  LL_RTC_SetAsynchPrescaler(RTC, RTC_ASYNCH_PREDIV);
-  /* Set Synch Prediv (value according to source clock) */
-  LL_RTC_SetSynchPrescaler(RTC, RTC_SYNCH_PREDIV);
-  /* Set OutPut */
-  /* Reset value is LL_RTC_ALARMOUT_DISABLE */
-  //LL_RTC_SetAlarmOutEvent(RTC, LL_RTC_ALARMOUT_DISABLE);
-  /* Set OutPutPolarity */
-  /* Reset value is LL_RTC_OUTPUTPOLARITY_PIN_HIGH */
-  //LL_RTC_SetOutputPolarity(RTC, LL_RTC_OUTPUTPOLARITY_PIN_HIGH);
-  /* Set OutPutType */
-  /* Reset value is LL_RTC_ALARM_OUTPUTTYPE_OPENDRAIN */
-  //LL_RTC_SetAlarmOutputType(RTC, LL_RTC_ALARM_OUTPUTTYPE_OPENDRAIN);
+  /* RTC configured as follows:
+      - Hour Format    = Format 24
+      - Asynch Prediv  = Value according to source clock
+      - Synch Prediv   = Value according to source clock
+      - OutPut         = Output Disable
+      - OutPutPolarity = High Polarity
+      - OutPutType     = Open Drain */
+  RtcHandle.Init.HourFormat     = RTC_HOURFORMAT_24;
+  RtcHandle.Init.AsynchPrediv   = RTC_ASYNCH_PREDIV;
+  RtcHandle.Init.SynchPrediv    = RTC_SYNCH_PREDIV;
+  RtcHandle.Init.OutPut         = RTC_OUTPUT_DISABLE;
+  RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  RtcHandle.Init.OutPutType     = RTC_OUTPUT_TYPE_OPENDRAIN;
 
-  /*##-5- Exit of initialization mode #######################################*/
-  Exit_RTC_InitMode();
+  static bool initFailed = false;
 
-  /*##-6- Enable RTC registers write protection #############################*/
-  LL_RTC_EnableWriteProtection(RTC);
+  if (initFailed) {
+    DEBUG_ECHOLN("rtc_init: forcing __HAL_RCC_BACKUPRESET_FORCE");
+    __HAL_RCC_BACKUPRESET_FORCE();
+    __HAL_RCC_BACKUPRESET_RELEASE();
+    HAL_RTC_MspInit(&RtcHandle);
+    initFailed = false;
+  }
+
+  /* Do not re-initialize RTC in case it was already */
+  if ((RCC->BDCR & RCC_BDCR_RTCEN) == 0 || force)
+  {
+    DEBUG_ECHOLN("rtc_init: initializing rtc");
+    HAL_StatusTypeDef res = HAL_RTC_Init(&RtcHandle);
+    if (res != HAL_OK)
+    {
+      /* Initialization Error */
+      int state = RtcHandle.State;
+      int isr = RTC->ISR;
+      int rtc_cr = RTC->CR;
+
+      int pwr_cr = PWR->CR;
+      int rcc_bdcr = RCC->BDCR;
+      int rcc_cfgr = RCC->CFGR;
+
+      DEBUG_ECHOLNPAIR("rtc_init Error: HAL_RTC_Init(&RtcHandle) = ", res,
+      " state = ", state,
+      " isr = ", isr,
+      " rtc_cr = ", rtc_cr,
+      " pwr_cr = ", pwr_cr,
+      " rcc_bdcr = ", rcc_bdcr,
+      " rcc_cfgr = ", rcc_cfgr
+      );
+      initFailed = true;
+    }
+    else {
+      initFailed = false;
+    }
+
+    /*##-2- Configure Alarm ####################################################*/
+    /* Configure RTC Alarm */
+    RTC_AlarmConfig();
+  }
+  else
+  {
+    DEBUG_ECHOLN("rtc_init: rtc already initialized");
+    HAL_PWR_EnableBkUpAccess();
+  }
+
+  DEBUG_ECHOLNPAIR("rtc_init: RCC->BDCR = ", RCC->BDCR);
+
+
+  DEBUG_ECHOLN("rtc_init done");
+}
+
+void rtc_init2() {
+  RtcHandle.Instance = RTC;
+  HAL_RTC_MspInit(&RtcHandle);
 }
 
 /**
@@ -278,247 +299,101 @@ void Configure_RTC(void)
   * @param  None
   * @retval None
   */
-void Configure_RTC_Calendar(void)
+static void RTC_AlarmConfig(void)
 {
-  /*##-1- Disable RTC registers write protection ############################*/
-  LL_RTC_DisableWriteProtection(RTC);
+  RTC_DateTypeDef  sdatestructure;
+  RTC_TimeTypeDef  stimestructure;
 
-  /*##-2- Enter in initialization mode ######################################*/
-  if (Enter_RTC_InitMode() != RTC_ERROR_NONE)
+  /*##-1- Configure the Date #################################################*/
+  /* Set Date: Tuesday February 2nd 2017 */
+  sdatestructure.Year = 0x17;
+  sdatestructure.Month = RTC_MONTH_FEBRUARY;
+  sdatestructure.Date = 0x02;
+  sdatestructure.WeekDay = RTC_WEEKDAY_TUESDAY;
+
+  HAL_StatusTypeDef res = HAL_RTC_SetDate(&RtcHandle,&sdatestructure,RTC_FORMAT_BCD);
+  if(res != HAL_OK)
   {
     /* Initialization Error */
-    LED_Blinking(LED_BLINK_ERROR);
+    int state = RtcHandle.State;
+    int isr = RTC->ISR;
+    int rtc_cr = RTC->CR;
+
+    int pwr_cr = PWR->CR;
+    int rcc_bdcr = RCC->BDCR;
+    int rcc_cfgr = RCC->CFGR;
+
+    DEBUG_ECHOLNPAIR("RTC_AlarmConfig Error: HAL_RTC_SetDate(&RtcHandle,&sdatestructure,RTC_FORMAT_BCD) = ", res,
+    " state = ", state,
+    " isr = ", isr,
+    " rtc_cr = ", rtc_cr,
+    " pwr_cr = ", pwr_cr,
+    " rcc_bdcr = ", rcc_bdcr,
+    " rcc_cfgr = ", rcc_cfgr
+    );
   }
 
-  /*##-3- Configure the Date ################################################*/
-  /* Note: __LL_RTC_CONVERT_BIN2BCD helper macro can be used if user wants to*/
-  /*       provide directly the decimal value:                               */
-  /*       LL_RTC_DATE_Config(RTC, LL_RTC_WEEKDAY_MONDAY,                    */
-  /*                          __LL_RTC_CONVERT_BIN2BCD(31), (...))           */
-  /* Set Date: Friday December 29th 2016 */
-  LL_RTC_DATE_Config(RTC, LL_RTC_WEEKDAY_FRIDAY, 0x29, LL_RTC_MONTH_DECEMBER, 0x16);
+  /*##-2- Configure the Time #################################################*/
+  /* Set Time: 02:20:00 */
+  stimestructure.Hours = 0x02;
+  stimestructure.Minutes = 0x20;
+  stimestructure.Seconds = 0x00;
+  stimestructure.TimeFormat = RTC_HOURFORMAT12_AM;
+  stimestructure.DayLightSaving = RTC_DAYLIGHTSAVING_NONE ;
+  stimestructure.StoreOperation = RTC_STOREOPERATION_RESET;
 
-  /*##-4- Configure the Time ################################################*/
-  /* Set Time: 11:59:55 PM*/
-  LL_RTC_TIME_Config(RTC, LL_RTC_TIME_FORMAT_PM, 0x11, 0x59, 0x55);
-
-  /*##-5- Exit of initialization mode #######################################*/
-  if (Exit_RTC_InitMode() != RTC_ERROR_NONE)
+  res = HAL_RTC_SetTime(&RtcHandle,&stimestructure,RTC_FORMAT_BCD);
+  if(res != HAL_OK)
   {
     /* Initialization Error */
-    LED_Blinking(LED_BLINK_ERROR);
+    int state = RtcHandle.State;
+    int isr = RTC->ISR;
+    int rtc_cr = RTC->CR;
+
+    int pwr_cr = PWR->CR;
+    int rcc_bdcr = RCC->BDCR;
+    int rcc_cfgr = RCC->CFGR;
+
+    DEBUG_ECHOLNPAIR("RTC_AlarmConfig Error: HAL_RTC_SetTime(&RtcHandle,&stimestructure,RTC_FORMAT_BCD) = ", res,
+    " state = ", state,
+    " isr = ", isr,
+    " rtc_cr = ", rtc_cr,
+    " pwr_cr = ", pwr_cr,
+    " rcc_bdcr = ", rcc_bdcr,
+    " rcc_cfgr = ", rcc_cfgr
+    );
   }
 
-  /*##-6- Enable RTC registers write protection #############################*/
-  LL_RTC_EnableWriteProtection(RTC);
-
-  /*##-8- Writes a data in a RTC Backup data Register1 #######################*/
-  LL_RTC_BAK_SetRegister(RTC, LL_RTC_BKP_DR1, RTC_BKP_DATE_TIME_UPDTATED);
 }
 
 /**
-  * @brief  Enter in initialization mode
-  * @note In this mode, the calendar counter is stopped and its value can be updated
-  * @param  None
-  * @retval RTC_ERROR_NONE if no error
-  */
-uint32_t Enter_RTC_InitMode(void)
-{
-  /* Set Initialization mode */
-  LL_RTC_EnableInitMode(RTC);
-
-#if (USE_TIMEOUT == 1)
-    Timeout = RTC_TIMEOUT_VALUE;
-#endif /* USE_TIMEOUT */
-
-  /* Check if the Initialization mode is set */
-  while (LL_RTC_IsActiveFlag_INIT(RTC) != 1)
-  {
-#if (USE_TIMEOUT == 1)
-      if (LL_SYSTICK_IsActiveCounterFlag())
-    {
-        Timeout --;
-    }
-      if (Timeout == 0)
-    {
-      return RTC_ERROR_TIMEOUT;
-    }
-#endif /* USE_TIMEOUT */
-  }
-
-  return RTC_ERROR_NONE;
-}
-
-/**
-  * @brief  Exit Initialization mode
-  * @param  None
-  * @retval RTC_ERROR_NONE if no error
-  */
-uint32_t Exit_RTC_InitMode(void)
-{
-  LL_RTC_DisableInitMode(RTC);
-
-  /* Wait for synchro */
-  /* Note: Needed only if Shadow registers is enabled           */
-  /*       LL_RTC_IsShadowRegBypassEnabled function can be used */
-  return (WaitForSynchro_RTC());
-}
-
-/**
-  * @brief  Wait until the RTC Time and Date registers (RTC_TR and RTC_DR) are
-  *         synchronized with RTC APB clock.
-  * @param  None
-  * @retval RTC_ERROR_NONE if no error (RTC_ERROR_TIMEOUT will occur if RTC is
-  *         not synchronized)
-  */
-uint32_t WaitForSynchro_RTC(void)
-{
-  /* Clear RSF flag */
-  LL_RTC_ClearFlag_RS(RTC);
-
-#if (USE_TIMEOUT == 1)
-    Timeout = RTC_TIMEOUT_VALUE;
-#endif /* USE_TIMEOUT */
-
-  /* Wait the registers to be synchronised */
-  while(LL_RTC_IsActiveFlag_RS(RTC) != 1)
-  {
-#if (USE_TIMEOUT == 1)
-      if (LL_SYSTICK_IsActiveCounterFlag())
-    {
-        Timeout --;
-    }
-      if (Timeout == 0)
-    {
-      return RTC_ERROR_TIMEOUT;
-    }
-#endif /* USE_TIMEOUT */
-  }
-  return RTC_ERROR_NONE;
-}
-
-/**
-  * @brief  Display the current time and date.
-  * @param  None
+  * @brief  Display the current time.
+  * @param  showtime : pointer to buffer
   * @retval None
   */
-void Show_RTC_Calendar(void)
+static void RTC_TimeShow(uint8_t* showtime)
 {
-  /* Note: need to convert in decimal value in using __LL_RTC_CONVERT_BCD2BIN helper macro */
+  RTC_DateTypeDef sdatestructureget = {0};
+  RTC_TimeTypeDef stimestructureget = {0};
+
+  /* Get the RTC current Time */
+  HAL_StatusTypeDef rest = HAL_RTC_GetTime(&RtcHandle, &stimestructureget, RTC_FORMAT_BIN);
+
+  /* Get the RTC current Date */
+  HAL_StatusTypeDef resd = HAL_RTC_GetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
+
+  SERIAL_ECHOLNPAIR("RTC_TimeShow rest:", rest, " resd:", resd, " d:", sdatestructureget.Year, "-", sdatestructureget.Month, "-", sdatestructureget.Date,
+    " ", stimestructureget.Hours, ":", stimestructureget.Minutes, ":", stimestructureget.Seconds );
+
   /* Display time Format : hh:mm:ss */
-  sprintf((char*)aShowTime,"%.2d:%.2d:%.2d", __LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetHour(RTC)),
-          __LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetMinute(RTC)),
-          __LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetSecond(RTC)));
-  /* Display date Format : mm-dd-yy */
-  sprintf((char*)aShowDate,"%.2d-%.2d-%.2d", __LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetMonth(RTC)),
-          __LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetDay(RTC)),
-          2000 + __LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetYear(RTC)));
+  ////sprintf((char*)showtime,"%02d:%02d:%02d",stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
 }
 
-/**
-  * @brief  Initialize LED2.
-  * @param  None
-  * @retval None
-  */
-void LED_Init(void)
-{
-  /* Enable the LED2 Clock */
-  LED2_GPIO_CLK_ENABLE();
+void rtc_print_debug() {
+  uint8_t stringBuff[50] = {0};
+  RTC_TimeShow(stringBuff);
 
-  /* Configure IO in output push-pull mode to drive external LED2 */
-  LL_GPIO_SetPinMode(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_MODE_OUTPUT);
-  /* Reset value is LL_GPIO_OUTPUT_PUSHPULL */
-  //LL_GPIO_SetPinOutputType(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_OUTPUT_PUSHPULL);
-  /* Reset value is LL_GPIO_SPEED_FREQ_LOW */
-  //LL_GPIO_SetPinSpeed(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_SPEED_FREQ_LOW);
-  /* Reset value is LL_GPIO_PULL_NO */
-  //LL_GPIO_SetPinPull(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_PULL_NO);
-}
-
-/**
-  * @brief  Turn-on LED2.
-  * @param  None
-  * @retval None
-  */
-void LED_On(void)
-{
-  /* Turn LED2 on */
-  LL_GPIO_SetOutputPin(LED2_GPIO_PORT, LED2_PIN);
-}
-
-/**
-  * @brief  Set LED2 to Blinking mode for an infinite loop (toggle period based on value provided as input parameter).
-  * @param  Period : Period of time (in ms) between each toggling of LED
-  *   This parameter can be user defined values. Pre-defined values used in that example are :
-  *     @arg LED_BLINK_FAST : Fast Blinking
-  *     @arg LED_BLINK_SLOW : Slow Blinking
-  *     @arg LED_BLINK_ERROR : Error specific Blinking
-  * @retval None
-  */
-void LED_Blinking(uint32_t Period)
-{
-  /* Toggle IO in an infinite loop */
-  while (1)
-  {
-    LL_GPIO_TogglePin(LED2_GPIO_PORT, LED2_PIN);
-    LL_mDelay(Period);
-  }
-}
-
-/**
-  * @brief  System Clock Configuration
-  *         The system Clock is configured as follow :
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 100000000
-  *            HCLK(Hz)                       = 100000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 2
-  *            APB2 Prescaler                 = 1
-  *            HSE Frequency(Hz)              = 8000000
-  *            PLL_M                          = 8
-  *            PLL_N                          = 400
-  *            PLL_P                          = 4
-  *            VDD(V)                         = 3.3
-  *            Main regulator output voltage  = Scale1 mode
-  *            Flash Latency(WS)              = 3
-  * @param  None
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
-  /* Enable HSE oscillator */
-  LL_RCC_HSE_EnableBypass();
-  LL_RCC_HSE_Enable();
-  while(LL_RCC_HSE_IsReady() != 1)
-  {
-  };
-
-  /* Set FLASH latency */
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_3);
-
-  /* Main PLL configuration and activation */
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_8, 400, LL_RCC_PLLP_DIV_4);
-  LL_RCC_PLL_Enable();
-  while(LL_RCC_PLL_IsReady() != 1)
-  {
-  };
-
-  /* Sysclk activation on the main PLL */
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
-  {
-  };
-
-  /* Set APB1 & APB2 prescaler */
-  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
-  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
-
-  /* Set systick to 1ms */
-  SysTick_Config(100000000 / 1000);
-
-  /* Update CMSIS variable (which can be updated also through SystemCoreClockUpdate function) */
-  SystemCoreClock = 100000000;
+  //SERIAL_ECHOLNPAIR("echo: RTC: ", stringBuff);
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -542,12 +417,10 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif
 
-/**
-  * @}
-  */
 
-/**
-  * @}
-  */
 
+
+#endif
+
+#endif
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

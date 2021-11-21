@@ -33,8 +33,8 @@
 #define X2_MIN_PIN PE6
 #define HAS_X2_MIN 1
 // PW_DET / J19
-#define X2_MAX_PIN PA13
-#define HAS_X2_MAX 1
+////FIXME: #define X2_MAX_PIN PA13
+////FIXME: #define HAS_X2_MAX 1
 
 /***** Controller fan used for stepper driver cooling *****/
 // FAN2 / J23
@@ -81,6 +81,12 @@
 // Include MKS ROBIN NANO V3 pins
 //
 #include "pins_MKS_ROBIN_NANO_V3.h"
+
+#undef POWER_LOSS_PIN
+#undef PW_DET
+
+#undef SD_DETECT_PIN
+#define SD_DETECT_PIN PD10
 
 #undef BOARD_INFO_NAME
 #define BOARD_INFO_NAME "ArcDroid V1.2-2"

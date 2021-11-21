@@ -1490,6 +1490,10 @@ void setup() {
     SETUP_RUN(watchdog_init());       // Reinit watchdog after HAL_get_reset_source call
   #endif
 
+  #if ENABLED(USE_RTC)
+    SETUP_RUN(rtc_init(0));
+  #endif
+
   #if ENABLED(EXTERNAL_CLOSED_LOOP_CONTROLLER)
     SETUP_RUN(closedloop.init());
   #endif

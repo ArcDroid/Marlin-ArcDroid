@@ -1121,6 +1121,10 @@ private:
     static void M710();
   #endif
 
+  #if ENABLED(USE_RTC)
+    static void M1200();
+  #endif
+
   static void T(const int8_t tool_index);
 
 };

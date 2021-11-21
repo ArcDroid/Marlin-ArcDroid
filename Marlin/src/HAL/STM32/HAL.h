@@ -31,6 +31,7 @@
 #include "fastio.h"
 #include "Servo.h"
 #include "watchdog.h"
+#include "rtc.h"
 #include "MarlinSerial.h"
 
 #include "../../inc/MarlinConfigPre.h"
