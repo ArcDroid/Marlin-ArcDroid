@@ -3501,6 +3501,8 @@
  */
 #define AUTO_REPORT_POSITION
 
+#define REPORT_POSITION_ENDSTOP_BITS
+
 /**
  * Include capabilities in M115 output
  */

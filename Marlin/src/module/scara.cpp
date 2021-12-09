@@ -347,7 +347,7 @@ float segments_per_second = TERN(AXEL_TPARA, TPARA_SEGMENTS_PER_SECOND, SCARA_SE
 #endif
 
 void scara_report_positions() {
-  SERIAL_ECHOLNPAIR("SCARA Theta:", planner.get_axis_position_degrees(A_AXIS)
+  SERIAL_ECHOLNPAIR(" SCARA Theta:", planner.get_axis_position_degrees(A_AXIS)
     #if ENABLED(AXEL_TPARA)
       , "  Phi:", planner.get_axis_position_degrees(B_AXIS)
       , "  Psi:", planner.get_axis_position_degrees(C_AXIS)

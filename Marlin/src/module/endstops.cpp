@@ -535,10 +535,10 @@ void Endstops::update() {
 
   #if BOTH(G38_PROBE_TARGET, HAS_Z_MIN_PROBE_PIN) && NONE(CORE_IS_XY, CORE_IS_XZ, MARKFORGED_XY)
     // If G38 command is active check Z_MIN_PROBE for ALL movement
-    if (G38_move) {
+    if (G38_move || 1) {
       UPDATE_ENDSTOP_BIT(Z, MIN_PROBE);
       UPDATE_ENDSTOP_BIT(X2, MIN);
-      ////FIXME: UPDATE_ENDSTOP_BIT(X2, MAX);
+      UPDATE_ENDSTOP_BIT(X2, MAX);
       UPDATE_ENDSTOP_BIT(Y2, MAX);
     }
   #endif

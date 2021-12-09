@@ -118,6 +118,20 @@ class ClosedLoopMarlin : public S42BClosedLoop {
     // correct encoder home offset when home offset is changed another way
     void offset_encoder_home(float delta_mm) {
         float delta_counts = delta_mm * encoder_counts_per_unit();
+
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+            DEBUG_ECHO("offset_encoder_home 001 axis:");
+            DEBUG_CHAR(AXIS_LETTER);
+            DEBUG_ECHOPAIR(" delta_mm: ", delta_mm);
+            DEBUG_ECHOPAIR(" encoder_counts_per_unit(): ", encoder_counts_per_unit());
+            DEBUG_ECHOPAIR(" delta_counts: ", delta_counts);
+            DEBUG_ECHOPAIR(" encoder_offset (before): ", encoder_offset);
+            DEBUG_ECHOPAIR(" encoder_offset (after): ", (int32_t)(encoder_offset + delta_counts));
+            DEBUG_EOL();
+        }
+        #endif
+
         encoder_offset += delta_counts;
     }
 
@@ -200,6 +214,8 @@ class ClosedLoopMarlin : public S42BClosedLoop {
             DEBUG_ECHOPAIR(" delta: ", delta);
             DEBUG_ECHOPAIR(" expected_pulse: ", expected_pulse);
             DEBUG_ECHOPAIR(" measured_pulse: ", measured_pulse);
+            DEBUG_ECHOPAIR(" new_position: ", new_position);
+            DEBUG_ECHOPAIR(" encoder_counts_per_unit: ", encoder_counts_per_unit());
             DEBUG_ECHOPAIR(" encoder_offset: ", encoder_offset);
             DEBUG_EOL();
         }
@@ -241,14 +257,6 @@ class ClosedLoopMarlin : public S42BClosedLoop {
 
     int32_t get_home_offset() {
         int32_t offset = encoder_offset;
-        int32_t half = (encoder_counts_per_rev>>1);
-
-        offset = offset % encoder_counts_per_rev;
-        if (offset > half) {
-            offset -= encoder_counts_per_rev;
-        } else if (offset <= -half) {
-            offset += encoder_counts_per_rev;
-        }
         return offset;
     }
 

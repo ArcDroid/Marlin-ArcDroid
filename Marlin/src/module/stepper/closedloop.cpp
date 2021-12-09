@@ -130,19 +130,19 @@ void restore_closedloop_drivers() {
 void closedloop_home_encoders(AxisEnum axis, abce_pos_t motor_pos, bool calibrate_home) {
     #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
-        DEBUG_ECHOPAIR("closedloop_home_encoders axis: ", axis);
+        DEBUG_ECHOPAIR("closedloop_home_encoders axis: ", axis, " motor_pos: ", motor_pos[axis]);
         DEBUG_EOL();
     }
     #endif
     #if AXIS_IS_CLOSEDLOOP(X)
-      if (axis && _BV(X_AXIS)) {
+      if (axis & _BV(X_AXIS)) {
         encoderX.touch_off_encoder(motor_pos.x, calibrate_home);
         // set_position_from_encoders_force will pick it back up
         set_axis_untrusted(X_AXIS);
       }
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-      if (axis && _BV(Y_AXIS)) {
+      if (axis & _BV(Y_AXIS)) {
         encoderY.touch_off_encoder(motor_pos.y, calibrate_home);
         set_axis_untrusted(Y_AXIS);
       }
@@ -175,11 +175,11 @@ bool closedloop_need_restore() {
 
 void closedloop_unhome(AxisEnum axis) {
     #if AXIS_IS_CLOSEDLOOP(X)
-        if (axis && _BV(X_AXIS))
+        if (axis & _BV(X_AXIS))
             encoderX.homed = false;
     #endif
     #if AXIS_IS_CLOSEDLOOP(Y)
-        if (axis && _BV(Y_AXIS))
+        if (axis & _BV(Y_AXIS))
             encoderY.homed = false;
     #endif
 }

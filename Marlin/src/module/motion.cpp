@@ -209,7 +209,10 @@ inline void report_more_positions() {
       SERIAL_ECHO(" CS:53 OX:0 OY:0 OZ:0 OR:0");
     }
   #endif
-  TERN_(IS_SCARA, scara_report_positions());
+  #if ENABLED(REPORT_POSITION_ENDSTOP_BITS)
+    SERIAL_ECHOPAIR(" ES:", (int32_t) endstops.state());
+  #endif
+  //TERN_(IS_SCARA, scara_report_positions());
   SERIAL_EOL();
 }
 
@@ -241,6 +244,13 @@ void report_real_position() {
     cartes = backup_cart;
     enc_xyz.z = pos.z;
 
+    // if motors are off
+    if (closedloop_need_restore()) {
+      planner.set_machine_position_mm(pos);
+      set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+      planner.position_cart = cartes;
+    }
+
     abce_pos_t expected = planner.get_axis_positions_mm();
     float da = pos.a - expected.a;
     float db = pos.b - expected.b;
@@ -252,7 +262,7 @@ void report_real_position() {
   npos.e = planner.get_axis_position_mm(E_AXIS);
   TERN_(HAS_POSITION_MODIFIERS, planner.unapply_modifiers(npos, true));
   report_logical_position(npos);
-  SERIAL_ECHOPAIR(" ErrA:", da, " ErrB:", db);
+  //SERIAL_ECHOPAIR(" ErrA:", da, " ErrB:", db);
   report_more_positions();
 }
 
@@ -429,11 +439,26 @@ void set_current_from_steppers_for_axis(const AxisEnum axis) {
       enable_all_steppers();
       delay(100);
     }
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+        DEBUG_ECHOPAIR("set_position_from_encoders_force get_axis_positions_mm X:", pos.x, " Y:", pos.y);
+        DEBUG_EOL();
+    }
+    #endif
+
     bool valid_pos = closedloop_restore_position(&pos, enable_motors, false);
     if (!valid_pos) {
       return;
     }
+
     planner.set_machine_position_mm(pos);
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+        DEBUG_ECHOPAIR("set_position_from_encoders_force closedloop_restore_position X:", pos.x, " Y:", pos.y);
+        DEBUG_EOL();
+    }
+    #endif
+
     set_current_from_steppers_for_axis(ALL_AXES_ENUM);
     planner.position_cart = cartes;
   }
