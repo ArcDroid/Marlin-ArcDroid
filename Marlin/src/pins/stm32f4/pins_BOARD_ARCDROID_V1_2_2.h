@@ -33,8 +33,11 @@
 #define X2_MIN_PIN PE6
 #define HAS_X2_MIN 1
 // PW_DET / J19
-////FIXME: #define X2_MAX_PIN PA13
-////FIXME: #define HAS_X2_MAX 1
+#define X2_MAX_PIN PD3
+#define HAS_X2_MAX 1
+
+#define USB_CONNECT_PIN PD6
+#define USB_CONNECT_INVERTING false
 
 /***** Controller fan used for stepper driver cooling *****/
 // FAN2 / J23
