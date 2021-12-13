@@ -71,7 +71,7 @@
 
     // Pretend the current position is 0,0
     #if IS_SCARA
-    current_position.set(0.0 + SCARA_OFFSET_X, 0.0 + SCARA_OFFSET_Y);
+    //current_position.set(0.0 + SCARA_OFFSET_X, 0.0 + SCARA_OFFSET_Y);
     #else
     current_position.set(0.0, 0.0);
     #endif
@@ -115,7 +115,9 @@
 
     endstops.validate_homing_move();
 
+    #if IS_SCARA
     current_position.set(0.0, 0.0);
+    #endif
 
     #if ENABLED(SENSORLESS_HOMING) && DISABLED(ENDSTOPS_ALWAYS_ON_DEFAULT)
       tmc_disable_stallguard(stepperX, stealth_states.x);
