@@ -59,6 +59,10 @@
   #include "../feature/runout.h"
 #endif
 
+#if ENABLED(TORCH_HEIGHT_CONTROL)
+  #include "../feature/thc.h"
+#endif
+
 #if ENABLED(SENSORLESS_HOMING)
   #include "../feature/tmc_util.h"
 #endif
@@ -211,6 +215,10 @@ inline void report_more_positions() {
   #endif
   #if ENABLED(REPORT_POSITION_ENDSTOP_BITS)
     SERIAL_ECHOPAIR(" ES:", (int32_t) endstops.state());
+  #endif
+  #if ENABLED(TORCH_HEIGHT_CONTROL)
+    SERIAL_ECHOPAIR(" THC:", (int32_t) thc.raw);
+    SERIAL_ECHOPAIR(" TH1:", (int32_t) thc_th1.raw);
   #endif
   //TERN_(IS_SCARA, scara_report_positions());
   SERIAL_EOL();

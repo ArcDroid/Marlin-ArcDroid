@@ -39,6 +39,9 @@
 #define USB_CONNECT_PIN PD6
 #define USB_CONNECT_INVERTING false
 
+#define THC_PIN PC0
+#define TH1_PIN PC1
+
 /***** Controller fan used for stepper driver cooling *****/
 // FAN2 / J23
 #define CONTROLLER_FAN_PIN PB1

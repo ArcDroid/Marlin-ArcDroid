@@ -1639,6 +1639,15 @@ static_assert(hbm[Z_AXIS] >= 0, "HOMING_BUMP_MM.Z must be greater than or equal 
 #endif
 
 /**
+ * Torch Hight Voltage Sensor
+ */
+#if ENABLED(TORCH_HEIGHT_CONTROL)
+  #if !HAS_TORCH_HEIGHT_CONTROL
+    #error "TORCH_HEIGHT_CONTROL requires a THC_PIN to be defined."
+  #endif
+#endif
+
+/**
  * System Power Sensor
  */
 #if ENABLED(POWER_MONITOR_CURRENT) && !PIN_EXISTS(POWER_MONITOR_CURRENT)

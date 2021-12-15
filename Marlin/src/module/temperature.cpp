@@ -176,6 +176,10 @@
   #include "../feature/filwidth.h"
 #endif
 
+#if ENABLED(TORCH_HEIGHT_CONTROL)
+  #include "../feature/thc.h"
+#endif
+
 #if HAS_POWER_MONITOR
   #include "../feature/power_monitor.h"
 #endif
@@ -1279,6 +1283,10 @@ void Temperature::manage_heater() {
     filwidth.update_volumetric();
   #endif
 
+  #if ENABLED(TORCH_HEIGHT_CONTROL)
+    thc.update_height();
+  #endif
+
   #if HAS_HEATED_BED
 
     #if ENABLED(THERMAL_PROTECTION_BED)
@@ -1915,6 +1923,7 @@ void Temperature::updateTemperaturesFromRawValues() {
   TERN_(HAS_TEMP_PROBE,   temp_probe.celsius   = analog_to_celsius_probe(temp_probe.raw));
 
   TERN_(FILAMENT_WIDTH_SENSOR, filwidth.update_measured_mm());
+  TERN_(TORCH_HEIGHT_CONTROL,  thc.update_measured_units());
   TERN_(HAS_POWER_MONITOR,     power_monitor.capture_values());
 
   #if HAS_HOTEND
@@ -2208,6 +2217,9 @@ void Temperature::init() {
   #endif
   #if ENABLED(FILAMENT_WIDTH_SENSOR)
     HAL_ANALOG_SELECT(FILWIDTH_PIN);
+  #endif
+  #if ENABLED(TORCH_HEIGHT_CONTROL)
+    HAL_ANALOG_SELECT(THC_PIN);
   #endif
   #if HAS_ADC_BUTTONS
     HAL_ANALOG_SELECT(ADC_KEYPAD_PIN);
@@ -2731,6 +2743,10 @@ void Temperature::update_raw_temperatures() {
     #endif
   #endif
 
+
+  TERN_(TORCH_HEIGHT_CONTROL, thc.update());
+  TERN_(TORCH_HEIGHT_CONTROL, thc_th1.update());
+
   TERN_(HAS_TEMP_ADC_2, temp_hotend[2].update());
   TERN_(HAS_TEMP_ADC_3, temp_hotend[3].update());
   TERN_(HAS_TEMP_ADC_4, temp_hotend[4].update());
@@ -2761,6 +2777,9 @@ void Temperature::readings_ready() {
 
   // Filament Sensor - can be read any time since IIR filtering is used
   TERN_(FILAMENT_WIDTH_SENSOR, filwidth.reading_ready());
+
+  TERN_(TORCH_HEIGHT_CONTROL, thc.reset());
+  TERN_(TORCH_HEIGHT_CONTROL, thc_th1.reset());
 
   #if HAS_HOTEND
     HOTEND_LOOP() temp_hotend[e].reset();
@@ -3237,6 +3256,14 @@ void Temperature::isr() {
         if (!HAL_ADC_READY()) next_sensor_state = adc_sensor_state; // Redo this state
         else filwidth.accumulate(HAL_READ_ADC());
       break;
+    #endif
+
+    #if ENABLED(TORCH_HEIGHT_CONTROL)
+      case Prepare_THC: HAL_START_ADC(THC_PIN); break;
+      case Measure_THC: ACCUMULATE_ADC(thc); break;
+
+      case Prepare_THC1: HAL_START_ADC(TH1_PIN); break;
+      case Measure_THC1: ACCUMULATE_ADC(thc_th1); break;
     #endif
 
     #if ENABLED(POWER_MONITOR_CURRENT)

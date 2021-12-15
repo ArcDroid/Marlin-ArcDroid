@@ -36,6 +36,9 @@
 #define X2_MAX_PIN PA13
 #define HAS_X2_MAX 1
 
+#define THC_PIN PC0
+#define TH1_PIN PC1
+
 /***** Controller fan used for stepper driver cooling *****/
 #define CONTROLLER_FAN_PIN PB1
 

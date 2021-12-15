@@ -3451,6 +3451,11 @@
   //#define FILAMENT_LCD_DISPLAY
 #endif
 
+#define TORCH_HEIGHT_CONTROL
+#if ENABLED(TORCH_HEIGHT_CONTROL)
+  // TODO: config for THC here
+#endif
+
 /**
  * Power Monitor
  * Monitor voltage (V) and/or current (A), and -when possible- power (W)

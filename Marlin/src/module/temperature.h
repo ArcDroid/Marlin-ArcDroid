@@ -138,6 +138,10 @@ enum ADCSensorState : char {
   #if ENABLED(FILAMENT_WIDTH_SENSOR)
     Prepare_FILWIDTH, Measure_FILWIDTH,
   #endif
+  #if ENABLED(TORCH_HEIGHT_CONTROL)
+    Prepare_THC, Measure_THC,
+    Prepare_THC1, Measure_THC1,
+  #endif
   #if ENABLED(POWER_MONITOR_CURRENT)
     Prepare_POWER_MONITOR_CURRENT,
     Measure_POWER_MONITOR_CURRENT,

@@ -2319,6 +2319,10 @@
   #define HAS_FILAMENT_WIDTH_SENSOR 1
 #endif
 
+#if PIN_EXISTS(THC)
+  #define HAS_TORCH_HEIGHT_CONTROL 1
+#endif
+
 // User Interface
 #if ENABLED(FREEZE_FEATURE)
   #if !PIN_EXISTS(FREEZE) && PIN_EXISTS(KILL)
