@@ -807,9 +807,9 @@
 
 // Calibration probe pins
 /// NC switches for arc radius calibration jig
-#define X2_MIN_ENDSTOP_INVERTING false
-#define X2_MAX_ENDSTOP_INVERTING false
-#define Y2_MAX_ENDSTOP_INVERTING false
+#define X2_MIN_ENDSTOP_INVERTING true
+#define X2_MAX_ENDSTOP_INVERTING true
+#define Y2_MAX_ENDSTOP_INVERTING true
 
 /**
  * Stepper Drivers
