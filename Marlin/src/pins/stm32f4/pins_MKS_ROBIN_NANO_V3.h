@@ -162,8 +162,12 @@
 //
 // Heaters / Fans
 //
+#ifndef HEATER_0_PIN
 #define HEATER_0_PIN                        PE5   // HEATER1
+#endif
+#ifndef HEATER_1_PIN
 #define HEATER_1_PIN                        PB0   // HEATER2
+#endif
 #ifndef HEATER_BED_PIN
 #define HEATER_BED_PIN                      PA0   // HOT BED
 #endif

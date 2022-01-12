@@ -72,6 +72,11 @@
 #define PIN_SERIAL4_TX          PA0
 
 /***** Torch output pin *****/
+// disable bed heat, using that pin for torch
+#define HEATER_BED_PIN -1
+#define HEATER_0_PIN PE8
+#define HEATER_1_PIN PE8
+
 // HEATER1 / J12 3,4 relay
 #define SPINDLE_LASER_ENA_PIN PE5
 #ifdef MINI_MODEL_2AM

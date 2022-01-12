@@ -413,7 +413,10 @@ void CardReader::mount() {
     #if defined(LCD_SDSS) && (LCD_SDSS != SDSS)
       && !driver->init(SD_SPI_SPEED, LCD_SDSS)
     #endif
-  ) SERIAL_ECHO_MSG(STR_SD_INIT_FAIL);
+  ) {
+    SERIAL_ECHO_MSG(STR_SD_INIT_FAIL);
+    DEBUG_ECHOLNPAIR("errorCode:", ((DiskIODriver_SPI_SD*)driver)->errorCode(), "errorData:", ((DiskIODriver_SPI_SD*)driver)->errorData());
+  }
   else if (!volume.init(driver))
     SERIAL_ERROR_MSG(STR_SD_VOL_INIT_FAIL);
   else if (!root.openRoot(&volume))

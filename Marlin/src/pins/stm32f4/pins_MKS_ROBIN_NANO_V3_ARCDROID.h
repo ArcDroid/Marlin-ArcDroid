@@ -77,5 +77,9 @@
 #undef POWER_LOSS_PIN
 #undef PW_DET
 
+
+#undef SD_DETECT_PIN
+#define SD_DETECT_PIN PD10
+
 #undef BOARD_INFO_NAME
 #define BOARD_INFO_NAME "MKS Robin Nano V3 for ArcDroid"

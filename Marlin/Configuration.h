@@ -569,7 +569,7 @@
 // PID Tuning Guide here: https://reprap.org/wiki/PID_Tuning
 
 // Comment the following line to disable PID and enable bang-bang.
-#define PIDTEMP
+////#define PIDTEMP
 #define BANG_MAX 255     // Limits current to nozzle while in bang-bang mode; 255=full current
 #define PID_MAX BANG_MAX // Limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
 #define PID_K1 0.95      // Smoothing factor within any PID loop
@@ -1299,16 +1299,17 @@
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #if defined(MINI_MODEL_2AM)
-#define INVERT_X_DIR false
-#define INVERT_Y_DIR true
+#define INVERT_X_DIR true
+#define INVERT_Y_DIR false
+#define INVERT_Z_DIR true
 #elif defined(PPR_INVERT_MOTORS)
 #define INVERT_X_DIR true
 #define INVERT_Y_DIR true
 #else
 #define INVERT_X_DIR false
 #define INVERT_Y_DIR false
-#endif
 #define INVERT_Z_DIR false
+#endif
 
 // @section extruder
 

@@ -3222,8 +3222,6 @@
 //#define SPINDLE_FEATURE
 #define LASER_FEATURE
 
-// disable bed heat, using that pin for torch
-#define HEATER_BED_PIN -1
 
 #if EITHER(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_STATE    HIGH   // Set to "HIGH" if the on/off function is active HIGH
