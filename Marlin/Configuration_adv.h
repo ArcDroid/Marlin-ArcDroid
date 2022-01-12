@@ -3086,11 +3086,15 @@
 #ifdef HAS_CLOSEDLOOP_CONFIG
   #define HAS_CLOSEDLOOP_HW_SERIAL 1
   #ifdef X_ENCODER_TYPE
-    #ifdef MINI_MODEL_2AM
-    // encoder 4096 pulses/step, stepper 32 usteps/step
-    #define X_ENCODER_PPS (-4096.0/32.0)
+    #ifdef XY_MOTOR_STEPS
+      #define X_ENCODER_PPS (819200.0/XY_MOTOR_STEPS/X_MICROSTEPS)
+    #elif defined(MINI_MODEL_2AM)
+      // encoder 819200 pulses/rev, 200 steps/rev motor, stepper 32 usteps/step
+      // motor is upside-down on mini machine
+      #define X_ENCODER_PPS (-819200.0/200/X_MICROSTEPS)
     #else
-    #define X_ENCODER_PPS (4096.0/32.0)
+      // 0.9deg / 400 s/rev motor on production machine
+      #define X_ENCODER_PPS (819200.0/400/X_MICROSTEPS)
     #endif
     #define X_ENCODER_PPR 819200
     //#define X_ENCODER_SERIAL_RX_PIN PE14
@@ -3102,10 +3106,15 @@
     //#define PIN_SERIAL3_TX          PB10
   #endif
   #ifdef Y_ENCODER_TYPE
-    #ifdef MINI_MODEL_2AM
-    #define Y_ENCODER_PPS (4096.0/32.0)
+    #ifdef XY_MOTOR_STEPS
+      #define Y_ENCODER_PPS (819200.0/XY_MOTOR_STEPS/X_MICROSTEPS)
+    #elif defined(MINI_MODEL_2AM)
+      // encoder 819200 pulses/rev, 200 steps/rev motor, stepper 32 usteps/step
+      // motor is upside-down on mini machine
+      #define Y_ENCODER_PPS (-819200.0/200/Y_MICROSTEPS)
     #else
-    #define Y_ENCODER_PPS (4096.0/32.0)
+      // 0.9deg / 400 s/rev motor on production machine
+      #define Y_ENCODER_PPS (819200.0/400/Y_MICROSTEPS)
     #endif
     #define Y_ENCODER_PPR 819200
     //#define Y_ENCODER_SERIAL_RX_PIN PD11
