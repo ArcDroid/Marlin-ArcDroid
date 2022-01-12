@@ -28,6 +28,8 @@
   #include "../../feature/encoder_i2c.h"
 #endif
 
+#include "../../module/probe.h"
+
 /**
  * G92: Set the Current Position to the given X Y Z E values.
  *
@@ -84,11 +86,13 @@ void GcodeSuite::G92() {
       #if HAS_CLOSEDLOOP_CONFIG
         set_position_from_encoders_if_lost(false);
       #endif
+      bool applyProbeOffset = parser.seenval('P');
 
       LOOP_LOGICAL_AXES(i) {
         if (parser.seenval(axis_codes[i])) {
           const float l = parser.value_axis_units((AxisEnum)i),       // Given axis coordinate value, converted to millimeters
-                      v = i == E_AXIS ? l : LOGICAL_TO_NATIVE(l, i),  // Axis position in NATIVE space (applying the existing offset)
+                      v = i == E_AXIS ? l : LOGICAL_TO_NATIVE(l, i)  // Axis position in NATIVE space (applying the existing offset)
+                        - (applyProbeOffset && i == Z_AXIS ? probe.offset.pos[i] : 0), // add probe offset when P word given
                       d = v - current_position[i];                    // How much is the current axis position altered by?
           if (!NEAR_ZERO(d)) {
 
