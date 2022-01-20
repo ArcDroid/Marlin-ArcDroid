@@ -185,6 +185,14 @@ void closedloop_unhome(AxisEnum axis) {
 }
 
 bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable, bool force_read) {
+    static bool is_inside_closedloop_restore_position = false;
+
+    // check if idle() called back inside here
+    if (is_inside_closedloop_restore_position)
+      return false;
+
+    is_inside_closedloop_restore_position = true;
+
     bool enabled_any = false;
     bool valid_position = true;
     #if AXIS_IS_CLOSEDLOOP(X)
@@ -232,6 +240,8 @@ bool closedloop_restore_position(abce_pos_t *motor_pos, bool enable, bool force_
         #endif
             );
     }
+
+    is_inside_closedloop_restore_position = false;
 
     return valid_position;
 }
@@ -496,7 +506,7 @@ int32_t S42BClosedLoop::readPosition(bool onetry) {
     uint8_t buff[4];
     int16_t res = 0;
     preCommunication();
-    for (uint8_t retries = 0; retries < (onetry ? 1 : 30); retries++) {
+    for (uint8_t retries = 0; retries < (onetry ? 1 : 5); retries++) {
         delay(2);
         res = sendCommandBinary(0x37, 0xaaaa, buff, 4, 40);
 

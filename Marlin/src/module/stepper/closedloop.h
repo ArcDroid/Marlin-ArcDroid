@@ -237,8 +237,8 @@ class ClosedLoopMarlin : public S42BClosedLoop {
         return (enc_count_noscale) / encoder_counts_per_unit();
     }
 
-    float read_encoder() {
-        int32_t raw_read = readPosition();
+    float read_encoder(bool one_try = false) {
+        int32_t raw_read = readPosition(one_try);
         int32_t error = S42BClosedLoop::positionIsError(raw_read);
         if (error != 0) {
             return NAN;
