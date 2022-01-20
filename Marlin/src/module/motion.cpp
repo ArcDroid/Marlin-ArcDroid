@@ -233,40 +233,44 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
 // Report the real current position according to the steppers.
 // Forward kinematics and un-leveling are applied.
 void report_real_position() {
+  xyze_pos_t npos = cartes;
+
   #if HAS_CLOSEDLOOP_CONFIG
     ////set_position_from_encoders_if_lost(false);
     abce_pos_t pos = planner.get_axis_positions_mm();
     bool valid_pos = closedloop_restore_position(&pos, false, true);
-    // if (!valid_pos) {
-    //   return;
-    // }
-    xyz_pos_t backup_cart = cartes;
-    forward_kinematics(
-        pos.a
-      , pos.b
-      #if ENABLED(AXEL_TPARA)
-        , planner.get_axis_position_degrees(C_AXIS)
-      #endif
-    );
-    xyz_pos_t enc_xyz = cartes;
-    cartes = backup_cart;
-    enc_xyz.z = pos.z;
+    float da = NAN, db = NAN;
 
-    // if motors are off
-    if (closedloop_need_restore()) {
-      planner.set_machine_position_mm(pos);
-      set_current_from_steppers_for_axis(ALL_AXES_ENUM);
-      planner.position_cart = cartes;
+    if (valid_pos) {
+      // this modifies cartes
+      forward_kinematics(
+          pos.a
+        , pos.b
+        #if ENABLED(AXEL_TPARA)
+          , planner.get_axis_position_degrees(C_AXIS)
+        #endif
+      );
+      xyz_pos_t enc_xyz = cartes;
+      // restore cartes to value before modification
+      cartes = npos;
+      enc_xyz.z = pos.z;
+
+      // if motors are off
+      if (closedloop_need_restore()) {
+        planner.set_machine_position_mm(pos);
+        set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+        planner.position_cart = cartes;
+      }
+
+      abce_pos_t expected = planner.get_axis_positions_mm();
+      da = pos.a - expected.a;
+      db = pos.b - expected.b;
+
+      npos = enc_xyz;
     }
-
-    abce_pos_t expected = planner.get_axis_positions_mm();
-    float da = pos.a - expected.a;
-    float db = pos.b - expected.b;
 
   #endif
   // get_cartesian_from_steppers();
-  // xyze_pos_t npos = cartes;
-  xyze_pos_t npos = enc_xyz;
   npos.e = planner.get_axis_position_mm(E_AXIS);
   TERN_(HAS_POSITION_MODIFIERS, planner.unapply_modifiers(npos, true));
   report_logical_position(npos);
