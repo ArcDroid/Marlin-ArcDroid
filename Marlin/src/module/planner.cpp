@@ -1327,6 +1327,8 @@ void Planner::check_axes_activity() {
     #endif
   #endif
 
+  TERN_(HAS_CUTTER, cutter.refresh());
+
   if (has_blocks_queued()) {
 
     #if EITHER(HAS_TAIL_FAN_SPEED, BARICUDA)
@@ -1353,8 +1355,6 @@ void Planner::check_axes_activity() {
     #endif
   }
   else {
-
-    TERN_(HAS_CUTTER, cutter.refresh());
 
     #if HAS_TAIL_FAN_SPEED
       FANS_LOOP(i) tail_fan_speed[i] = thermalManager.scaledFanSpeed(i);

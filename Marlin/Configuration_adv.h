@@ -3234,6 +3234,7 @@
 
 #if EITHER(SPINDLE_FEATURE, LASER_FEATURE)
   #define SPINDLE_LASER_ACTIVE_STATE    HIGH   // Set to "HIGH" if the on/off function is active HIGH
+  #define LASER_IGNORE_BLOCK_POWER 1
 #ifdef MINI_MODEL_2AM
   #define SPINDLE_LASER_PWM             true   // Set to "true" if your controller supports setting the speed/power
 #else

@@ -35,7 +35,10 @@
 #endif
 
 SpindleLaser cutter;
-uint8_t SpindleLaser::power;
+volatile uint8_t SpindleLaser::power;
+volatile bool SpindleLaser::inhibit;
+volatile bool SpindleLaser::inhibit_reset;
+
 #if ENABLED(LASER_FEATURE)
   cutter_test_pulse_t SpindleLaser::testPulse = 50;                   // Test fire Pulse time ms value.
 #endif
@@ -107,10 +110,12 @@ void SpindleLaser::init() {
 // Set cutter ON/OFF state (and PWM) to the given cutter power value
 //
 void SpindleLaser::apply_power(const uint8_t opwr) {
-  static uint8_t last_power_applied = 0;
+  static volatile uint8_t last_power_applied = 0;
   uint8_t req_pwr = opwr;
   #ifdef SPINDLE_LASER_INHIBIT_PIN
-    const bool inhibit = READ(SPINDLE_LASER_INHIBIT_PIN);
+    if (inhibit_reset && req_pwr != 0) {
+      inhibit = false;
+    }
     if (inhibit) {
       req_pwr = 0;
     }

@@ -180,6 +180,11 @@
   #include "../feature/thc.h"
 #endif
 
+
+#if ENABLED(HAS_CUTTER) && defined(SPINDLE_LASER_INHIBIT_PIN)
+  #include "../feature/spindle_laser.h"
+#endif
+
 #if HAS_POWER_MONITOR
   #include "../feature/power_monitor.h"
 #endif
@@ -3344,6 +3349,15 @@ void Temperature::isr() {
 
   // Poll endstops state, if required
   endstops.poll();
+
+  #if ENABLED(HAS_CUTTER) && defined(SPINDLE_LASER_INHIBIT_PIN)
+    static uint8_t inhibit_debounce = 0xff;
+    const bool inhibit = READ(SPINDLE_LASER_INHIBIT_PIN);
+    inhibit_debounce = inhibit_debounce << 1 | (inhibit ? 1 : 0);
+    if (inhibit_debounce == 0 || inhibit_debounce == 0xff) {
+      cutter.set_inhibit(inhibit_debounce == 0xff);
+    }
+  #endif
 
   // Periodically call the planner timer service routine
   planner.isr();

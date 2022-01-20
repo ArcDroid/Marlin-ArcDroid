@@ -99,7 +99,12 @@ public:
   #endif
 
   static bool isReady;                    // Ready to apply power setting from the UI to OCR
-  static uint8_t power;
+  static volatile uint8_t power;
+
+  #ifdef SPINDLE_LASER_INHIBIT_PIN
+  static volatile bool inhibit;
+  static volatile bool inhibit_reset;
+  #endif
 
   #if ENABLED(MARLIN_DEV_MODE)
     static cutter_frequency_t frequency;  // Set PWM frequency; range: 2K-50K
@@ -125,6 +130,15 @@ public:
 
   FORCE_INLINE static void refresh() { apply_power(power); }
   FORCE_INLINE static void set_power(const uint8_t upwr) { power = upwr; refresh(); }
+  FORCE_INLINE static void set_inhibit(bool inh) {
+      if (inh) {
+        inhibit_reset = false;
+        inhibit = true;
+      }
+      else {
+        inhibit_reset = true;
+      }
+  }
 
   #if ENABLED(SPINDLE_LASER_PWM)
 
