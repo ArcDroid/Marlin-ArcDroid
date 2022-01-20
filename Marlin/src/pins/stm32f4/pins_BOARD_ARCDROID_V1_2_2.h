@@ -79,9 +79,12 @@
 
 // HEATER1 / J12 3,4 relay
 #define SPINDLE_LASER_ENA_PIN PE5
+
+#define LED_PIN PB0
+
 #ifdef MINI_MODEL_2AM
 // HEATER2 / J12 1,2 MOSFET
-#define SPINDLE_LASER_PWM_PIN PB0
+//#define SPINDLE_LASER_PWM_PIN PB0
 #else
 //#define SPINDLE_LASER_PWM_PIN -1
 #endif
