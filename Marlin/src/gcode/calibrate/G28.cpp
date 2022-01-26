@@ -108,6 +108,7 @@
       target.y += distance;
       planner.buffer_segment(target.a, target.b, target.c, target.e, homing_feedrate(X_AXIS), active_extruder);
       planner.synchronize();
+      UNUSED(fr_mm_s);
 
     #else
     do_blocking_move_to_xy(1.5 * mlx * x_axis_home_dir, 1.5 * mly * Y_HOME_DIR, fr_mm_s);

@@ -28,6 +28,8 @@
 
 #include "../inc/MarlinConfig.h"
 
+#include "../gcode/gcode.h"
+
 #include "spindle_laser_types.h"
 
 #if USE_BEEPER
@@ -217,7 +219,7 @@ public:
   // Wait for spindle to spin up or spin down
   static inline void power_delay(const bool on) {
     #if DISABLED(LASER_POWER_INLINE)
-      safe_delay(on ? powerup_delay : powerdown_delay);
+      gcode.dwell(on ? powerup_delay : powerdown_delay);
     #endif
   }
 
