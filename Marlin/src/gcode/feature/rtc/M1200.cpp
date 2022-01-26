@@ -96,21 +96,23 @@ void JumpToBootloader(void) {
  * M1200: RTC
  */
 void GcodeSuite::M1200() {
-  SERIAL_ECHOLN("M1200: ");
+  SERIAL_ECHO("M1200 ");
 
-  if (parser.seen("S")) {
-    if (parser.value_int() < 2) {
-      rtc_init2();
-    }
-    rtc_init(1);
+  if (parser.seenval('D')) {
+    unsigned int d = parser.value_ulong();
+    rtc_set_date(d / 10000, (d / 100) % 100, d % 100);
+  }
+  if (parser.seenval('T')) {
+    const unsigned int t = parser.value_ulong();
+    rtc_set_time(t / 10000, (t / 100) % 100, t % 100);
   }
 
+  // if (parser.seen("B") && parser.value_bool()) {
+  //   JumpToBootloader();
+  // }
 
-  if (parser.seen("B") && parser.value_bool()) {
-    JumpToBootloader();
-  }
-
-  rtc_print_debug();
+  rtc_print_datetime();
+  SERIAL_EOL();
 }
 
 #endif

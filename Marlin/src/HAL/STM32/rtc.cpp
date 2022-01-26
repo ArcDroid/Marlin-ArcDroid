@@ -396,6 +396,45 @@ void rtc_print_debug() {
   //SERIAL_ECHOLNPAIR("echo: RTC: ", stringBuff);
 }
 
+void rtc_set_date(uint8_t year, uint8_t month, uint8_t day) {
+
+  RTC_DateTypeDef sdatestructureget = {0};
+  sdatestructureget.Year = year;
+  sdatestructureget.Month = month;
+  sdatestructureget.Date = day;
+
+  HAL_StatusTypeDef resd = HAL_RTC_SetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
+
+}
+
+void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
+
+  RTC_TimeTypeDef stimestructureget = {0};
+  stimestructureget.Hours = hour;
+  stimestructureget.Minutes = minute;
+  stimestructureget.Seconds = second;
+
+  HAL_StatusTypeDef rest = HAL_RTC_SetTime(&RtcHandle, &stimestructureget, RTC_FORMAT_BIN);
+}
+
+void rtc_print_datetime() {
+
+  RTC_DateTypeDef sdatestructureget = {0};
+  RTC_TimeTypeDef stimestructureget = {0};
+
+  /* Get the RTC current Time */
+  HAL_StatusTypeDef rest = HAL_RTC_GetTime(&RtcHandle, &stimestructureget, RTC_FORMAT_BIN);
+
+  /* Get the RTC current Date */
+  HAL_StatusTypeDef resd = HAL_RTC_GetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
+
+  char buffer[50];
+  snprintf(buffer, sizeof(buffer), "D%02d%02d%02d", sdatestructureget.Year, sdatestructureget.Month, sdatestructureget.Date);
+  SERIAL_ECHO(buffer);
+  snprintf(buffer, sizeof(buffer), " T%02d%02d%02d", stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
+  SERIAL_ECHO(buffer);
+}
+
 #ifdef  USE_FULL_ASSERT
 
 /**
