@@ -51,4 +51,6 @@ public:
 };
 
 extern TorchHeightControl thc;
+#if ENABLED(TORCH_HEIGHT_TH1)
 extern struct TempInfo thc_th1;
+#endif

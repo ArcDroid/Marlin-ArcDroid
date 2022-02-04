@@ -29,7 +29,9 @@
 
 TorchHeightControl thc;
 
+#if ENABLED(TORCH_HEIGHT_TH1)
 struct TempInfo thc_th1;
+#endif
 
 bool TorchHeightControl::enabled; // = false;                          // Torch height control on/off
 uint32_t TorchHeightControl::acc; // = 0                             // ADC accumulator

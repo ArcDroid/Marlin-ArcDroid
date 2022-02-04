@@ -2750,7 +2750,7 @@ void Temperature::update_raw_temperatures() {
 
 
   TERN_(TORCH_HEIGHT_CONTROL, thc.update());
-  TERN_(TORCH_HEIGHT_CONTROL, thc_th1.update());
+  TERN_(TORCH_HEIGHT_TH1, thc_th1.update());
 
   TERN_(HAS_TEMP_ADC_2, temp_hotend[2].update());
   TERN_(HAS_TEMP_ADC_3, temp_hotend[3].update());
@@ -2784,7 +2784,7 @@ void Temperature::readings_ready() {
   TERN_(FILAMENT_WIDTH_SENSOR, filwidth.reading_ready());
 
   TERN_(TORCH_HEIGHT_CONTROL, thc.reset());
-  TERN_(TORCH_HEIGHT_CONTROL, thc_th1.reset());
+  TERN_(TORCH_HEIGHT_TH1, thc_th1.reset());
 
   #if HAS_HOTEND
     HOTEND_LOOP() temp_hotend[e].reset();
@@ -3266,7 +3266,8 @@ void Temperature::isr() {
     #if ENABLED(TORCH_HEIGHT_CONTROL)
       case Prepare_THC: HAL_START_ADC(THC_PIN); break;
       case Measure_THC: ACCUMULATE_ADC(thc); break;
-
+    #endif
+    #if ENABLED(TORCH_HEIGHT_TH1)
       case Prepare_THC1: HAL_START_ADC(TH1_PIN); break;
       case Measure_THC1: ACCUMULATE_ADC(thc_th1); break;
     #endif

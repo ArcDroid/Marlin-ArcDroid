@@ -140,6 +140,8 @@ enum ADCSensorState : char {
   #endif
   #if ENABLED(TORCH_HEIGHT_CONTROL)
     Prepare_THC, Measure_THC,
+  #endif
+  #if ENABLED(TORCH_HEIGHT_TH1)
     Prepare_THC1, Measure_THC1,
   #endif
   #if ENABLED(POWER_MONITOR_CURRENT)

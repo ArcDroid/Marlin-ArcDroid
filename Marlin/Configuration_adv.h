@@ -3465,6 +3465,7 @@
 #if ENABLED(TORCH_HEIGHT_CONTROL)
   // TODO: config for THC here
   #define HAL_ADC_FILTERED
+  //#define TORCH_HEIGHT_TH1
 #endif
 
 /**

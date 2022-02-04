@@ -197,7 +197,6 @@ xyz_pos_t cartes;
  */
 
 inline void report_more_positions() {
-  stepper.report_positions();
   #if HAS_CLOSEDLOOP_CONFIG
     report_closedloop_alignment();
   #endif
@@ -213,13 +212,6 @@ inline void report_more_positions() {
       SERIAL_ECHO(" CS:53 OX:0 OY:0 OZ:0 OR:0");
     }
   #endif
-  #if ENABLED(REPORT_POSITION_ENDSTOP_BITS)
-    SERIAL_ECHOPAIR(" ES:", (int32_t) endstops.state());
-  #endif
-  #if ENABLED(TORCH_HEIGHT_CONTROL)
-    SERIAL_ECHOPAIR(" THC:", (int32_t) thc.raw);
-    SERIAL_ECHOPAIR(" TH1:", (int32_t) thc_th1.raw);
-  #endif
   //TERN_(IS_SCARA, scara_report_positions());
   SERIAL_EOL();
 }
@@ -228,7 +220,18 @@ inline void report_more_positions() {
 inline void report_logical_position(const xyze_pos_t &rpos) {
   const xyze_pos_t lpos = rpos.asLogical();
   SERIAL_ECHOPAIR_P(X_LBL, lpos.x, SP_Y_LBL, lpos.y, SP_Z_LBL, lpos.z, SP_E_LBL, lpos.e);
+  #if ENABLED(REPORT_POSITION_ENDSTOP_BITS)
+    SERIAL_ECHOPAIR(" ES:", (int32_t) endstops.state());
+  #endif
+  #if ENABLED(TORCH_HEIGHT_CONTROL)
+    SERIAL_ECHOPAIR(" THC:", (int32_t) thc.raw);
+    #if ENABLED(TORCH_HEIGHT_TH1)
+    SERIAL_ECHOPAIR(" TH1:", (int32_t) thc_th1.raw);
+    #endif
+  #endif
 }
+
+static millis_t last_full_report = 0;
 
 // Report the real current position according to the steppers.
 // Forward kinematics and un-leveling are applied.
@@ -274,14 +277,30 @@ void report_real_position() {
   npos.e = planner.get_axis_position_mm(E_AXIS);
   TERN_(HAS_POSITION_MODIFIERS, planner.unapply_modifiers(npos, true));
   report_logical_position(npos);
+  stepper.report_positions();
   //SERIAL_ECHOPAIR(" ErrA:", da, " ErrB:", db);
-  report_more_positions();
+  const millis_t ms = millis();
+  if (ms > last_full_report + 100) {
+    last_full_report = ms;
+    report_more_positions();
+  }
+  else {
+    SERIAL_EOL();
+  }
 }
 
 // Report the logical current position according to the most recent G-code command
 void report_current_position() {
   report_logical_position(current_position);
-  report_more_positions();
+  stepper.report_positions();
+  const millis_t ms = millis();
+  if (ms > last_full_report + 100) {
+    last_full_report = ms;
+    report_more_positions();
+  }
+  else {
+    SERIAL_EOL();
+  }
 }
 
 /**
