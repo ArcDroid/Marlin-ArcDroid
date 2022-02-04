@@ -301,7 +301,7 @@ void Endstops::poll() {
 
   TERN_(PINS_DEBUGGING, run_monitor()); // Report changes in endstop status
 
-  #if DISABLED(ENDSTOP_INTERRUPTS_FEATURE)
+  #if DISABLED(ENDSTOP_INTERRUPTS_FEATURE) || ENABLED(FORCE_UPDATE_ENDSTOPS_INTERRUPT)
     update();
   #elif ENDSTOP_NOISE_THRESHOLD
     if (endstop_poll_count) update();
