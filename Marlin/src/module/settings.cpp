@@ -2264,6 +2264,9 @@ void MarlinSettings::postprocess() {
           #ifdef ARCDROID
             // don't want to save offsets on portable machine
             ZERO(gcode.coordinate_system);
+            for(int i = 0; i < MAX_COORDINATE_SYSTEMS; i++) {
+              gcode.coordinate_system[i].rotation = OFFSET_ROTATION_DEFAULT;
+            }
           #endif
         #else
           coordinate_system_t coordinate_system[MAX_COORDINATE_SYSTEMS];

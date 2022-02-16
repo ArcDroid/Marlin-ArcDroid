@@ -521,6 +521,8 @@ struct XYZEval {
     OFFSET_ROTATION_180 = 1,
   } coordinate_rotation_t;
 
+  #define OFFSET_ROTATION_DEFAULT OFFSET_ROTATION_180
+
   typedef struct {
     xyz_pos_t offset;
     coordinate_rotation_t rotation;

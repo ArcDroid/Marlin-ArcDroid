@@ -176,7 +176,7 @@ xyz_pos_t cartes;
 #if HAS_POSITION_SHIFT
   // The distance that XYZ has been offset by G92. Reset by G28.
   xyz_pos_t position_shift{0};
-  coordinate_rotation_t offset_rotation = OFFSET_ROTATION_0;
+  coordinate_rotation_t offset_rotation = OFFSET_ROTATION_DEFAULT;
 #endif
 #if HAS_HOME_OFFSET
   // This offset is added to the configured home position.

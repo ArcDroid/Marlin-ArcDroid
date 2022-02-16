@@ -65,7 +65,7 @@ void GcodeSuite::G92() {
       case 1:                                                         // G92.1 - Zero the Workspace Offset
         LOOP_LINEAR_AXES(i) if (position_shift[i]) {
           position_shift[i] = 0;
-          offset_rotation = OFFSET_ROTATION_0;
+          offset_rotation = OFFSET_ROTATION_DEFAULT;
           update_workspace_offset((AxisEnum)i);
         }
         break;

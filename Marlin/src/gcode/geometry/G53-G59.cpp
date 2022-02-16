@@ -37,6 +37,8 @@ bool GcodeSuite::select_coordinate_system(const int8_t _new) {
   if (active_coordinate_system == _new) return false;
   active_coordinate_system = _new;
   coordinate_system_t new_offset{0};
+  new_offset.rotation = OFFSET_ROTATION_DEFAULT;
+
   if (WITHIN(_new, 0, MAX_COORDINATE_SYSTEMS - 1))
     new_offset = coordinate_system[_new];
   LOOP_LINEAR_AXES(i) {
