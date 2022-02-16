@@ -96,22 +96,47 @@ void JumpToBootloader(void) {
  * M1200: RTC
  */
 void GcodeSuite::M1200() {
-  SERIAL_ECHO("M1200 ");
+  if (parser.seenval('R')) {
+    rtc_init(parser.value_bool());
+  }
 
   if (parser.seenval('D')) {
     unsigned int d = parser.value_ulong();
-    rtc_set_date(d / 10000, (d / 100) % 100, d % 100);
+    uint8_t weekday = 1;
+    if (parser.seenval('W')) {
+      weekday = parser.value_byte();
+    }
+    unsigned long year = d / 10000;
+    unsigned long month = (d / 100) % 100;
+    unsigned long day = d % 100;
+    SERIAL_ECHOLNPAIR("echo: debug M1200 y:", year, "m:", month, "d:", day, "w:", weekday);
+    rtc_set_date(year, month, day, weekday);
   }
   if (parser.seenval('T')) {
     const unsigned int t = parser.value_ulong();
-    rtc_set_time(t / 10000, (t / 100) % 100, t % 100);
+
+    unsigned long hour = t / 10000;
+    unsigned long min = (t / 100) % 100;
+    unsigned long sec = t % 100;
+    SERIAL_ECHOLNPAIR("echo: debug M1200 h:", hour, "n:", min, "s:", sec);
+
+    rtc_set_time(hour, min, sec);
   }
 
   // if (parser.seen("B") && parser.value_bool()) {
   //   JumpToBootloader();
   // }
 
+  SERIAL_ECHO("M1200 ");
+
   rtc_print_datetime();
+
+  SERIAL_ECHO("; BDCR = ");
+  SERIAL_ECHO(RCC->BDCR);
+
+  SERIAL_ECHO(" RTC_STATUS_REG = ");
+  SERIAL_ECHO(rtc_read_status_reg());
+
   SERIAL_EOL();
 }
 

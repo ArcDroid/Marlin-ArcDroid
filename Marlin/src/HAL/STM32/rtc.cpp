@@ -57,7 +57,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* RTC handler declaration */
-RTC_HandleTypeDef RtcHandle;
+RTC_HandleTypeDef RtcHandle = {0};
 
 /* Buffer used for displaying Time */
 uint8_t aShowTime[50] = {0};
@@ -68,89 +68,38 @@ static void RTC_TimeShow(uint8_t* showtime);
 /* Private functions ---------------------------------------------------------*/
 
 
-/**
-  * @brief RTC MSP Initialization
-  *        This function configures the hardware resources used in this example
-  * @param hrtc: RTC handle pointer
-  *
-  * @note  Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to select
-  *        the RTC clock source; in this case the Backup domain will be reset in
-  *        order to modify the RTC Clock source, as consequence RTC registers (including
-  *        the backup registers) and RCC_BDCR register are set to their reset values.
-  *
-  * @retval None
-  */
-void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc)
-{
-  RCC_OscInitTypeDef        RCC_OscInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct = {0};
+void TM_RTC_Config() {
+	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  __HAL_RCC_PWR_CLK_ENABLE();
+	/* We are updating RTC clock */
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
 
-  bool PWREN = RCC->APB1ENR & RCC_APB1ENR_PWREN;
+	/* Do not use PLL */
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
 
-  DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: __HAL_RCC_PWR_CLK_ENABLE PWREN = ", PWREN);
+	/* LSI is used as RTC clock */
+	#if defined(RTC_CLOCK_SOURCE_LSI)
+		RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI;
+		RCC_OscInitStruct.LSIState = RCC_LSI_ON;
 
-  /*##-1- Enables access to the backup domain ######*/
-  /* To enable access on RTC registers */
-  HAL_PWR_EnableBkUpAccess();
-  /*##-2- Configure LSE/LSI as RTC clock source ###############################*/
-#ifdef RTC_CLOCK_SOURCE_LSE
-  RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSE;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
-  HAL_StatusTypeDef res = HAL_RCC_OscConfig(&RCC_OscInitStruct);
-  if(res != HAL_OK)
-  {
-    int cr = PWR->CR;
-    int bdcr = RCC->BDCR;
-    DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: HAL_RCC_OscConfig res = ", res, " PWR.CR = ", cr, " RCC.BDCR = ", bdcr);
+		PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+	#else
+		/* LSE is used */
+		RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
+		RCC_OscInitStruct.LSEState = RCC_LSE_ON;
 
-  }
+		PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+	#endif
 
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-  res = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-  if(res != HAL_OK)
-  {
-    int cr = PWR->CR;
-    int bdcr = RCC->BDCR;
-    int cfgr = RCC->CFGR;
-    DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: HAL_RCCEx_PeriphCLKConfig res = ", res, " PWR.CR = ", cr, " RCC.BDCR = ", bdcr, " RCC.CFGR = ", cfgr);
-  }
-  /* Configures the External Low Speed oscillator (LSE) drive capability */
-  // __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_HIGH);
+	/* Config oscillator */
+	HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-#elif defined (RTC_CLOCK_SOURCE_LSI)
-  RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSE | RCC_OSCILLATORTYPE_LSI;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
-  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/* Select peripheral clock */
+	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
 
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-  if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#else
-#error Please select the RTC Clock source inside the main.h file
-#endif /*RTC_CLOCK_SOURCE_LSE*/
-
-  /*##-3- Enable RTC peripheral Clocks #######################################*/
-  /* Enable RTC Clock */
-  __HAL_RCC_RTC_ENABLE();
-
-  DEBUG_ECHOLNPAIR("HAL_RTC_MspInit: __HAL_RCC_RTC_ENABLE RCC.BDCR = ", RCC->BDCR);
-
-  /*##-4- Configure the NVIC for RTC Alarm ###################################*/
-  // HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 0x0F, 0);
-  // HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+	/* Enable RTC Clock */
+	__HAL_RCC_RTC_ENABLE();
 }
 
 /**
@@ -169,6 +118,10 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
 
 void rtc_init_nohal(int force)
 {
+
+  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:173 force = ", force);
+  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:174 RCC.BDCR = ", RCC->BDCR);
+
   RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Enable the PWR clock
   PWR->CR |= PWR_CR_DBP;         // Allow access to RTC
   RTC->WPR = 0xCA;         // Unlock write protection
@@ -180,11 +133,18 @@ void rtc_init_nohal(int force)
   while((RCC->BDCR & RCC_BDCR_LSERDY) == 0)      // Wait till LSE is ready
    ;
 
+  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:187 RCC.BDCR = ", RCC->BDCR);
+
   RCC->BDCR |= RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0;  // RTCEN = 1, LSE, LSEON
 
 
   while((RTC->ISR & RTC_ISR_RSF) == 0)   // Wait for RTC APB registers synchronisation
     ;
+
+  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:195 RCC.BDCR = ", RCC->BDCR);
+
+
+  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:198 RTC->ISR = ", RTC->ISR);
 
   RTC->WPR = 0xCA;         // Unlock write protection
   RTC->WPR = 0x53;         // Unlock write protection
@@ -192,6 +152,9 @@ void rtc_init_nohal(int force)
 
   while((RTC->ISR & RTC_ISR_INITF) == 0)   // Poll INITF
    ;
+
+
+  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:208 RTC->ISR = ", RTC->ISR);
 
   // Configure the RTC prescaler
   RTC->PRER = 0x7F00FF;
@@ -203,9 +166,19 @@ void rtc_init_nohal(int force)
   RTC->ISR &= ~RTC_ISR_INIT;   // Exit initialization mode
   RTC->WPR = 0xFF;         // Enable the write protection for RTC registers
 
+  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:220 RTC->ISR = ", RTC->ISR);
 
 }
 
+
+#if defined(STM32F7xx)
+#define RTC_STATUS_REG      			RTC_BKP_DR31 /* Status Register */
+#else
+#define RTC_STATUS_REG      			RTC_BKP_DR19 /* Status Register */
+#endif
+#define RTC_STATUS_INIT_OK              0x1234       /* RTC initialised */
+#define RTC_STATUS_TIME_OK              0x4321       /* RTC time OK */
+#define	RTC_STATUS_ZERO                 0x0000
 
 /**
   * @brief  Main program
@@ -214,6 +187,7 @@ void rtc_init_nohal(int force)
   */
 void rtc_init(int force)
 {
+  DEBUG_ECHOLNPAIR("echo: rtc_init:275 force = ", force);
 
   /*##-1- Configure the RTC peripheral #######################################*/
   RtcHandle.Instance = RTC;
@@ -233,65 +207,76 @@ void rtc_init(int force)
   RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   RtcHandle.Init.OutPutType     = RTC_OUTPUT_TYPE_OPENDRAIN;
 
-  static bool initFailed = false;
+  /* Enable PWR peripheral clock */
+	__HAL_RCC_PWR_CLK_ENABLE();
 
-  if (initFailed) {
-    DEBUG_ECHOLN("rtc_init: forcing __HAL_RCC_BACKUPRESET_FORCE");
-    __HAL_RCC_BACKUPRESET_FORCE();
-    __HAL_RCC_BACKUPRESET_RELEASE();
-    HAL_RTC_MspInit(&RtcHandle);
-    initFailed = false;
+	/* Allow access to BKP Domain */
+	HAL_PWR_EnableBkUpAccess();
+
+  /* Get RTC status */
+  uint32_t status = HAL_RTCEx_BKUPRead(&RtcHandle, RTC_STATUS_REG);
+
+  if (status == RTC_STATUS_TIME_OK) {
+		/* Start internal clock if we choose internal clock */
+		#if defined(RTC_CLOCK_SOURCE_LSI)
+			TM_RTC_Config();
+		#endif
+
+    DEBUG_ECHOLNPAIR("echo: rtc_init:310 status = ", status);
+
+		/* Wait for RTC APB registers synchronisation (needed after start-up from Reset) */
+		HAL_RTC_WaitForSynchro(&RtcHandle);
+
+		/* Clear reset flags */
+		__HAL_RCC_CLEAR_RESET_FLAGS();
+
+		/* Return OK */
+		// return 1;
+  }
+  else {
+		/* Start RTC clock */
+		TM_RTC_Config();
+
+		/* Init RTC */
+		HAL_StatusTypeDef res = HAL_RTC_Init(&RtcHandle);
+
+    RTC_DateTypeDef RTC_DateStruct = {0};
+    RTC_TimeTypeDef RTC_TimeStruct = {0};
+
+		/* Set date */
+		RTC_DateStruct.Year = 0x01;
+		RTC_DateStruct.Month = 0x02;
+		RTC_DateStruct.Date = 0x03;
+		RTC_DateStruct.WeekDay = RTC_WEEKDAY_THURSDAY;
+
+		/* Set date */
+		HAL_RTC_SetDate(&RtcHandle, &RTC_DateStruct, RTC_FORMAT_BCD);
+
+		/* Set time */
+		RTC_TimeStruct.Hours = 0x04;
+		RTC_TimeStruct.Minutes = 0x05;
+		RTC_TimeStruct.Seconds = 0x06;
+		RTC_TimeStruct.TimeFormat = RTC_HOURFORMAT_24;
+		RTC_TimeStruct.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+		RTC_TimeStruct.StoreOperation = RTC_STOREOPERATION_RESET;
+
+		/* Set time */
+		HAL_RTC_SetTime(&RtcHandle, &RTC_TimeStruct, RTC_FORMAT_BCD);
+
+
+    DEBUG_ECHOLNPAIR("echo: rtc_init:352 res = ", res);
+
+		/* Save data to backup regiser */
+		HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
+
+		/* RTC was initialized now */
+		// return 0;
   }
 
-  /* Do not re-initialize RTC in case it was already */
-  if ((RCC->BDCR & RCC_BDCR_RTCEN) == 0 || force)
-  {
-    DEBUG_ECHOLN("rtc_init: initializing rtc");
-    HAL_StatusTypeDef res = HAL_RTC_Init(&RtcHandle);
-    if (res != HAL_OK)
-    {
-      /* Initialization Error */
-      int state = RtcHandle.State;
-      int isr = RTC->ISR;
-      int rtc_cr = RTC->CR;
-
-      int pwr_cr = PWR->CR;
-      int rcc_bdcr = RCC->BDCR;
-      int rcc_cfgr = RCC->CFGR;
-
-      DEBUG_ECHOLNPAIR("rtc_init Error: HAL_RTC_Init(&RtcHandle) = ", res,
-      " state = ", state,
-      " isr = ", isr,
-      " rtc_cr = ", rtc_cr,
-      " pwr_cr = ", pwr_cr,
-      " rcc_bdcr = ", rcc_bdcr,
-      " rcc_cfgr = ", rcc_cfgr
-      );
-      initFailed = true;
-    }
-    else {
-      initFailed = false;
-    }
-
-    /*##-2- Configure Alarm ####################################################*/
-    /* Configure RTC Alarm */
-    RTC_AlarmConfig();
-  }
-  else
-  {
-    DEBUG_ECHOLN("rtc_init: rtc already initialized");
-    HAL_PWR_EnableBkUpAccess();
-  }
-
-  DEBUG_ECHOLNPAIR("rtc_init: RCC->BDCR = ", RCC->BDCR);
-
+  DEBUG_ECHOLNPAIR("echo: rtc_init: RCC->BDCR = ", RCC->BDCR);
+  DEBUG_ECHOLNPAIR("echo: rtc_init: RTC_STATUS_REG = ", HAL_RTCEx_BKUPRead(&RtcHandle, RTC_STATUS_REG));
 
   DEBUG_ECHOLN("rtc_init done");
-}
-
-void rtc_init2() {
-  RtcHandle.Instance = RTC;
-  HAL_RTC_MspInit(&RtcHandle);
 }
 
 /**
@@ -396,15 +381,18 @@ void rtc_print_debug() {
   //SERIAL_ECHOLNPAIR("echo: RTC: ", stringBuff);
 }
 
-void rtc_set_date(uint8_t year, uint8_t month, uint8_t day) {
+void rtc_set_date(uint8_t year, uint8_t month, uint8_t day, uint8_t weekday) {
 
   RTC_DateTypeDef sdatestructureget = {0};
   sdatestructureget.Year = year;
   sdatestructureget.Month = month;
   sdatestructureget.Date = day;
+  sdatestructureget.WeekDay = weekday;
 
   HAL_StatusTypeDef resd = HAL_RTC_SetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
 
+	// HAL_StatusTypeDef res = HAL_RTC_Init(&RtcHandle);
+  // HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
 }
 
 void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
@@ -415,6 +403,9 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
   stimestructureget.Seconds = second;
 
   HAL_StatusTypeDef rest = HAL_RTC_SetTime(&RtcHandle, &stimestructureget, RTC_FORMAT_BIN);
+
+  // HAL_StatusTypeDef res = HAL_RTC_Init(&RtcHandle);
+  // HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
 }
 
 void rtc_print_datetime() {
@@ -429,10 +420,14 @@ void rtc_print_datetime() {
   HAL_StatusTypeDef resd = HAL_RTC_GetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
 
   char buffer[50];
-  snprintf(buffer, sizeof(buffer), "D%02d%02d%02d", sdatestructureget.Year, sdatestructureget.Month, sdatestructureget.Date);
+  snprintf(buffer, sizeof(buffer), "D%02d%02d%02dW%d", sdatestructureget.Year, sdatestructureget.Month, sdatestructureget.Date, sdatestructureget.WeekDay);
   SERIAL_ECHO(buffer);
   snprintf(buffer, sizeof(buffer), " T%02d%02d%02d", stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
   SERIAL_ECHO(buffer);
+}
+
+uint32_t rtc_read_status_reg() {
+  return HAL_RTCEx_BKUPRead(&RtcHandle, RTC_STATUS_REG);
 }
 
 #ifdef  USE_FULL_ASSERT
