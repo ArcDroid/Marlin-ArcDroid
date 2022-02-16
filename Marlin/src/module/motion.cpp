@@ -279,6 +279,7 @@ void report_real_position() {
   report_logical_position(npos);
   stepper.report_positions();
   //SERIAL_ECHOPAIR(" ErrA:", da, " ErrB:", db);
+  UNUSED(da); UNUSED(db);
   const millis_t ms = millis();
   if (ms > last_full_report + 100) {
     last_full_report = ms;
@@ -847,7 +848,7 @@ void restore_feedrate_and_scaling() {
         const xy_pos_t offs = hotend_offset[active_extruder];
       #else
         // SCARA needs to consider the angle of the arm through the entire move, so for now use no tool offset.
-        constexpr xy_pos_t offs{0};
+        //// constexpr xy_pos_t offs{0}; // remove unused?
       #endif
 
       if (TERN1(IS_SCARA, axis_was_homed(X_AXIS) && axis_was_homed(Y_AXIS))) {

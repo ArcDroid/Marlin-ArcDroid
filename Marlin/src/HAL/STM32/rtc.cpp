@@ -26,7 +26,7 @@
 
 #if ENABLED(USE_RTC)
 
-#define DEBUG_OUT 1
+//#define DEBUG_OUT 1
 #include "../../core/debug_out.h"
 
 #include "../../MarlinCore.h"
@@ -63,10 +63,7 @@ RTC_HandleTypeDef RtcHandle = {0};
 uint8_t aShowTime[50] = {0};
 
 /* Private function prototypes -----------------------------------------------*/
-static void RTC_AlarmConfig(void);
-static void RTC_TimeShow(uint8_t* showtime);
 /* Private functions ---------------------------------------------------------*/
-
 
 void TM_RTC_Config() {
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -114,62 +111,6 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
   /*##-1- Reset peripherals ##################################################*/
    __HAL_RCC_RTC_DISABLE();
 }
-
-
-void rtc_init_nohal(int force)
-{
-
-  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:173 force = ", force);
-  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:174 RCC.BDCR = ", RCC->BDCR);
-
-  RCC->APB1ENR |= RCC_APB1ENR_PWREN;  // Enable the PWR clock
-  PWR->CR |= PWR_CR_DBP;         // Allow access to RTC
-  RTC->WPR = 0xCA;         // Unlock write protection
-  RTC->WPR = 0x53;         // Unlock write protection
-  RCC->BDCR |= RCC_BDCR_BDRST;  // Make it possible to change clock source
-  RCC->BDCR &= ~RCC_BDCR_BDRST;  // Make it possible to change clock source
-
-  RCC->BDCR |= RCC_BDCR_LSEON;  // LSEON
-  while((RCC->BDCR & RCC_BDCR_LSERDY) == 0)      // Wait till LSE is ready
-   ;
-
-  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:187 RCC.BDCR = ", RCC->BDCR);
-
-  RCC->BDCR |= RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0;  // RTCEN = 1, LSE, LSEON
-
-
-  while((RTC->ISR & RTC_ISR_RSF) == 0)   // Wait for RTC APB registers synchronisation
-    ;
-
-  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:195 RCC.BDCR = ", RCC->BDCR);
-
-
-  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:198 RTC->ISR = ", RTC->ISR);
-
-  RTC->WPR = 0xCA;         // Unlock write protection
-  RTC->WPR = 0x53;         // Unlock write protection
-  RTC->ISR |= RTC_ISR_INIT;   // Enter initialization mode
-
-  while((RTC->ISR & RTC_ISR_INITF) == 0)   // Poll INITF
-   ;
-
-
-  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:208 RTC->ISR = ", RTC->ISR);
-
-  // Configure the RTC prescaler
-  RTC->PRER = 0x7F00FF;
-  RTC->PRER = 0x7F00FF;
-
-  RTC->TR = 0x221900u;      // Setting time to 12.35.00
-  RTC->DR = 0x211113u;      // Set date to  2012-07-18
-  RTC->CR &= ~RTC_CR_WUCKSEL_Msk; // Set FMT 24H format
-  RTC->ISR &= ~RTC_ISR_INIT;   // Exit initialization mode
-  RTC->WPR = 0xFF;         // Enable the write protection for RTC registers
-
-  DEBUG_ECHOLNPAIR("echo: rtc_init_nohal:220 RTC->ISR = ", RTC->ISR);
-
-}
-
 
 #if defined(STM32F7xx)
 #define RTC_STATUS_REG      			RTC_BKP_DR31 /* Status Register */
@@ -262,6 +203,7 @@ void rtc_init(int force)
 
 		/* Set time */
 		HAL_RTC_SetTime(&RtcHandle, &RTC_TimeStruct, RTC_FORMAT_BCD);
+    UNUSED(res);
 
 
     DEBUG_ECHOLNPAIR("echo: rtc_init:352 res = ", res);
@@ -279,108 +221,6 @@ void rtc_init(int force)
   DEBUG_ECHOLN("rtc_init done");
 }
 
-/**
-  * @brief  Configure the current time and date.
-  * @param  None
-  * @retval None
-  */
-static void RTC_AlarmConfig(void)
-{
-  RTC_DateTypeDef  sdatestructure;
-  RTC_TimeTypeDef  stimestructure;
-
-  /*##-1- Configure the Date #################################################*/
-  /* Set Date: Tuesday February 2nd 2017 */
-  sdatestructure.Year = 0x17;
-  sdatestructure.Month = RTC_MONTH_FEBRUARY;
-  sdatestructure.Date = 0x02;
-  sdatestructure.WeekDay = RTC_WEEKDAY_TUESDAY;
-
-  HAL_StatusTypeDef res = HAL_RTC_SetDate(&RtcHandle,&sdatestructure,RTC_FORMAT_BCD);
-  if(res != HAL_OK)
-  {
-    /* Initialization Error */
-    int state = RtcHandle.State;
-    int isr = RTC->ISR;
-    int rtc_cr = RTC->CR;
-
-    int pwr_cr = PWR->CR;
-    int rcc_bdcr = RCC->BDCR;
-    int rcc_cfgr = RCC->CFGR;
-
-    DEBUG_ECHOLNPAIR("RTC_AlarmConfig Error: HAL_RTC_SetDate(&RtcHandle,&sdatestructure,RTC_FORMAT_BCD) = ", res,
-    " state = ", state,
-    " isr = ", isr,
-    " rtc_cr = ", rtc_cr,
-    " pwr_cr = ", pwr_cr,
-    " rcc_bdcr = ", rcc_bdcr,
-    " rcc_cfgr = ", rcc_cfgr
-    );
-  }
-
-  /*##-2- Configure the Time #################################################*/
-  /* Set Time: 02:20:00 */
-  stimestructure.Hours = 0x02;
-  stimestructure.Minutes = 0x20;
-  stimestructure.Seconds = 0x00;
-  stimestructure.TimeFormat = RTC_HOURFORMAT12_AM;
-  stimestructure.DayLightSaving = RTC_DAYLIGHTSAVING_NONE ;
-  stimestructure.StoreOperation = RTC_STOREOPERATION_RESET;
-
-  res = HAL_RTC_SetTime(&RtcHandle,&stimestructure,RTC_FORMAT_BCD);
-  if(res != HAL_OK)
-  {
-    /* Initialization Error */
-    int state = RtcHandle.State;
-    int isr = RTC->ISR;
-    int rtc_cr = RTC->CR;
-
-    int pwr_cr = PWR->CR;
-    int rcc_bdcr = RCC->BDCR;
-    int rcc_cfgr = RCC->CFGR;
-
-    DEBUG_ECHOLNPAIR("RTC_AlarmConfig Error: HAL_RTC_SetTime(&RtcHandle,&stimestructure,RTC_FORMAT_BCD) = ", res,
-    " state = ", state,
-    " isr = ", isr,
-    " rtc_cr = ", rtc_cr,
-    " pwr_cr = ", pwr_cr,
-    " rcc_bdcr = ", rcc_bdcr,
-    " rcc_cfgr = ", rcc_cfgr
-    );
-  }
-
-}
-
-/**
-  * @brief  Display the current time.
-  * @param  showtime : pointer to buffer
-  * @retval None
-  */
-static void RTC_TimeShow(uint8_t* showtime)
-{
-  RTC_DateTypeDef sdatestructureget = {0};
-  RTC_TimeTypeDef stimestructureget = {0};
-
-  /* Get the RTC current Time */
-  HAL_StatusTypeDef rest = HAL_RTC_GetTime(&RtcHandle, &stimestructureget, RTC_FORMAT_BIN);
-
-  /* Get the RTC current Date */
-  HAL_StatusTypeDef resd = HAL_RTC_GetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
-
-  SERIAL_ECHOLNPAIR("RTC_TimeShow rest:", rest, " resd:", resd, " d:", sdatestructureget.Year, "-", sdatestructureget.Month, "-", sdatestructureget.Date,
-    " ", stimestructureget.Hours, ":", stimestructureget.Minutes, ":", stimestructureget.Seconds );
-
-  /* Display time Format : hh:mm:ss */
-  ////sprintf((char*)showtime,"%02d:%02d:%02d",stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
-}
-
-void rtc_print_debug() {
-  uint8_t stringBuff[50] = {0};
-  RTC_TimeShow(stringBuff);
-
-  //SERIAL_ECHOLNPAIR("echo: RTC: ", stringBuff);
-}
-
 void rtc_set_date(uint8_t year, uint8_t month, uint8_t day, uint8_t weekday) {
 
   RTC_DateTypeDef sdatestructureget = {0};
@@ -390,7 +230,7 @@ void rtc_set_date(uint8_t year, uint8_t month, uint8_t day, uint8_t weekday) {
   sdatestructureget.WeekDay = weekday;
 
   HAL_StatusTypeDef resd = HAL_RTC_SetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
-
+  UNUSED(resd);
 	// HAL_StatusTypeDef res = HAL_RTC_Init(&RtcHandle);
   // HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
 }
@@ -403,7 +243,7 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
   stimestructureget.Seconds = second;
 
   HAL_StatusTypeDef rest = HAL_RTC_SetTime(&RtcHandle, &stimestructureget, RTC_FORMAT_BIN);
-
+  UNUSED(rest);
   // HAL_StatusTypeDef res = HAL_RTC_Init(&RtcHandle);
   // HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
 }
@@ -420,10 +260,14 @@ void rtc_print_datetime() {
   HAL_StatusTypeDef resd = HAL_RTC_GetDate(&RtcHandle, &sdatestructureget, RTC_FORMAT_BIN);
 
   char buffer[50];
-  snprintf(buffer, sizeof(buffer), "D%02d%02d%02dW%d", sdatestructureget.Year, sdatestructureget.Month, sdatestructureget.Date, sdatestructureget.WeekDay);
-  SERIAL_ECHO(buffer);
-  snprintf(buffer, sizeof(buffer), " T%02d%02d%02d", stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
-  SERIAL_ECHO(buffer);
+  if (resd == HAL_OK) {
+    snprintf(buffer, sizeof(buffer), "D%02d%02d%02d W%d", sdatestructureget.Year, sdatestructureget.Month, sdatestructureget.Date, sdatestructureget.WeekDay);
+    SERIAL_ECHO(buffer);
+  }
+  if (rest == HAL_OK) {
+    snprintf(buffer, sizeof(buffer), " T%02d%02d%02d", stimestructureget.Hours, stimestructureget.Minutes, stimestructureget.Seconds);
+    SERIAL_ECHO(buffer);
+  }
 }
 
 uint32_t rtc_read_status_reg() {

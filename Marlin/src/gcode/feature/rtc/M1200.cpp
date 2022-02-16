@@ -109,7 +109,7 @@ void GcodeSuite::M1200() {
     unsigned long year = d / 10000;
     unsigned long month = (d / 100) % 100;
     unsigned long day = d % 100;
-    SERIAL_ECHOLNPAIR("echo: debug M1200 y:", year, "m:", month, "d:", day, "w:", weekday);
+    // SERIAL_ECHOLNPAIR("echo: debug M1200 y:", year, "m:", month, "d:", day, "w:", weekday);
     rtc_set_date(year, month, day, weekday);
   }
   if (parser.seenval('T')) {
@@ -118,8 +118,7 @@ void GcodeSuite::M1200() {
     unsigned long hour = t / 10000;
     unsigned long min = (t / 100) % 100;
     unsigned long sec = t % 100;
-    SERIAL_ECHOLNPAIR("echo: debug M1200 h:", hour, "n:", min, "s:", sec);
-
+    // SERIAL_ECHOLNPAIR("echo: debug M1200 h:", hour, "n:", min, "s:", sec);
     rtc_set_time(hour, min, sec);
   }
 
@@ -131,11 +130,11 @@ void GcodeSuite::M1200() {
 
   rtc_print_datetime();
 
-  SERIAL_ECHO("; BDCR = ");
-  SERIAL_ECHO(RCC->BDCR);
+  // SERIAL_ECHO("; BDCR = ");
+  // SERIAL_ECHO(RCC->BDCR);
 
-  SERIAL_ECHO(" RTC_STATUS_REG = ");
-  SERIAL_ECHO(rtc_read_status_reg());
+  // SERIAL_ECHO(" RTC_STATUS_REG = ");
+  // SERIAL_ECHO(rtc_read_status_reg());
 
   SERIAL_EOL();
 }
