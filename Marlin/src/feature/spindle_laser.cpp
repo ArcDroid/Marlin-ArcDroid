@@ -34,6 +34,11 @@
   #include "../module/servo.h"
 #endif
 
+
+#if ENABLED(TORCH_HEIGHT_CONTROL)
+#include "thc.h"
+#endif
+
 SpindleLaser cutter;
 volatile uint8_t SpindleLaser::power;
 volatile bool SpindleLaser::inhibit;
@@ -123,6 +128,9 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
   if (req_pwr == last_power_applied) return;
   last_power_applied = req_pwr;
   power = req_pwr;
+  #if ENABLED(TORCH_HEIGHT_CONTROL)
+    thc.update_beam(req_pwr > 0);
+  #endif
   #if ENABLED(SPINDLE_LASER_PWM)
     if (cutter.unitPower == 0 && CUTTER_UNIT_IS(RPM)) {
       ocr_off();

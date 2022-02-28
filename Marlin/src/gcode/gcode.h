@@ -1121,6 +1121,10 @@ private:
     static void M710();
   #endif
 
+  #if ENABLED(TORCH_HEIGHT_CONTROL)
+    static void M783();
+  #endif
+
   #if ENABLED(USE_RTC)
     static void M1200();
   #endif

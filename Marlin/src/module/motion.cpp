@@ -224,7 +224,9 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
     SERIAL_ECHOPAIR(" ES:", (int32_t) endstops.state());
   #endif
   #if ENABLED(TORCH_HEIGHT_CONTROL)
-    SERIAL_ECHOPAIR(" THC:", (int32_t) thc.raw);
+    SERIAL_ECHOPAIR_F(" THC:", thc.filtered);
+    SERIAL_ECHOPAIR(" THR:", (int32_t) thc.raw);
+    SERIAL_ECHOPAIR_F(" THS:", thc.sigma_R);
     #if ENABLED(TORCH_HEIGHT_TH1)
     SERIAL_ECHOPAIR(" TH1:", (int32_t) thc_th1.raw);
     #endif

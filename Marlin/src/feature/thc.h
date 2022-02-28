@@ -25,29 +25,79 @@
 #include "../module/planner.h"
 // #include "../module/thermistor/thermistors.h"
 
-class TorchHeightControl {
-public:
-  static bool enabled;              // THC enabled
-  static uint32_t acc;              // ADC accumulator
-  static uint16_t raw;              // Measured filament diameter - one extruder only
+#include "../feature/kalman.h"
 
-  TorchHeightControl() { init(); }
+struct THCControlStruct {
+
+};
+
+class TorchHeightControl : EKFModel<2, 1, THCControlStruct> {
+public:
+  static bool enabled;
+  static uint32_t acc;
+  static uint16_t raw;
+  static float filtered;
+
+  // kalman filter
+  // "sensor nosie covariance under good conditions (meters^2)";
+  static float sigma_R_min;
+  // "model nosie covariance";
+  static float sigma_Q;
+  // "time for sigma_R to return to sigma_R_min (seconds)";
+  static float sigma_R_decay_time;
+  // "how much to scale sensor rate to adjust sigma_R";
+  static float sensor_rate_scale;
+  // "how much to scale sensor rate rate to adjust sigma_R";
+  static float sensor_rate_rate_scale;
+
+
+  // control input
+  static uint32_t turned_on_time;
+  static int32_t delay_on;
+  static float rate_toggle;
+
+  // kalman state
+  static bool beam_on;
+  static float voltage;
+  static float voltage_rate;
+  static float sigma_R;
+
+  static float last_measurement;
+  static float last_rate;
+
+  static float pid_p;
+
+  static float target_v;
+
+  static ExtendedKalman<2, 1, THCControlStruct> kalman;
+
+  TorchHeightControl();
   static void init();
 
   static inline void enable(const bool ena) { enabled = ena; }
 
   inline void reset() { acc = 0; }
+  // called by ACCUMULATE_ADC
   inline void sample(const uint16_t s) { acc += s; }
-  inline void update() { raw = acc; }
+  void update();
 
-  static void update_height() {
-    //TODO
-  }
+  static void update_height();
 
-  static void update_measured_units() {
-    //TODO
-  }
+  static void update_measured_units();
 
+  static void update_beam(bool on);
+
+  // EKFModel
+  Matrix<1, 1> getR();
+  Matrix<2, 2> getQ(const float dT);
+  Matrix<2, 1> f(const Matrix<2, 1> x_prev, const float dT, THCControlStruct* u);
+  Matrix<2, 2> getF(const Matrix<2, 1> x_prev, const float dT, THCControlStruct* u);
+  Matrix<1, 1> h(const Matrix<2, 1> x);
+  Matrix<1, 2> getH(const Matrix<2, 1> x);
+
+  bool updateSensorNoise(const float measurement, const float dT, const bool is_turn_on);
+
+  Estimate<2, 1, THCControlStruct> step(const Matrix<1, 1> z, const float deltaT, THCControlStruct* u, const bool skipUpdate);
 };
 
 extern TorchHeightControl thc;
