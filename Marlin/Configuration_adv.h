@@ -3116,7 +3116,7 @@
     #elif defined(MINI_MODEL_2AM)
       // encoder 819200 pulses/rev, 200 steps/rev motor, stepper 32 usteps/step
       // motor is upside-down on mini machine
-      #define Y_ENCODER_PPS (-819200.0/200/Y_MICROSTEPS)
+      #define Y_ENCODER_PPS (819200.0/200/Y_MICROSTEPS)
     #else
       // 0.9deg / 400 s/rev motor on production machine
       #define Y_ENCODER_PPS (819200.0/400/Y_MICROSTEPS)
