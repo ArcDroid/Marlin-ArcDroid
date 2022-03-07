@@ -8,6 +8,10 @@
 
 
 void M783_report(const bool forReplay) {
+  #ifdef DISABLE_THC
+    return;
+  #endif
+
   if (!forReplay) { SERIAL_ECHO_MSG("; Torch Height Control"); SERIAL_ECHO_START(); }
   SERIAL_ECHOLNPAIR("  M783"
     " E", int(thc.enabled),
@@ -34,6 +38,9 @@ void M783_report(const bool forReplay) {
  *  G         : PID P gain
  */
 void GcodeSuite::M783() {
+  #ifdef DISABLE_THC
+    return;
+  #endif
 
   const bool seenE = parser.seenval('E');
   if (seenE) thc.enabled = parser.value_bool();
