@@ -3120,7 +3120,7 @@ void MarlinSettings::reset() {
     closedloop_reset_home_pulse();
   #endif
 
-  #if HAS_CLOSEDLOOP_CONFIG
+  #if HAS_TORCH_HEIGHT_CONTROL
     thc.reset_settings();
   #endif
 
