@@ -27,9 +27,33 @@
 
 #include "../feature/kalman.h"
 
-struct THCControlStruct {
+void M783_report(const bool forReplay);
 
+struct THCControlStruct {
+  bool is_turn_on;
+  bool is_turn_off;
 };
+
+typedef struct _THCSettings {
+  // kalman filter
+  // "sensor nosie covariance under good conditions (meters^2)";
+  float sigma_R_min;
+  // "model nosie covariance";
+  float sigma_Q;
+  // "time for sigma_R to return to sigma_R_min (seconds)";
+  float sigma_R_decay_time;
+  // "how much to scale sensor rate to adjust sigma_R";
+  float sensor_rate_scale;
+  // "how much to scale sensor rate rate to adjust sigma_R";
+  float sensor_rate_rate_scale;
+
+  int32_t delay_on;
+  float rate_toggle;
+
+  float pid_p;
+  float pid_i;
+  float pid_d;
+} THCSettings;
 
 class TorchHeightControl : EKFModel<2, 1, THCControlStruct> {
 public:
@@ -38,23 +62,10 @@ public:
   static uint16_t raw;
   static float filtered;
 
-  // kalman filter
-  // "sensor nosie covariance under good conditions (meters^2)";
-  static float sigma_R_min;
-  // "model nosie covariance";
-  static float sigma_Q;
-  // "time for sigma_R to return to sigma_R_min (seconds)";
-  static float sigma_R_decay_time;
-  // "how much to scale sensor rate to adjust sigma_R";
-  static float sensor_rate_scale;
-  // "how much to scale sensor rate rate to adjust sigma_R";
-  static float sensor_rate_rate_scale;
-
+  static THCSettings settings;
 
   // control input
   static uint32_t turned_on_time;
-  static int32_t delay_on;
-  static float rate_toggle;
 
   // kalman state
   static bool beam_on;
@@ -65,14 +76,14 @@ public:
   static float last_measurement;
   static float last_rate;
 
-  static float pid_p;
-
   static float target_v;
 
   static ExtendedKalman<2, 1, THCControlStruct> kalman;
 
   TorchHeightControl();
   static void init();
+
+  static void reset_settings();
 
   static inline void enable(const bool ena) { enabled = ena; }
 

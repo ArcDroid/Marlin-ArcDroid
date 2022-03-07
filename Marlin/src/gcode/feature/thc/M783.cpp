@@ -7,16 +7,16 @@
 #include "../../../feature/thc.h"
 
 
-void M783_report(bool forReplay) {
-  if (!forReplay) { SERIAL_ECHOLNPGM("; Torch Height Control"); SERIAL_ECHO_START(); }
+void M783_report(const bool forReplay) {
+  if (!forReplay) { SERIAL_ECHO_MSG("; Torch Height Control"); SERIAL_ECHO_START(); }
   SERIAL_ECHOLNPAIR("  M783"
     " E", int(thc.enabled),
-    " D", thc.delay_on,
-    " M", thc.sigma_R_min,
-    " S", thc.sensor_rate_scale,
-    " T", thc.sensor_rate_rate_scale,
-    " B", thc.rate_toggle,
-    " G", thc.pid_p
+    " D", thc.settings.delay_on / 1000.0f,
+    " M", thc.settings.sigma_R_min,
+    " S", thc.settings.sensor_rate_scale,
+    " T", thc.settings.sensor_rate_rate_scale,
+    " B", thc.settings.rate_toggle,
+    " G", thc.settings.pid_p
   );
 }
 
@@ -39,22 +39,22 @@ void GcodeSuite::M783() {
   if (seenE) thc.enabled = parser.value_bool();
 
   const bool seenD = parser.seenval('D');
-  if (seenD) thc.delay_on = (int32_t) parser.value_millis_from_seconds();
+  if (seenD) thc.settings.delay_on = (int32_t) parser.value_millis_from_seconds();
 
   const bool seenM = parser.seenval('M');
-  if (seenM) thc.sigma_R_min = parser.value_float();
+  if (seenM) thc.settings.sigma_R_min = parser.value_float();
 
   const bool seenS = parser.seenval('S');
-  if (seenS) thc.sensor_rate_scale = parser.value_float();
+  if (seenS) thc.settings.sensor_rate_scale = parser.value_float();
 
   const bool seenT = parser.seenval('T');
-  if (seenT) thc.sensor_rate_rate_scale = parser.value_float();
+  if (seenT) thc.settings.sensor_rate_rate_scale = parser.value_float();
 
   const bool seenB = parser.seenval('B');
-  if (seenB) thc.rate_toggle = parser.value_float();
+  if (seenB) thc.settings.rate_toggle = parser.value_float();
 
   const bool seenG = parser.seenval('G');
-  if (seenG) thc.pid_p = parser.value_float();
+  if (seenG) thc.settings.pid_p = parser.value_float();
 
   //if (!(seenE || seenD || seenM || seenS || seenT || seenB || seenG))
     M783_report(false);

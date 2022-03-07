@@ -128,6 +128,10 @@
   #include "stepper/closedloop.h"
 #endif
 
+#if HAS_TORCH_HEIGHT_CONTROL
+  #include "../feature/thc.h"
+#endif
+
 #if ENABLED(PROBE_TEMP_COMPENSATION)
   #include "../feature/probe_temp_comp.h"
 #endif
@@ -501,6 +505,10 @@ typedef struct SettingsDataStruct {
   #if HAS_CLOSEDLOOP_CONFIG
     abc_float_t encoder_pps;
     abc_long_t encoder_home_pulse;
+  #endif
+
+  #if HAS_TORCH_HEIGHT_CONTROL
+    THCSettings thc_settings;
   #endif
 
 } SettingsData;
@@ -1447,6 +1455,12 @@ void MarlinSettings::postprocess() {
       abc_long_t encoder_home_pulse = closedloop_get_home_pulse();
       _FIELD_TEST(encoder_home_pulse);
       EEPROM_WRITE(encoder_home_pulse);
+    #endif
+
+    #if HAS_TORCH_HEIGHT_CONTROL
+      THCSettings thc_set = thc.settings;
+      _FIELD_TEST(thc_set);
+      EEPROM_WRITE(thc_set);
     #endif
 
     //
@@ -2409,6 +2423,13 @@ void MarlinSettings::postprocess() {
         if (!validating) closedloop_set_home_pulse(encoder_home_pulse);
       #endif
 
+      #if HAS_TORCH_HEIGHT_CONTROL
+        THCSettings thc_set = { 0 };
+        _FIELD_TEST(thc_set);
+        EEPROM_READ(thc_set);
+        thc.settings = thc_set;
+      #endif
+
       //
       // Ethernet network info
       //
@@ -3099,6 +3120,10 @@ void MarlinSettings::reset() {
     closedloop_reset_home_pulse();
   #endif
 
+  #if HAS_CLOSEDLOOP_CONFIG
+    thc.reset_settings();
+  #endif
+
   #if ENABLED(PASSWORD_FEATURE)
     #ifdef PASSWORD_DEFAULT_VALUE
       password.is_set = true;
@@ -3106,11 +3131,6 @@ void MarlinSettings::reset() {
     #else
       password.is_set = false;
     #endif
-  #endif
-
-  #if HAS_CLOSEDLOOP_CONFIG
-    closedloop_reset_pps();
-    closedloop_reset_home_pulse();
   #endif
 
   //
@@ -4066,6 +4086,10 @@ void MarlinSettings::reset() {
           PSTR("  M444 S"), cutter.powerup_delay / 1000.0f
         , SP_P_STR, cutter.powerdown_delay / 1000.0f
       );
+    #endif
+
+    #if HAS_TORCH_HEIGHT_CONTROL
+      M783_report(forReplay);
     #endif
 
     #if HAS_ETHERNET

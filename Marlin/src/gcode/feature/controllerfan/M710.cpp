@@ -28,7 +28,7 @@
 #include "../../../feature/controllerfan.h"
 
 void M710_report(const bool forReplay) {
-  if (!forReplay) { SERIAL_ECHOLNPGM("; Controller Fan"); SERIAL_ECHO_START(); }
+  if (!forReplay) { SERIAL_ECHO_MSG("; Controller Fan"); SERIAL_ECHO_START(); }
   SERIAL_ECHOLNPAIR("  M710"
     " S", int(controllerFan.settings.active_speed),
     " I", int(controllerFan.settings.idle_speed),

@@ -51,15 +51,9 @@ uint32_t TorchHeightControl::acc; // = 0                             // ADC accu
 uint16_t TorchHeightControl::raw; // = 0                               // Raw ADC torch voltage measurement
 float TorchHeightControl::filtered;
 
-float TorchHeightControl::sigma_R_min;
-float TorchHeightControl::sigma_Q;
-float TorchHeightControl::sigma_R_decay_time;
-float TorchHeightControl::sensor_rate_scale;
-float TorchHeightControl::sensor_rate_rate_scale;
+THCSettings TorchHeightControl::settings;
 
 uint32_t TorchHeightControl::turned_on_time;
-int32_t TorchHeightControl::delay_on;
-float TorchHeightControl::rate_toggle;
 
 bool TorchHeightControl::beam_on;
 float TorchHeightControl::voltage;
@@ -69,7 +63,6 @@ float TorchHeightControl::sigma_R;
 float TorchHeightControl::last_measurement;
 float TorchHeightControl::last_rate;
 
-float TorchHeightControl::pid_p;
 float TorchHeightControl::target_v;
 
 ExtendedKalman<2, 1, THCControlStruct> TorchHeightControl::kalman;
@@ -79,26 +72,32 @@ TorchHeightControl::TorchHeightControl() {
 }
 
 void TorchHeightControl::init() {
-  // kalman filter
-  sigma_R_min = 60.0f;
-  sigma_Q = 1E-06f;
-  sigma_R_decay_time = 1000.0f;
-  sensor_rate_scale = 0.2f;
-  sensor_rate_rate_scale = 0.1f/50;
-
   turned_on_time = 0;
-  delay_on = 2000;
-  rate_toggle = 2.0f;
 
   voltage = 0;
   voltage_rate = 0;
-  sigma_R = sigma_R_min * 20;
+  sigma_R = settings.sigma_R_min * 20;
 
   last_measurement = NAN;
   last_rate = NAN;
 
-  pid_p = 0;
   target_v = NAN;
+}
+
+void TorchHeightControl::reset_settings() {
+  // kalman filter
+  settings.sigma_R_min = 60.0f;
+  settings.sigma_Q = 1E-06f;
+  settings.sigma_R_decay_time = 1000.0f;
+  settings.sensor_rate_scale = 0.2f;
+  settings.sensor_rate_rate_scale = 0.1f/50;
+
+  settings.delay_on = 2000;
+  settings.rate_toggle = 2.0f;
+
+  settings.pid_p = .3f;
+  settings.pid_i = 0;
+  settings.pid_d = 0;
 }
 
 void TorchHeightControl::update_beam(bool on) {
@@ -132,7 +131,7 @@ void TorchHeightControl::update() {
 
   int32_t dt = (int32_t)(time - turned_on_time);
 
-  bool is_turn_on = beam_on && dt > 0 && dt < delay_on;
+  bool is_turn_on = beam_on && dt > 0 && dt < settings.delay_on;
 
   // update kalman filter
   Matrix<1,1> m;
@@ -153,10 +152,10 @@ void TorchHeightControl::update() {
     target_v = filtered;
   }
 
-  if (beam_on && enabled && dt > delay_on) {
+  if (beam_on && enabled && dt > settings.delay_on) {
     // babystep Z here
     float error = filtered - target_v;
-    int16_t correction = (int16_t) round(-error * pid_p);
+    int16_t correction = (int16_t) round(-error * settings.pid_p);
     int16_t existing = babystep.steps[BS_AXIS_IND(Z_AXIS)];
 
     if (correction - existing) {
@@ -170,8 +169,8 @@ void TorchHeightControl::update() {
 bool TorchHeightControl::updateSensorNoise(const float measurement, const float dT, const bool is_turn_on)
 {
   // trust sensor readings more over time
-  float weight = MIN(1.0f, dT / sigma_R_decay_time);
-  sigma_R = sigma_R * (1.0f - weight) + sigma_R_min * weight;
+  float weight = MIN(1.0f, dT / settings.sigma_R_decay_time);
+  sigma_R = sigma_R * (1.0f - weight) + settings.sigma_R_min * weight;
   if (__isnanf(last_measurement))
   {
     // no last measurement to compare to, accept measuremnt
@@ -201,7 +200,7 @@ bool TorchHeightControl::updateSensorNoise(const float measurement, const float 
   if (!__isnanf(last_rate))
   {
     float rateRate = powf(rate - last_rate, 2.0f) / dT;
-    diff = MAX(diff, rateRate / sensor_rate_rate_scale);
+    diff = MAX(diff, rateRate / settings.sensor_rate_rate_scale);
   }
 
   if (sigma_R < diff && !is_turn_on)
@@ -213,7 +212,7 @@ bool TorchHeightControl::updateSensorNoise(const float measurement, const float 
   }
   else if (is_turn_on)
   {
-    sigma_R = sigma_R_min;
+    sigma_R = settings.sigma_R_min;
   }
   last_rate = rate;
   last_measurement = measurement;
@@ -281,10 +280,10 @@ Matrix<1, 1> TorchHeightControl::getR() {
 }
 Matrix<2, 2> TorchHeightControl::getQ(float dT) {
   Matrix<2,2> ret;
-  ret.x[0][0] = dT*dT / 2.0f * sigma_Q;
+  ret.x[0][0] = dT*dT / 2.0f * settings.sigma_Q;
   ret.x[0][1] = 0.0;
   ret.x[1][0] = 0;
-  ret.x[1][1] = dT * sigma_Q;
+  ret.x[1][1] = dT * settings.sigma_Q;
   return ret;
 }
 Matrix<2, 1> TorchHeightControl::f(const Matrix<2, 1> x_prev, const float dT, THCControlStruct* u) {
