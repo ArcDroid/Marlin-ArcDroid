@@ -903,7 +903,7 @@
 #ifdef MINI_MODEL_2AM
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 32.0*200.0/360.0*4.0, 32.0*200.0/360.0*4.0, 200/1.25, 1000 }  // default steps per unit for SCARA
 #else
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 221.913, 221.913, 400, 1000 }  // default steps per unit for SCARA
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 442.38, 442.38, 400, 1000 }  // default steps per unit for SCARA
 #endif
 
 /**
@@ -912,9 +912,9 @@
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
 #ifdef MINI_MODEL_2AM
-#define DEFAULT_MAX_FEEDRATE          { 36000, 36000, 30, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 5500, 5500, 60, 25 }
 #else
-#define DEFAULT_MAX_FEEDRATE          { 36000, 36000, 30, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 5500, 5500, 60, 25 }
 #endif
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
@@ -929,9 +929,9 @@
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
 #ifdef MINI_MODEL_2AM
-#define DEFAULT_MAX_ACCELERATION      { 360, 360, 20, 1000 }
+#define DEFAULT_MAX_ACCELERATION      { 300, 300, 50, 1000 }
 #else
-#define DEFAULT_MAX_ACCELERATION      { 360, 360, 20, 1000 }
+#define DEFAULT_MAX_ACCELERATION      { 300, 300, 50, 1000 }
 #endif
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
@@ -947,9 +947,9 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   2000    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_ACCELERATION          300    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  300    // E acceleration for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   300    // X, Y, Z acceleration for travel (non printing) moves
 
 /**
  * Default Jerk limits (mm/s)
@@ -963,7 +963,7 @@
 #if ENABLED(CLASSIC_JERK)
   #define DEFAULT_XJERK  5.0
   #define DEFAULT_YJERK  5.0
-  #define DEFAULT_ZJERK  0.3
+  #define DEFAULT_ZJERK  0.5
 
   //#define TRAVEL_EXTRA_XYJERK 0.0     // Additional jerk allowance for all travel moves
 
@@ -1160,7 +1160,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { 0, 0, 0 }
+#define NOZZLE_TO_PROBE_OFFSET { 0, 0, 1.5 }
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
