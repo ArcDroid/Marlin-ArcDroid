@@ -107,9 +107,6 @@ void TorchHeightControl::update_beam(bool on) {
   }
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-
 void TorchHeightControl::update() {
   raw = acc;
 
@@ -261,8 +258,6 @@ Estimate<2, 1, THCControlStruct> TorchHeightControl::step(const Matrix<1, 1> z, 
     ////kalman.state = new Estimate(xPriori, Ppriori, kalman.state.u, deltaT);
     return kalman.state;
 }
-
-#pragma GCC pop_options
 
 void TorchHeightControl::update_height() {
 
