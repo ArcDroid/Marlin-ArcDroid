@@ -48,7 +48,7 @@ typedef struct _THCSettings {
   float sensor_rate_rate_scale;
 
   int32_t delay_on;
-  float rate_toggle;
+  float pv_limit;
 
   float pid_p;
   float pid_i;
@@ -61,6 +61,8 @@ public:
   static uint32_t acc;
   static uint16_t raw;
   static float filtered;
+  static float filtered_dt;
+  static float correction;
 
   static THCSettings settings;
 
@@ -77,6 +79,7 @@ public:
   static float last_rate;
 
   static float target_v;
+  static float accum_i;
 
   static ExtendedKalman<2, 1, THCControlStruct> kalman;
 

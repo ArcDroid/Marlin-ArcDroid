@@ -50,6 +50,8 @@ bool TorchHeightControl::enabled; // = false;                          // Torch 
 uint32_t TorchHeightControl::acc; // = 0                             // ADC accumulator
 uint16_t TorchHeightControl::raw; // = 0                               // Raw ADC torch voltage measurement
 float TorchHeightControl::filtered;
+float TorchHeightControl::filtered_dt;
+float TorchHeightControl::correction;
 
 THCSettings TorchHeightControl::settings;
 
@@ -64,6 +66,7 @@ float TorchHeightControl::last_measurement;
 float TorchHeightControl::last_rate;
 
 float TorchHeightControl::target_v;
+float TorchHeightControl::accum_i;
 
 ExtendedKalman<2, 1, THCControlStruct> TorchHeightControl::kalman;
 
@@ -82,6 +85,7 @@ void TorchHeightControl::init() {
   last_rate = NAN;
 
   target_v = NAN;
+  accum_i = 0;
 }
 
 void TorchHeightControl::reset_settings() {
@@ -93,7 +97,7 @@ void TorchHeightControl::reset_settings() {
   settings.sensor_rate_rate_scale = 0.1f/50;
 
   settings.delay_on = 2000;
-  settings.rate_toggle = 2.0f;
+  settings.pv_limit = 40.0f;
 
   settings.pid_p = .3f;
   settings.pid_i = 0;
@@ -104,6 +108,8 @@ void TorchHeightControl::update_beam(bool on) {
   beam_on = on;
   if (on) {
     turned_on_time = getCurrentMillis();
+  } else {
+    correction = 0;
   }
 }
 
@@ -142,21 +148,31 @@ void TorchHeightControl::update() {
     Estimate<2, 1, THCControlStruct> e = step(m, dT, NULL, !accept);
 
     filtered = e.x.x[0][0];
+    filtered_dt = e.x.x[1][0];
   //}
 
   if (is_turn_on) {
     // beam turning on
     target_v = filtered;
+    accum_i = 0;
   }
 
   if (beam_on && enabled && dt > settings.delay_on) {
     // babystep Z here
     float error = filtered - target_v;
-    int16_t correction = (int16_t) round(-error * settings.pid_p);
+    float p_part = error * settings.pid_p;
+    if (fabs(p_part) < settings.pv_limit && fabs(error) > 0.00001) {
+      accum_i += error * dT * settings.pid_i;
+    } else {
+      accum_i = 0;
+    }
+    float d_part = filtered_dt * settings.pid_d; // kalman already includes step time in velocity calculation
+    correction = -(p_part + accum_i + d_part);
+    int16_t correction_i = (int16_t) round(correction);
     int16_t existing = babystep.steps[BS_AXIS_IND(Z_AXIS)];
 
-    if (correction - existing) {
-      babystep.add_steps(Z_AXIS, correction - existing);
+    if (correction_i - existing) {
+      babystep.add_steps(Z_AXIS, correction_i - existing);
     }
   }
 

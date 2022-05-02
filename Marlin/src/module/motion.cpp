@@ -71,7 +71,7 @@
   #include "../feature/fwretract.h"
 #endif
 
-#if ENABLED(BABYSTEP_DISPLAY_TOTAL)
+#if ENABLED(BABYSTEP_DISPLAY_TOTAL) || ENABLED(TORCH_HEIGHT_CONTROL)
   #include "../feature/babystep.h"
 #endif
 
@@ -227,6 +227,7 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
     SERIAL_ECHOPAIR_F(" THC:", thc.filtered);
     SERIAL_ECHOPAIR(" THR:", (int32_t) thc.raw);
     SERIAL_ECHOPAIR_F(" THS:", thc.sigma_R);
+    SERIAL_ECHOPAIR_F(" THD:", thc.correction);
     #if ENABLED(TORCH_HEIGHT_TH1)
     SERIAL_ECHOPAIR(" TH1:", (int32_t) thc_th1.raw);
     #endif
