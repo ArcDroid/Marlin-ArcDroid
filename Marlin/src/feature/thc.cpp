@@ -151,7 +151,7 @@ void TorchHeightControl::update() {
     filtered_dt = e.x.x[1][0];
   //}
 
-  if (is_turn_on) {
+  if (is_turn_on || !beam_on) {
     // beam turning on
     target_v = filtered;
     accum_i = 0;
