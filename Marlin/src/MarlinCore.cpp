@@ -303,8 +303,11 @@ void enable_e_steppers() {
 void enable_all_steppers() {
   TERN_(AUTO_POWER_CONTROL, powerManager.power_on());
   ENABLE_AXIS_X();
+  delay(20);
   ENABLE_AXIS_Y();
+  delay(20);
   ENABLE_AXIS_Z();
+  delay(20);
   enable_e_steppers();
 
   TERN_(EXTENSIBLE_UI, ExtUI::onSteppersEnabled());
