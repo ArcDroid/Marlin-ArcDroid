@@ -91,6 +91,8 @@
 // T_EN / J16 - TFT RJ45
 #define SPINDLE_LASER_INHIBIT_PIN PD13
 
+#define FAN_PIN PB0
+
 //
 // Include MKS ROBIN NANO V3 pins
 //
