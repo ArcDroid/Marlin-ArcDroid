@@ -58,6 +58,7 @@ class TMCStorage {
       uint8_t otpw_count = 0,
               error_count = 0;
       bool flag_otpw = false;
+      bool otpw_stepdown = CURRENT_STEP_DOWN > 0;
       inline bool getOTPW() { return flag_otpw; }
       inline void clear_otpw() { flag_otpw = 0; }
     #endif
@@ -312,10 +313,21 @@ void tmc_print_current(TMC &st) {
     SERIAL_EOL();
   }
   template<typename TMC>
-  void tmc_clear_otpw(TMC &st) {
+  void tmc_clear_otpw(TMC &st, int ottrim, int otpw_stepdown) {
     st.clear_otpw();
     st.printLabel();
-    SERIAL_ECHOLNPGM(" prewarn flag cleared");
+    SERIAL_ECHOPGM(" prewarn flag cleared");
+    if (ottrim != -1 || otpw_stepdown != -1) {
+      if (ottrim != -1) {
+        st.ottrim(ottrim);
+      }
+      if (otpw_stepdown != -1) {
+        st.otpw_stepdown = otpw_stepdown == 1;
+      }
+      SERIAL_ECHOPAIR(" otrim:", st.ottrim());
+      SERIAL_ECHOPAIR(" otpw_stepdown:", st.otpw_stepdown);
+    }
+    SERIAL_EOL();
   }
 #endif
 #if ENABLED(HYBRID_THRESHOLD)

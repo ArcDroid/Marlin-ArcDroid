@@ -265,7 +265,7 @@
 
     template<typename TMC>
     void step_current_down(TMC &st) {
-      if (st.isEnabled()) {
+      if (st.isEnabled() && st.otpw_stepdown) {
         const uint16_t I_rms = st.getMilliamps() - (CURRENT_STEP_DOWN);
         if (I_rms > 50) {
           st.rms_current(I_rms);
@@ -498,7 +498,9 @@
     TMC_HSTRT,
     TMC_SGT,
     TMC_MSCNT,
-    TMC_INTERPOLATE
+    TMC_INTERPOLATE,
+    TMC_OTTRIM,
+    TMC_OTSTEPDOWN
   };
   enum TMC_drv_status_enum : char {
     TMC_DRV_CODES,
@@ -605,6 +607,7 @@
         case TMC_PWM_GRAD_AUTO: SERIAL_ECHO(st.pwm_grad_auto()); break;
         case TMC_STEALTHCHOP: serialprint_truefalse(st.stealth()); break;
         case TMC_INTERPOLATE: serialprint_truefalse(st.intpol()); break;
+        case TMC_OTTRIM: SERIAL_ECHO(st.ottrim()); break;
         default: break;
       }
     }
@@ -699,6 +702,7 @@
       case TMC_HEND: SERIAL_ECHO(st.hysteresis_end()); break;
       case TMC_HSTRT: SERIAL_ECHO(st.hysteresis_start()); break;
       case TMC_MSCNT: SERIAL_ECHO(st.get_microstep_counter()); break;
+      case TMC_OTSTEPDOWN: serialprint_truefalse(st.otpw_stepdown); break;
       default: _tmc_status(st, i); break;
     }
   }
@@ -913,6 +917,8 @@
     TMC_REPORT("stealthChop",        TMC_STEALTHCHOP);
     TMC_REPORT("msteps\t",           TMC_MICROSTEPS);
     TMC_REPORT("interp\t",           TMC_INTERPOLATE);
+    TMC_REPORT("ottrim\t",           TMC_OTTRIM);
+    TMC_REPORT("otstepdown\t",       TMC_OTSTEPDOWN);
     TMC_REPORT("tstep\t",            TMC_TSTEP);
     TMC_REPORT("PWM thresh.",        TMC_TPWMTHRS);
     TMC_REPORT("[mm/s]\t",           TMC_TPWMTHRS_MMS);

@@ -112,6 +112,8 @@
    * M912: Clear TMC stepper driver overtemperature pre-warn flag held by the library
    *       Specify one or more axes with X, Y, Z, X1, Y1, Z1, X2, Y2, Z2, Z3, Z4 and E[index].
    *       If no axes are given, clear all.
+   *       Specify S to set TMC OTTRIM over temperature threshold register (values: 0-3)
+   *       Specify P to toggle over temperature current stepdown
    *
    * Examples:
    *       M912 X   ; clear X and X2
@@ -128,10 +130,22 @@
 
     const bool hasNone = !hasE && !hasX && !hasY && !hasZ;
 
+    int ottrim = -1;
+    if (parser.seen('S')) {
+      ottrim = parser.value_byte();
+      if (ottrim < 0 || ottrim > 3)
+        ottrim = -1;
+    }
+
+    int otpw_stepdown = -1;
+    if (parser.seen('P')) {
+      otpw_stepdown = parser.value_bool() ? 1 : 0;
+    }
+
     #if M91x_SOME_X
       const int8_t xval = int8_t(parser.byteval(axis_codes.x, 0xFF));
       #if M91x_USE(X)
-        if (hasNone || xval == 1 || (hasX && xval < 0)) tmc_clear_otpw(stepperX);
+        if (hasNone || xval == 1 || (hasX && xval < 0)) tmc_clear_otpw(stepperX, ottrim, otpw_stepdown);
       #endif
       #if M91x_USE(X2)
         if (hasNone || xval == 2 || (hasX && xval < 0)) tmc_clear_otpw(stepperX2);
@@ -141,7 +155,7 @@
     #if M91x_SOME_Y
       const int8_t yval = int8_t(parser.byteval(axis_codes.y, 0xFF));
       #if M91x_USE(Y)
-        if (hasNone || yval == 1 || (hasY && yval < 0)) tmc_clear_otpw(stepperY);
+        if (hasNone || yval == 1 || (hasY && yval < 0)) tmc_clear_otpw(stepperY, ottrim, otpw_stepdown);
       #endif
       #if M91x_USE(Y2)
         if (hasNone || yval == 2 || (hasY && yval < 0)) tmc_clear_otpw(stepperY2);
@@ -151,7 +165,7 @@
     #if M91x_SOME_Z
       const int8_t zval = int8_t(parser.byteval(axis_codes.z, 0xFF));
       #if M91x_USE(Z)
-        if (hasNone || zval == 1 || (hasZ && zval < 0)) tmc_clear_otpw(stepperZ);
+        if (hasNone || zval == 1 || (hasZ && zval < 0)) tmc_clear_otpw(stepperZ, ottrim, otpw_stepdown);
       #endif
       #if M91x_USE(Z2)
         if (hasNone || zval == 2 || (hasZ && zval < 0)) tmc_clear_otpw(stepperZ2);
