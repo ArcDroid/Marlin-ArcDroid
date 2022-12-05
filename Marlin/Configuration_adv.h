@@ -2548,7 +2548,7 @@
     #ifdef MINI_MODEL_2AM
     #define Z_CURRENT       800        // (mA) RMS current. Multiply by 1.414 for peak current.
     #else
-    #define Z_CURRENT       1100        // (mA) RMS current. Multiply by 1.414 for peak current.
+    #define Z_CURRENT       1400        // (mA) RMS current. Multiply by 1.414 for peak current.
     #endif
     #define Z_CURRENT_HOME  Z_CURRENT
     #define Z_MICROSTEPS      4

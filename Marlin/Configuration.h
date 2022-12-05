@@ -929,9 +929,9 @@
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
 #ifdef MINI_MODEL_2AM
-#define DEFAULT_MAX_ACCELERATION      { 300, 300, 50, 1000 }
+#define DEFAULT_MAX_ACCELERATION      { 300, 300, 30, 1000 }
 #else
-#define DEFAULT_MAX_ACCELERATION      { 300, 300, 50, 1000 }
+#define DEFAULT_MAX_ACCELERATION      { 300, 300, 30, 1000 }
 #endif
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
