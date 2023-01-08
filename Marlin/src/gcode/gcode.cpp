@@ -951,6 +951,7 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 925: M925(); break;                                   // M925: Configure CL_S42B driver
         case 926: M926(); break;                                   // M926: Start CL_S42B calibration
         case 927: M927(); break;                                   // M927: Send CL_S42B raw command
+        case 930: M930(); break;                                   // M930: check belt tension
       #endif
 
       #if HAS_MICROSTEPS

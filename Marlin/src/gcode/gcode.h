@@ -1060,6 +1060,7 @@ private:
     static void M925();
     static void M926();
     static void M927();
+    static void M930();
   #endif
 
   #if ANY(HAS_MOTOR_CURRENT_SPI, HAS_MOTOR_CURRENT_PWM, HAS_MOTOR_CURRENT_I2C, HAS_MOTOR_CURRENT_DAC)

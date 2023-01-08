@@ -746,6 +746,7 @@ class Planner {
       friend void do_homing_move(const AxisEnum, const float, const feedRate_t, const bool);
       friend void quick_home_xy();
       friend bool SCARA_move_to_cal(const float delta_a, const float delta_b);
+      friend bool SCARA_move_relative_start(const float rel_a, const float rel_b, const float rel_z);
   #endif
 
     /**

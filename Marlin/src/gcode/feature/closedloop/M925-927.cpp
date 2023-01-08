@@ -28,6 +28,8 @@
 #include "../../../feature/tmc_util.h"
 #include "../../../module/stepper/indirection.h"
 
+#include "../../../module/endstops.h"
+
 void send_axis_commands(uint8_t function, uint16_t data) {
   LOOP_LINEAR_AXES(i) if (parser.seen(axis_codes[i])) {
     switch (i) {
@@ -254,6 +256,190 @@ void GcodeSuite::M924() {
       encoderY.home_pulse
     #endif
   );
+
+}
+
+
+
+bool SCARA_move_relative_start(const float rel_a, const float rel_b, const float rel_z) {
+  abce_pos_t target = planner.get_axis_positions_mm();
+  target.a += rel_a;
+  target.b += rel_b;
+  target.z += rel_z;
+  return planner.buffer_segment(target.a, target.b, target.c, target.e, homing_feedrate(X_AXIS), active_extruder);
+}
+
+struct PollResult {
+  float min_value;
+  float max_value;
+  float trigger_pos;
+  int samples;
+};
+
+bool poll_stepper_result(AxisEnum axis, float threshold, struct PollResult& output) {
+  int force = 10;
+  while (planner.has_blocks_queued() || force > 0) {
+    force--;
+    abce_pos_t pos = planner.get_axis_positions_mm();
+    float enc_pos;
+    switch (axis) {
+      case X_AXIS:
+        enc_pos = encoderX.read_encoder(true);
+        break;
+      case Y_AXIS:
+        enc_pos = encoderY.read_encoder(true);
+        break;
+      default:
+        enc_pos = NAN;
+    }
+    float pos_error = enc_pos - pos.pos[axis];
+
+    output.samples++;
+
+    //SERIAL_ECHOLNPAIR("; E", pos_error, " S", pos.pos[axis], " M", enc_pos);
+
+    if (pos_error < output.min_value)
+      output.min_value = pos_error;
+    if (pos_error > output.max_value)
+      output.max_value = pos_error;
+
+    if ((threshold > 0 && pos_error > threshold) ||
+        (threshold < 0 && pos_error < threshold)) {
+
+      //SERIAL_ECHOLNPAIR("; zE", pos_error, " zS", pos.pos[axis], " zM", enc_pos, " zT", threshold, " zF", force);
+      planner.quick_stop();
+      output.trigger_pos = enc_pos;
+      return true;
+    }
+
+    idle_no_sleep();
+  }
+  return false;
+}
+
+/**
+ * M930: check belt tension
+ *
+ *   XYZE to target an axis
+ *   P move distance
+ *   T TMC SG_RESULT threshold
+ *   R repeat cycles
+ */
+void GcodeSuite::M930() {
+
+  float D = 15;
+  float T = 0.1f;
+  int R = 3;
+
+  float min_backlash = 0;
+  float max_backlash = 0;
+
+  if (parser.seen('D')) {
+    D = parser.value_float();
+  }
+
+  if (parser.seen('T')) {
+    T = parser.value_float();
+  }
+
+  if (parser.seen('R')) {
+    R = parser.value_int();
+  }
+
+  int axis = NO_AXIS_ENUM;
+
+  LOOP_LINEAR_AXES(i) if (parser.seen(axis_codes[i])) {
+    axis = i;
+    break;
+  }
+
+  if (axis < A_AXIS || axis > Z_AXIS)
+    return;
+
+  endstops.enable_globally(false);
+  char axis_string[2] = { axis_codes[axis], 0};
+
+  // SERIAL_ECHOPAIR("; test start: ");
+  // SERIAL_ECHOPAIR("D", D);
+  // SERIAL_ECHOPAIR_F("T", T);
+  // SERIAL_ECHOPAIR("R", R);
+  // SERIAL_ECHOPAIR("Axis: ", axis_string);
+
+
+  planner.finish_and_disable();
+  delay(20);
+
+  struct PollResult res_range[R*2 + 1];
+
+
+  #if HAS_CLOSEDLOOP_CONFIG
+    set_position_from_encoders_if_lost(true);
+  #endif
+  enable_all_steppers();
+  #if HAS_CLOSEDLOOP_CONFIG
+    set_position_from_encoders_if_lost(true);
+  #endif
+
+  // complete all motion
+  planner.synchronize();
+  delay(200);
+
+  for (int i = 0; i < R; i++) {
+
+    for (int d = 0; d < 2; d++) {
+      res_range[i*2 + d].max_value = -123;
+      res_range[i*2 + d].min_value = 123;
+      res_range[i*2 + d].trigger_pos = NAN;
+      res_range[i*2 + d].samples = 0;
+
+
+      float delta = d == 0 ? D : -D;
+      abce_pos_t start_pos = planner.get_axis_positions_mm();
+
+      while (!SCARA_move_relative_start(
+        axis == A_AXIS ? delta : 0,
+        axis == B_AXIS ? delta : 0,
+        axis == Z_AXIS ? delta : 0
+      )){};
+
+      poll_stepper_result((AxisEnum)axis, d == 0 ? -T : T, res_range[i*2 + d]);
+
+      if (__isnanf(res_range[i*2 + d].trigger_pos)) {
+        SERIAL_ERROR_MSG("M930 did not reach error threshold, arm not held or belt slipping?");
+        goto exit_M330;
+      }
+
+      res_range[i*2 + d].trigger_pos -= start_pos.pos[axis];
+
+      planner.synchronize();
+      disable_all_steppers();
+
+      delay(200);
+    }
+
+      // SERIAL_ECHOPAIR("; pass result: ", i + 1);
+      // SERIAL_ECHOPAIR(  "  Fs:", res_range[i*2 + 0].samples);
+      // SERIAL_ECHOPAIR_F( " Fm:", res_range[i*2 + 0].min_value);
+      // SERIAL_ECHOPAIR_F( " FM:", res_range[i*2 + 0].max_value);
+      // SERIAL_ECHOPAIR_F( " FR:", res_range[i*2 + 0].trigger_pos);
+      // SERIAL_ECHOPAIR(  "  Bs:", res_range[i*2 + 1].samples);
+      // SERIAL_ECHOPAIR_F( " Bm:", res_range[i*2 + 1].min_value);
+      // SERIAL_ECHOPAIR_F( " BM:", res_range[i*2 + 1].max_value);
+      // SERIAL_ECHOPAIR_F( " BR:", res_range[i*2 + 1].trigger_pos);
+      // SERIAL_EOL();
+  }
+
+  for (int i = 0; i < R; i++) {
+    max_backlash += res_range[i*2 + 0].trigger_pos;
+    min_backlash += res_range[i*2 + 1].trigger_pos;
+  }
+  max_backlash /= R;
+  max_backlash /= R;
+
+  SERIAL_ECHO_MSG("M930 done T", T, " D", D, " R", R, " Axis:", axis_string, " Backlash:", max_backlash - min_backlash);
+
+exit_M330:
+  endstops.enable_globally(true);
 
 }
 
