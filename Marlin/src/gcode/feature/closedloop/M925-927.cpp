@@ -324,12 +324,14 @@ bool poll_stepper_result(AxisEnum axis, float threshold, struct PollResult& outp
  *   P move distance
  *   T TMC SG_RESULT threshold
  *   R repeat cycles
+ *   Q test current
  */
 void GcodeSuite::M930() {
 
   float D = 15;
   float T = 0.1f;
   int R = 3;
+  int Q = 800;
 
   float min_backlash = 0;
   float max_backlash = 0;
@@ -344,6 +346,10 @@ void GcodeSuite::M930() {
 
   if (parser.seen('R')) {
     R = parser.value_int();
+  }
+
+  if (parser.seen('Q')) {
+    Q = parser.value_int();
   }
 
   int axis = NO_AXIS_ENUM;
@@ -365,9 +371,22 @@ void GcodeSuite::M930() {
   // SERIAL_ECHOPAIR("R", R);
   // SERIAL_ECHOPAIR("Axis: ", axis_string);
 
-
   planner.finish_and_disable();
   delay(20);
+
+  int old_current;
+  switch (axis) {
+    case X_AXIS:
+      old_current = stepperX.rms_current();
+      stepperX.rms_current(Q);
+      break;
+    case Y_AXIS:
+      old_current = stepperY.rms_current();
+      stepperY.rms_current(Q);
+      break;
+    default:
+      old_current = 0;
+  }
 
   struct PollResult res_range[R*2 + 1];
 
@@ -406,7 +425,7 @@ void GcodeSuite::M930() {
 
       if (__isnanf(res_range[i*2 + d].trigger_pos)) {
         SERIAL_ERROR_MSG("M930 did not reach error threshold, arm not held or belt slipping?");
-        goto exit_M330;
+        goto exit_M930;
       }
 
       res_range[i*2 + d].trigger_pos -= start_pos.pos[axis];
@@ -436,9 +455,21 @@ void GcodeSuite::M930() {
   max_backlash /= R;
   max_backlash /= R;
 
-  SERIAL_ECHO_MSG("M930 done T", T, " D", D, " R", R, " Axis:", axis_string, " Backlash:", max_backlash - min_backlash);
+  SERIAL_ECHO_MSG("M930 done T", T, " D", D, " R", R, " Q", Q, " Axis:", axis_string, " Backlash:", max_backlash - min_backlash);
 
-exit_M330:
+exit_M930:
+
+  switch (axis) {
+    case X_AXIS:
+      stepperX.rms_current(old_current);
+      break;
+    case Y_AXIS:
+      stepperY.rms_current(old_current);
+      break;
+    default:
+      ;
+  }
+
   endstops.enable_globally(true);
 
 }
