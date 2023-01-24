@@ -877,6 +877,37 @@ void Planner::calculate_trapezoid_for_block(block_t * const block, const_float_t
       #endif
     }
   #endif
+
+
+  /**
+   * THC trapezoid calculations
+   * TODO: document
+   */
+  #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+    const uint8_t entry_power = block->thc_vel_comp.power * entry_factor; // Power on block entry
+
+    // Speedup power
+    const uint8_t entry_power_diff = block->thc_vel_comp.power - entry_power;
+    if (entry_power_diff) {
+      block->thc_vel_comp.entry_per = accelerate_steps / entry_power_diff;
+      block->thc_vel_comp.power_entry = entry_power;
+    }
+    else {
+      block->thc_vel_comp.entry_per = 0;
+      block->thc_vel_comp.power_entry = block->thc_vel_comp.power;
+    }
+    // Slowdown power
+    const uint8_t exit_power = block->thc_vel_comp.power * exit_factor, // Power on block entry
+                  exit_power_diff = block->thc_vel_comp.power - exit_power;
+    if (exit_power_diff) {
+      block->thc_vel_comp.exit_per = (block->step_event_count - block->decelerate_after) / exit_power_diff;
+      block->thc_vel_comp.power_exit = exit_power;
+    }
+    else {
+      block->thc_vel_comp.exit_per = 0;
+      block->thc_vel_comp.power_exit = block->thc_vel_comp.power;
+    }
+  #endif
 }
 
 /*                            PLANNER SPEED DEFINITION
@@ -1931,6 +1962,12 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     laser_inline.status.isPlanned = true;
     block->laser.status = laser_inline.status;
     block->laser.power = laser_inline.power;
+  #endif
+
+  // Update thc velocity comp
+  #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+    // using 8 bit gain factor
+    block->thc_vel_comp.power = cutter.enabled() ? 255 : 0;
   #endif
 
   // Number of steps for each axis

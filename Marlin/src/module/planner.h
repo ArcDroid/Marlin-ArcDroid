@@ -147,6 +147,16 @@ enum BlockFlag : char {
   } block_laser_t;
 
 #endif
+#if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+  typedef struct {
+    uint8_t power;            // Ditto; When in trapezoid mode this is nominal power
+    uint8_t   power_entry;  // Entry power for the laser
+    uint8_t   power_exit; // Exit power for the laser
+    uint32_t  entry_per,  // Steps per power increment (to avoid floats in stepper calcs)
+              exit_per;   // Steps per power decrement
+  } thc_vel_comp_t;
+
+#endif
 
 /**
  * struct block_t
@@ -240,6 +250,10 @@ typedef struct block_t {
 
   #if ENABLED(LASER_POWER_INLINE)
     block_laser_t laser;
+  #endif
+
+  #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+    thc_vel_comp_t thc_vel_comp;
   #endif
 
 } block_t;

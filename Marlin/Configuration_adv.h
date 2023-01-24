@@ -3470,6 +3470,9 @@
   #define HAL_ADC_FILTERED
   //#define DISABLE_THC
   //#define TORCH_HEIGHT_TH1
+
+  // enable velocity compensation for THC gain
+  #define TORCH_HEIGHT_CONTROL_TRAPEZOID
 #endif
 
 /**

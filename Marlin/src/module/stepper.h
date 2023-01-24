@@ -382,6 +382,20 @@ class Stepper {
 
     #endif
 
+    #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+
+      typedef struct {
+        bool enabled;
+        uint8_t cur_power;  // Current laser power
+        bool cruise_set;    // Power set up for cruising?
+        uint32_t last_step_count; // Step count from the last update
+        int32_t acc_step_count;  // Bresenham counter for laser accel/decel
+      } stepper_thc_t;
+
+      static stepper_thc_t thc_trap;
+
+    #endif
+
   public:
     // Initialize stepper hardware
     static void init();

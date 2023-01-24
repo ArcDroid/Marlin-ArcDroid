@@ -56,6 +56,9 @@ float TorchHeightControl::correction;
 THCSettings TorchHeightControl::settings;
 
 uint32_t TorchHeightControl::turned_on_time;
+#if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+  uint8_t TorchHeightControl::vel_gain;
+#endif
 
 bool TorchHeightControl::beam_on;
 float TorchHeightControl::voltage;
@@ -86,6 +89,10 @@ void TorchHeightControl::init() {
 
   target_v = NAN;
   accum_i = 0;
+
+#if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+  vel_gain = 0;
+#endif
 }
 
 void TorchHeightControl::reset_settings() {
@@ -100,8 +107,8 @@ void TorchHeightControl::reset_settings() {
   settings.pv_limit = 40.0f;
 
   settings.pid_p = .3f;
-  settings.pid_i = 0;
-  settings.pid_d = 0;
+  settings.setpoint_fixed = 0;
+  settings.vel_comp = 0;
 }
 
 void TorchHeightControl::update_beam(bool on) {
@@ -112,6 +119,14 @@ void TorchHeightControl::update_beam(bool on) {
     correction = 0;
   }
 }
+
+#if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+void TorchHeightControl::update_vel_gain(uint8_t v) {
+  if (vel_gain != v) {
+    vel_gain = v;
+  }
+}
+#endif
 
 void TorchHeightControl::update() {
   raw = acc;
@@ -153,21 +168,36 @@ void TorchHeightControl::update() {
 
   if (is_turn_on || !beam_on) {
     // beam turning on
-    target_v = filtered;
+    if (__isnanf(thc.settings.setpoint_fixed) || thc.settings.setpoint_fixed == 0.0f) {
+      // auto-setpoint
+      target_v = filtered;
+    } else {
+      // fixed setpoint
+      target_v = thc.settings.setpoint_fixed;
+    }
     accum_i = 0;
   }
 
   if (beam_on && enabled && dt > settings.delay_on) {
     // babystep Z here
     float error = filtered - target_v;
+
+#if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+    error *= (1.0f - settings.vel_comp * (1.0f - vel_gain / 255.0f));
+#endif
+
     float p_part = error * settings.pid_p;
-    if (fabs(p_part) < settings.pv_limit && fabs(error) > 0.00001) {
-      accum_i += error * dT * settings.pid_i;
-    } else {
-      accum_i = 0;
-    }
-    float d_part = filtered_dt * settings.pid_d; // kalman already includes step time in velocity calculation
-    correction = -(p_part + accum_i + d_part);
+
+    // not using I and D terms
+    // if (fabs(p_part) < settings.pv_limit && fabs(error) > 0.00001) {
+    //   accum_i += error * dT * settings.pid_i;
+    // } else {
+    //   accum_i = 0;
+    // }
+    // float d_part = filtered_dt * settings.pid_dv; // kalman already includes step time in velocity calculation
+    // correction = -(p_part + accum_i + d_part);
+    correction = -p_part;
+
     int16_t correction_i = (int16_t) round(correction);
     int16_t existing = babystep.steps[BS_AXIS_IND(Z_AXIS)];
 

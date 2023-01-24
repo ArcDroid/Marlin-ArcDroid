@@ -131,6 +131,10 @@ Stepper stepper; // Singleton
   #include "../feature/spindle_laser.h"
 #endif
 
+#if ENABLED(TORCH_HEIGHT_CONTROL) && ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+  #include "../feature/thc.h"
+#endif
+
 // public:
 
 #if EITHER(HAS_EXTRA_ENDSTOPS, Z_STEPPER_AUTO_ALIGN)
@@ -254,6 +258,14 @@ xyze_int8_t Stepper::count_direction{0};
     #else
       .till_update = 0
     #endif
+  };
+#endif
+#if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+  Stepper::stepper_thc_t Stepper::thc_trap = {
+    .cur_power = 0,
+    .cruise_set = false,
+    .last_step_count = 0,
+    .acc_step_count = 0
   };
 #endif
 
@@ -1874,6 +1886,22 @@ uint32_t Stepper::block_phase_isr() {
             #endif
           }
         #endif
+        // Update thc - Accelerating
+        #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+          if (current_block->thc_vel_comp.entry_per) {
+            thc_trap.acc_step_count -= step_events_completed - thc_trap.last_step_count;
+            thc_trap.last_step_count = step_events_completed;
+
+            // Should be faster than a divide, since this should trip just once
+            if (thc_trap.acc_step_count < 0) {
+              while (thc_trap.acc_step_count < 0) {
+                thc_trap.acc_step_count += current_block->thc_vel_comp.entry_per;
+                if (thc_trap.cur_power < current_block->thc_vel_comp.power) thc_trap.cur_power++;
+              }
+              thc.update_vel_gain(thc_trap.cur_power);
+            }
+          }
+        #endif
       }
       // Are we in Deceleration phase ?
       else if (step_events_completed > decelerate_after) {
@@ -1951,6 +1979,23 @@ uint32_t Stepper::block_phase_isr() {
             #endif
           }
         #endif
+
+        // Update THC - Decelerating
+        #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+          if (current_block->thc_vel_comp.exit_per) {
+            thc_trap.acc_step_count -= step_events_completed - thc_trap.last_step_count;
+            thc_trap.last_step_count = step_events_completed;
+
+            // Should be faster than a divide, since this should trip just once
+            if (thc_trap.acc_step_count < 0) {
+              while (thc_trap.acc_step_count < 0) {
+                thc_trap.acc_step_count += current_block->thc_vel_comp.exit_per;
+                if (thc_trap.cur_power > current_block->thc_vel_comp.power_exit) thc_trap.cur_power--;
+              }
+              thc.update_vel_gain(thc_trap.cur_power);
+            }
+          }
+        #endif
       }
       // Must be in cruise phase otherwise
       else {
@@ -1982,6 +2027,18 @@ uint32_t Stepper::block_phase_isr() {
             #else
               laser_trap.last_step_count = step_events_completed;
             #endif
+          }
+        #endif
+
+        // Update THC - Cruising
+        #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+          if (current_block->thc_vel_comp.power) {
+            if (!thc_trap.cruise_set) {
+              thc_trap.cur_power = current_block->thc_vel_comp.power;
+              thc.update_vel_gain(thc_trap.cur_power);
+              thc_trap.cruise_set = true;
+            }
+            thc_trap.last_step_count = step_events_completed;
           }
         #endif
       }
@@ -2210,6 +2267,17 @@ uint32_t Stepper::block_phase_isr() {
           }
         #endif
       #endif // LASER_POWER_INLINE
+
+
+      #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+          thc_trap.cur_power = current_block->thc_vel_comp.power_entry; // RESET STATE
+          thc_trap.cruise_set = false;
+            thc_trap.last_step_count = 0;
+            thc_trap.acc_step_count = current_block->thc_vel_comp.entry_per / 2;
+          // Always have PWM in this case
+          //// TODO: check if required?
+          thc.update_vel_gain(cutter.enabled() ? thc_trap.cur_power : 0);
+      #endif // TORCH_HEIGHT_CONTROL_TRAPEZOID
 
       // At this point, we must ensure the movement about to execute isn't
       // trying to force the head against a limit switch. If using interrupt-

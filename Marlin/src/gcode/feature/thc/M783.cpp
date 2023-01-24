@@ -15,21 +15,21 @@ void M783_report(const bool forReplay) {
   if (!forReplay) { SERIAL_ECHO_MSG("; Torch Height Control"); SERIAL_ECHO_START(); }
   SERIAL_ECHOLNPAIR("  M783"
     " E", int(thc.enabled),
+    " Q", (__isnanf(thc.settings.setpoint_fixed) ? 0.0f : thc.settings.setpoint_fixed),
     " L", thc.settings.delay_on / 1000.0f,
     " M", thc.settings.sigma_R_min,
     " S", thc.settings.sensor_rate_scale,
     " T", thc.settings.sensor_rate_rate_scale,
     " B", thc.settings.pv_limit,
     " P", thc.settings.pid_p,
-    " I", thc.settings.pid_i,
-    " D", thc.settings.pid_d,
+    " V", thc.settings.vel_comp,
   );
 }
 
 /**
  * M783: Set Torch Height Control settings
  *  E         : Enable (1/0)
-// *  P         : Target value (THC ADC value/4096.0)
+ *  Q         : Target value (THC ADC value/4096.0)
  *
  *  L         : Delay after firing before activating control (decimal seconds)
  *  M         : Kalman sigma_R_min
@@ -38,8 +38,7 @@ void M783_report(const bool forReplay) {
  *  B         : pv_limit
  *
  *  P         : PID P gain
- *  I         : PID I gain
- *  D         : PID D gain
+ *  V         : Velocity Comp
  */
 void GcodeSuite::M783() {
   #ifdef DISABLE_THC
@@ -48,6 +47,17 @@ void GcodeSuite::M783() {
 
   const bool seenE = parser.seenval('E');
   if (seenE) thc.enabled = parser.value_bool();
+
+  const bool seenQ = parser.seenval('Q');
+  if (seenQ) {
+    float q = parser.value_float();
+    if (q == 0.0f) {
+      thc.settings.setpoint_fixed = NAN;
+    }
+    else {
+      thc.settings.setpoint_fixed = q;
+    }
+  }
 
   const bool seenL = parser.seenval('L');
   if (seenL) thc.settings.delay_on = (int32_t) parser.value_millis_from_seconds();
@@ -67,11 +77,8 @@ void GcodeSuite::M783() {
   const bool seenP = parser.seenval('P');
   if (seenP) thc.settings.pid_p = parser.value_float();
 
-  const bool seenI = parser.seenval('I');
-  if (seenI) thc.settings.pid_i = parser.value_float();
-
-  const bool seenD = parser.seenval('D');
-  if (seenD) thc.settings.pid_d = parser.value_float();
+  const bool seenV = parser.seenval('V');
+  if (seenV) thc.settings.vel_comp = parser.value_float();
 
   //if (!(seenE || seenL || seenM || seenS || seenT || seenB || seenP))
     M783_report(false);

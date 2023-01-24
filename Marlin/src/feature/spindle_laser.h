@@ -36,7 +36,7 @@
   #include "../libs/buzzer.h"
 #endif
 
-#if ENABLED(LASER_POWER_INLINE)
+#if ENABLED(LASER_POWER_INLINE) || ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
   #include "../module/planner.h"
 #endif
 
