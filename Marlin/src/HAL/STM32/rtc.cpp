@@ -248,6 +248,25 @@ void rtc_set_time(uint8_t hour, uint8_t minute, uint8_t second) {
   // HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
 }
 
+void rtc_get_date_time(RTC_DateTypeDef* date, RTC_TimeTypeDef* time) {
+  HAL_RTC_GetTime(&RtcHandle, time, RTC_FORMAT_BIN);
+  HAL_RTC_GetDate(&RtcHandle, date, RTC_FORMAT_BIN);
+}
+
+#if ENABLED(SDSUPPORT)
+#include "../../sd/SdFile.h"
+void rtc_dateTimeCallback(uint16_t *date, uint16_t *time) {
+
+  RTC_DateTypeDef date_rtc = {0};
+  RTC_TimeTypeDef time_rtc = {0};
+  HAL_RTC_GetTime(&RtcHandle, &time_rtc, RTC_FORMAT_BIN);
+  HAL_RTC_GetDate(&RtcHandle, &date_rtc, RTC_FORMAT_BIN);
+
+  *date = FAT_DATE(date_rtc.Year + 2000, date_rtc.Month, date_rtc.Date);
+  *time = FAT_TIME(time_rtc.Hours + (time_rtc.TimeFormat & RTC_HOURFORMAT12_PM ? 12 : 0), time_rtc.Minutes, time_rtc.Seconds);
+}
+#endif
+
 void rtc_print_datetime() {
 
   RTC_DateTypeDef sdatestructureget = {0};

@@ -1495,6 +1495,7 @@ void setup() {
 
   #if ENABLED(USE_RTC)
     SETUP_RUN(rtc_init(0));
+    SdFile::dateTimeCallback(rtc_dateTimeCallback);
   #endif
 
   #if ENABLED(EXTERNAL_CLOSED_LOOP_CONTROLLER)

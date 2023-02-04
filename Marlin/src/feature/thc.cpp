@@ -33,6 +33,86 @@
 #endif
 
 
+typedef struct _thc_log_header {
+  char magic[4];
+  RTC_DateTypeDef rtc_date;
+  RTC_TimeTypeDef rtc_time;
+  uint32_t millis;
+  THCSettings settings;
+  int entries;
+} thc_log_header;
+
+
+thc_log_header header = { .magic = {'T', 'H', 'D', 'L'} };
+
+typedef struct _thc_log_entry{
+  uint32_t millis;
+  float th_f;
+  float th_v;
+  float th_s;
+  float correction;
+
+  uint16_t th_raw;
+  int16_t babystep;
+  uint8_t vel_gain;
+  uint8_t __pad1;
+  uint8_t __pad2;
+  uint8_t __pad3;
+
+} thc_log_entry;
+#define LOG_STRUCT_SIZE sizeof(thc_log_entry)
+
+static const int32_t max_entires = 100*1024 / LOG_STRUCT_SIZE;
+
+static thc_log_entry thc_log[max_entires];
+#define LOG_FULL_SIZE sizeof(thc_log)
+
+static bool failed = false;
+
+void init_thc_log() {
+  header.entries = 0;
+  failed = false;
+}
+
+#include "../sd/cardreader.h"
+
+static int file_counter = 0;
+
+void write_thc_log_file() {
+  if (header.entries == 0 || failed)
+    return;
+
+  if (!card.isMounted()) card.mount();
+
+  if (!card.isMounted())
+    return;
+
+  header.settings = thc.settings;
+
+  rtc_get_date_time(&header.rtc_date, &header.rtc_time);
+  header.millis = getCurrentMillis();
+
+  char fname[50];
+
+  do {
+    snprintf(fname, sizeof(fname), "%d.thl", file_counter++);
+  } while (card.fileExists(fname));
+
+  card.openFileWrite(fname);
+  if (!card.isFileOpen()) {
+    SERIAL_ECHOLNPAIR("Failed to open ", fname, " to write.");
+    failed = true;
+    return;
+  }
+
+  card.write(&header, sizeof(header));
+  card.write(thc_log, header.entries * sizeof(thc_log_entry));
+
+  card.closefile();
+
+  init_thc_log();
+}
+
 Matrix<1, 1> inverse(Matrix<1, 1>a) {
   Matrix<1, 1> ret;
   ret.x[0][0] = 1.0f / a.x[0][0];
@@ -182,9 +262,9 @@ void TorchHeightControl::update() {
     // babystep Z here
     float error = filtered - target_v;
 
-#if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
+    #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
     error *= (1.0f - settings.vel_comp * (1.0f - vel_gain / 255.0f));
-#endif
+    #endif
 
     float p_part = error * settings.pid_p;
 
@@ -205,6 +285,28 @@ void TorchHeightControl::update() {
       babystep.add_steps(Z_AXIS, correction_i - existing);
     }
   }
+
+  if (is_turn_on) {
+    init_thc_log();
+  }
+
+  if (beam_on && header.entries < max_entires) {
+    thc_log[header.entries] = (thc_log_entry){
+      .millis = getCurrentMillis(),
+      .th_f = thc.filtered,
+      .th_v = thc.filtered_dt,
+      .th_s = thc.sigma_R,
+      .correction = thc.correction,
+      .th_raw = thc.raw,
+      .babystep = babystep.steps[BS_AXIS_IND(Z_AXIS)],
+      .vel_gain = thc.vel_gain,
+    };
+    header.entries++;
+  }
+  else if (!beam_on) {
+    write_thc_log_file();
+  }
+
 
   time_last = time;
 }
