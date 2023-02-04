@@ -106,7 +106,14 @@ void write_thc_log_file() {
   }
 
   card.write(&header, sizeof(header));
-  card.write(thc_log, header.entries * sizeof(thc_log_entry));
+  int to_write = header.entries * sizeof(thc_log_entry);
+  uint8_t* source = (uint8_t*)(void*)thc_log;
+  while (to_write) {
+    int write_bytes = MIN(0x4000, to_write);
+    card.write(source, write_bytes);
+    to_write -= write_bytes;
+    source += write_bytes;
+  }
 
   card.closefile();
 
