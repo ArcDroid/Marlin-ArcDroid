@@ -3473,6 +3473,9 @@
 
   // enable velocity compensation for THC gain
   #define TORCH_HEIGHT_CONTROL_TRAPEZOID
+
+  // enable THC debugging log
+  //#define TORCH_HEIGHT_CONTROL_LOG
 #endif
 
 /**

@@ -62,7 +62,7 @@ typedef struct _thc_log_entry{
 } thc_log_entry;
 #define LOG_STRUCT_SIZE sizeof(thc_log_entry)
 
-static const int32_t max_entires = 100*1024 / LOG_STRUCT_SIZE;
+static const int32_t max_entires = TERN(TORCH_HEIGHT_CONTROL_LOG, 100*1024 / LOG_STRUCT_SIZE, 0);
 
 static thc_log_entry thc_log[max_entires];
 #define LOG_FULL_SIZE sizeof(thc_log)
@@ -297,7 +297,7 @@ void TorchHeightControl::update() {
     init_thc_log();
   }
 
-  if (beam_on && header.entries < max_entires) {
+  if (max_entires != 0 && beam_on && header.entries < max_entires) {
     thc_log[header.entries] = (thc_log_entry){
       .millis = getCurrentMillis(),
       .th_f = thc.filtered,
