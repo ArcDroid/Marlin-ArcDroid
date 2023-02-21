@@ -132,6 +132,8 @@ public:
 
   FORCE_INLINE static void refresh() { apply_power(power); }
   FORCE_INLINE static void set_power(const uint8_t upwr) { power = upwr; refresh(); }
+
+  #ifdef SPINDLE_LASER_INHIBIT_PIN
   FORCE_INLINE static void set_inhibit(bool inh) {
       if (inh) {
         inhibit_reset = false;
@@ -141,6 +143,7 @@ public:
         inhibit_reset = true;
       }
   }
+  #endif
 
   #if ENABLED(SPINDLE_LASER_PWM)
 

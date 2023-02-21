@@ -41,8 +41,10 @@
 
 SpindleLaser cutter;
 volatile uint8_t SpindleLaser::power;
+#ifdef SPINDLE_LASER_INHIBIT_PIN
 volatile bool SpindleLaser::inhibit;
 volatile bool SpindleLaser::inhibit_reset;
+#endif
 
 #if ENABLED(LASER_FEATURE)
   cutter_test_pulse_t SpindleLaser::testPulse = 50;                   // Test fire Pulse time ms value.
