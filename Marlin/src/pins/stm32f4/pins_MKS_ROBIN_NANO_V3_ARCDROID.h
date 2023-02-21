@@ -67,7 +67,7 @@
 //#define SPINDLE_LASER_PWM_PIN 2
 #endif
 
-#define SPINDLE_LASER_INHIBIT_PIN PD13
+////#define SPINDLE_LASER_INHIBIT_PIN PD13
 
 //
 // Include MKS ROBIN NANO V3 pins
