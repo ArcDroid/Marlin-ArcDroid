@@ -32,6 +32,9 @@
   #error "TORCH_HEIGHT_CONTROL requires a BABYSTEPPING."
 #endif
 
+typedef enum _thc_log_flags {
+  LOG_FLAG_MICROS = 1
+} thc_log_flags;
 
 typedef struct _thc_log_header {
   char magic[4];
@@ -39,11 +42,12 @@ typedef struct _thc_log_header {
   RTC_TimeTypeDef rtc_time;
   uint32_t millis;
   THCSettings settings;
-  int entries;
+  int entries:28;
+  thc_log_flags flags:4;
 } thc_log_header;
 
 
-thc_log_header header = { .magic = {'T', 'H', 'D', 'L'} };
+thc_log_header header = { .magic = {'T', 'H', 'D', 'L'}, .flags = LOG_FLAG_MICROS };
 
 typedef struct _thc_log_entry{
   uint32_t millis;
@@ -82,6 +86,9 @@ void write_thc_log_file() {
   if (header.entries == 0 || failed)
     return;
 
+  if (!IS_SD_INSERTED())
+    return;
+
   if (!card.isMounted()) card.mount();
 
   if (!card.isMounted())
@@ -106,6 +113,7 @@ void write_thc_log_file() {
   }
 
   card.write(&header, sizeof(header));
+
   int to_write = header.entries * sizeof(thc_log_entry);
   uint8_t* source = (uint8_t*)(void*)thc_log;
   while (to_write) {
@@ -231,8 +239,9 @@ void TorchHeightControl::update() {
     kalman.initialize(est, this);
   }
 
-  static uint32_t time_last = 0;
+  static uint32_t time_last_us = 0;
   uint32_t time = getCurrentMillis();
+  uint32_t time_us = getCurrentMicros();
 
   int32_t dt = (int32_t)(time - turned_on_time);
 
@@ -241,7 +250,7 @@ void TorchHeightControl::update() {
   // update kalman filter
   Matrix<1,1> m;
   m.x[0][0] = raw;
-  float dT = (float) (int32_t) (time - time_last);
+  float dT = (float)((int32_t) (time_us - time_last_us)) * 0.001f;
   //if (dT < 100) {
     //SERIAL_ECHOLNPAIR(" updateSensorNoise(", raw, ", ", dT, ", ", is_turn_on, ")");
     bool accept = updateSensorNoise(raw, dT, is_turn_on);
@@ -299,7 +308,7 @@ void TorchHeightControl::update() {
 
   if (max_entires != 0 && beam_on && header.entries < max_entires) {
     thc_log[header.entries] = (thc_log_entry){
-      .millis = getCurrentMillis(),
+      .millis = time_us,
       .th_f = thc.filtered,
       .th_v = thc.filtered_dt,
       .th_s = thc.sigma_R,
@@ -315,7 +324,7 @@ void TorchHeightControl::update() {
   }
 
 
-  time_last = time;
+  time_last_us = time_us;
 }
 
 bool TorchHeightControl::updateSensorNoise(const float measurement, const float dT, const bool is_turn_on)
