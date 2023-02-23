@@ -33,7 +33,8 @@
 #endif
 
 typedef enum _thc_log_flags {
-  LOG_FLAG_MICROS = 1
+  LOG_FLAG_MICROS = 1,
+  LOG_FLAG_V3 = 2,
 } thc_log_flags;
 
 typedef struct _thc_log_header {
@@ -46,8 +47,7 @@ typedef struct _thc_log_header {
   thc_log_flags flags:4;
 } thc_log_header;
 
-
-thc_log_header header = { .magic = {'T', 'H', 'D', 'L'}, .flags = LOG_FLAG_MICROS };
+thc_log_header header = { .magic = {'T', 'H', 'D', 'L'}, .flags = LOG_FLAG_V3 };
 
 typedef struct _thc_log_entry{
   uint32_t millis;
@@ -95,6 +95,7 @@ void write_thc_log_file() {
     return;
 
   header.settings = thc.settings;
+  header.settings.variance = thc.variance;
 
   rtc_get_date_time(&header.rtc_date, &header.rtc_time);
   header.millis = getCurrentMillis();
@@ -147,6 +148,7 @@ uint16_t TorchHeightControl::raw; // = 0                               // Raw AD
 float TorchHeightControl::filtered;
 float TorchHeightControl::filtered_dt;
 float TorchHeightControl::correction;
+float TorchHeightControl::variance;
 
 THCSettings TorchHeightControl::settings;
 
@@ -158,10 +160,8 @@ uint32_t TorchHeightControl::turned_on_time;
 bool TorchHeightControl::beam_on;
 float TorchHeightControl::voltage;
 float TorchHeightControl::voltage_rate;
-float TorchHeightControl::sigma_R;
 
 float TorchHeightControl::last_measurement;
-float TorchHeightControl::last_rate;
 
 float TorchHeightControl::target_v;
 float TorchHeightControl::accum_i;
@@ -177,10 +177,8 @@ void TorchHeightControl::init() {
 
   voltage = 0;
   voltage_rate = 0;
-  sigma_R = settings.sigma_R_min * 20;
 
   last_measurement = NAN;
-  last_rate = NAN;
 
   target_v = NAN;
   accum_i = 0;
@@ -192,14 +190,10 @@ void TorchHeightControl::init() {
 
 void TorchHeightControl::reset_settings() {
   // kalman filter
-  settings.sigma_R_min = 60.0f;
+  settings.sigma_R = 60.0f;
   settings.sigma_Q = 1E-06f;
-  settings.sigma_R_decay_time = 1000.0f;
-  settings.sensor_rate_scale = 0.2f;
-  settings.sensor_rate_rate_scale = 0.1f/50;
 
   settings.delay_on = 2000;
-  settings.pv_limit = 40.0f;
 
   settings.pid_p = .3f;
   settings.setpoint_fixed = 0;
@@ -260,6 +254,7 @@ void TorchHeightControl::update() {
 
     filtered = e.x.x[0][0];
     filtered_dt = e.x.x[1][0];
+    float variance = e.P.x[0][0];
   //}
 
   if (is_turn_on || !beam_on) {
@@ -311,7 +306,7 @@ void TorchHeightControl::update() {
       .millis = time_us,
       .th_f = thc.filtered,
       .th_v = thc.filtered_dt,
-      .th_s = thc.sigma_R,
+      .th_s = thc.settings.sigma_R,
       .correction = thc.correction,
       .th_raw = thc.raw,
       .babystep = babystep.steps[BS_AXIS_IND(Z_AXIS)],
@@ -320,6 +315,7 @@ void TorchHeightControl::update() {
     header.entries++;
   }
   else if (!beam_on) {
+    thc.variance = variance;
     write_thc_log_file();
   }
 
@@ -329,55 +325,8 @@ void TorchHeightControl::update() {
 
 bool TorchHeightControl::updateSensorNoise(const float measurement, const float dT, const bool is_turn_on)
 {
-  // trust sensor readings more over time
-  float weight = MIN(1.0f, dT / settings.sigma_R_decay_time);
-  sigma_R = sigma_R * (1.0f - weight) + settings.sigma_R_min * weight;
-  if (__isnanf(last_measurement))
-  {
-    // no last measurement to compare to, accept measuremnt
-    last_measurement = measurement;
-    return true;
-  }
-
-  // accept sensor readings by default
-  bool accept = true;
-  // check if measurement rate of change is too fast for Math.Max actual rate
-  // start increasing measurement error for kalman filter if so
-  float rate = (measurement - last_measurement) / dT;
-
-  //var flow_min = draining ? this.config.flow_min_open : this.config.flow_min_closed;
-  float diff = 0;
-  //if (rate < flow_min)
-  //{
-  //	diff = rate / flow_min * this.config.sensor_rate_scale;
-  //}
-  //else if (rate > this.config.flow_max)
-  //{
-  //	diff = rate / this.config.flow_max * this.config.sensor_rate_scale;
-  //}
-
-  // high rate of rate indicates repeating noise spikes
-  // adjust measurement error along with it as well
-  if (!__isnanf(last_rate))
-  {
-    float rateRate = powf(rate - last_rate, 2.0f) / dT;
-    diff = MAX(diff, rateRate / settings.sensor_rate_rate_scale);
-  }
-
-  if (sigma_R < diff && !is_turn_on)
-  {
-    // adjust measurement error
-    sigma_R = diff;
-    // tell caller not to pass this reading to filter, use model only
-    accept = false;
-  }
-  else if (is_turn_on)
-  {
-    sigma_R = settings.sigma_R_min;
-  }
-  last_rate = rate;
   last_measurement = measurement;
-  return accept;
+  return true;
 }
 
 Estimate<2, 1, THCControlStruct> TorchHeightControl::step(const Matrix<1, 1> z, const float deltaT, THCControlStruct* u, const bool skipUpdate) {
@@ -434,7 +383,7 @@ void TorchHeightControl::update_measured_units() {
 
 Matrix<1, 1> TorchHeightControl::getR() {
   Matrix<1,1> ret;
-  ret.x[0][0] = sigma_R;
+  ret.x[0][0] = settings.sigma_R;
   return ret;
 }
 Matrix<2, 2> TorchHeightControl::getQ(float dT) {

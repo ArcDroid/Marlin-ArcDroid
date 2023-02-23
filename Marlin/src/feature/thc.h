@@ -36,19 +36,17 @@ struct THCControlStruct {
 
 typedef struct _THCSettings {
   // kalman filter
-  // "sensor nosie covariance under good conditions (meters^2)";
-  float sigma_R_min;
+  // "sensor nosie covariance";
+  float sigma_R;
   // "model nosie covariance";
   float sigma_Q;
-  // "time for sigma_R to return to sigma_R_min (seconds)";
-  float sigma_R_decay_time;
-  // "how much to scale sensor rate to adjust sigma_R";
-  float sensor_rate_scale;
-  // "how much to scale sensor rate rate to adjust sigma_R";
-  float sensor_rate_rate_scale;
+
+  float variance;
+  float filler2;
+  float filler3;
 
   int32_t delay_on;
-  float pv_limit;
+  float __pv_limit;
 
   float pid_p;
   float setpoint_fixed;
@@ -64,6 +62,8 @@ public:
   static float filtered_dt;
   static float correction;
 
+  static float variance;
+
   static THCSettings settings;
 
   // control input
@@ -76,10 +76,8 @@ public:
   static bool beam_on;
   static float voltage;
   static float voltage_rate;
-  static float sigma_R;
 
   static float last_measurement;
-  static float last_rate;
 
   static float target_v;
   static float accum_i;

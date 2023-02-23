@@ -17,12 +17,10 @@ void M783_report(const bool forReplay) {
     " E", int(thc.enabled),
     " Q", (__isnanf(thc.settings.setpoint_fixed) ? 0.0f : thc.settings.setpoint_fixed),
     " L", thc.settings.delay_on / 1000.0f,
-    " M", thc.settings.sigma_R_min,
-    " S", thc.settings.sensor_rate_scale,
-    " T", thc.settings.sensor_rate_rate_scale,
-    " B", thc.settings.pv_limit,
+    " R", thc.settings.sigma_R,
     " P", thc.settings.pid_p,
     " V", thc.settings.vel_comp,
+    " T", thc.variance,
   );
 }
 
@@ -62,17 +60,8 @@ void GcodeSuite::M783() {
   const bool seenL = parser.seenval('L');
   if (seenL) thc.settings.delay_on = (int32_t) parser.value_millis_from_seconds();
 
-  const bool seenM = parser.seenval('M');
-  if (seenM) thc.settings.sigma_R_min = parser.value_float();
-
-  const bool seenS = parser.seenval('S');
-  if (seenS) thc.settings.sensor_rate_scale = parser.value_float();
-
-  const bool seenT = parser.seenval('T');
-  if (seenT) thc.settings.sensor_rate_rate_scale = parser.value_float();
-
-  const bool seenB = parser.seenval('B');
-  if (seenB) thc.settings.pv_limit = parser.value_float();
+  const bool seenM = parser.seenval('R');
+  if (seenM) thc.settings.sigma_R = parser.value_float();
 
   const bool seenP = parser.seenval('P');
   if (seenP) thc.settings.pid_p = parser.value_float();
