@@ -42,7 +42,7 @@ typedef struct _THCSettings {
   float sigma_Q;
 
   float variance;
-  float filler2;
+  float setpoint_actual;
   float filler3;
 
   int32_t delay_on;
@@ -63,6 +63,7 @@ public:
   static float correction;
 
   static float variance;
+  static float last_target_v;
 
   static THCSettings settings;
 

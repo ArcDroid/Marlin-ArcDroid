@@ -96,6 +96,7 @@ void write_thc_log_file() {
 
   header.settings = thc.settings;
   header.settings.variance = thc.variance;
+  header.settings.setpoint_actual = thc.last_target_v;
 
   rtc_get_date_time(&header.rtc_date, &header.rtc_time);
   header.millis = getCurrentMillis();
@@ -149,6 +150,7 @@ float TorchHeightControl::filtered;
 float TorchHeightControl::filtered_dt;
 float TorchHeightControl::correction;
 float TorchHeightControl::variance;
+float TorchHeightControl::last_target_v;
 
 THCSettings TorchHeightControl::settings;
 
@@ -179,6 +181,7 @@ void TorchHeightControl::init() {
   voltage_rate = 0;
 
   last_measurement = NAN;
+  last_target_v = 0;
 
   target_v = NAN;
   accum_i = 0;
@@ -266,6 +269,7 @@ void TorchHeightControl::update() {
       // fixed setpoint
       target_v = thc.settings.setpoint_fixed;
     }
+    last_target_v = target_v;
     accum_i = 0;
   }
 

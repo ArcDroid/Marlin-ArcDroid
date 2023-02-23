@@ -21,6 +21,7 @@ void M783_report(const bool forReplay) {
     " P", thc.settings.pid_p,
     " V", thc.settings.vel_comp,
     " T", thc.variance,
+    " A", thc.last_target_v,
   );
 }
 
