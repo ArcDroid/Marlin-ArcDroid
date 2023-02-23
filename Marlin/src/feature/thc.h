@@ -43,7 +43,7 @@ typedef struct _THCSettings {
 
   float variance;
   float setpoint_actual;
-  float filler3;
+  float z_steps_per_mm;
 
   int32_t delay_on;
   float __pv_limit;

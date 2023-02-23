@@ -35,6 +35,7 @@
 typedef enum _thc_log_flags {
   LOG_FLAG_MICROS = 1,
   LOG_FLAG_V3 = 2,
+  LOG_FLAG_V4 = 3,
 } thc_log_flags;
 
 typedef struct _thc_log_header {
@@ -47,7 +48,7 @@ typedef struct _thc_log_header {
   thc_log_flags flags:4;
 } thc_log_header;
 
-thc_log_header header = { .magic = {'T', 'H', 'D', 'L'}, .flags = LOG_FLAG_V3 };
+thc_log_header header = { .magic = {'T', 'H', 'D', 'L'}, .flags = LOG_FLAG_V4 };
 
 typedef struct _thc_log_entry{
   uint32_t millis;
@@ -97,6 +98,7 @@ void write_thc_log_file() {
   header.settings = thc.settings;
   header.settings.variance = thc.variance;
   header.settings.setpoint_actual = thc.last_target_v;
+  header.settings.z_steps_per_mm = planner.settings.axis_steps_per_mm[Z_AXIS];
 
   rtc_get_date_time(&header.rtc_date, &header.rtc_time);
   header.millis = getCurrentMillis();
@@ -313,7 +315,7 @@ void TorchHeightControl::update() {
       .th_s = thc.settings.sigma_R,
       .correction = thc.correction,
       .th_raw = thc.raw,
-      .babystep = babystep.steps[BS_AXIS_IND(Z_AXIS)],
+      .babystep = babystep.axis_total[BS_AXIS_IND(Z_AXIS)],
       .vel_gain = thc.vel_gain,
     };
     header.entries++;
