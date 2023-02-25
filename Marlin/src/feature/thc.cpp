@@ -151,6 +151,7 @@ uint16_t TorchHeightControl::raw; // = 0                               // Raw AD
 float TorchHeightControl::filtered;
 float TorchHeightControl::filtered_dt;
 float TorchHeightControl::correction;
+float TorchHeightControl::correction_remainder;
 float TorchHeightControl::variance;
 float TorchHeightControl::last_target_v;
 
@@ -188,6 +189,8 @@ void TorchHeightControl::init() {
   target_v = NAN;
   accum_i = 0;
 
+  correction_remainder = 0;
+
 #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
   vel_gain = 0;
 #endif
@@ -211,6 +214,7 @@ void TorchHeightControl::update_beam(bool on) {
     turned_on_time = getCurrentMillis();
   } else {
     correction = 0;
+    correction_remainder = 0;
   }
 }
 
@@ -295,7 +299,10 @@ void TorchHeightControl::update() {
     // correction = -(p_part + accum_i + d_part);
     correction = -p_part;
 
-    int16_t correction_i = (int16_t) round(correction);
+    correction_remainder += correction;
+    int16_t correction_i = (int16_t) round(correction_remainder);
+    correction_remainder -= correction_i;
+
     int16_t existing = babystep.steps[BS_AXIS_IND(Z_AXIS)];
 
     if (correction_i - existing) {

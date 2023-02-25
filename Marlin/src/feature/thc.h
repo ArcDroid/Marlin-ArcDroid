@@ -61,6 +61,7 @@ public:
   static float filtered;
   static float filtered_dt;
   static float correction;
+  static float correction_remainder;
 
   static float variance;
   static float last_target_v;
