@@ -176,6 +176,9 @@ xyz_pos_t cartes;
 #if HAS_POSITION_SHIFT
   // The distance that XYZ has been offset by G92. Reset by G28.
   xyz_pos_t position_shift{0};
+  #if ENABLED(ENCODER_SLED)
+    xyz_pos_t external_shift{0};
+  #endif
   coordinate_rotation_t offset_rotation = OFFSET_ROTATION_DEFAULT;
 #endif
 #if HAS_HOME_OFFSET
@@ -203,6 +206,12 @@ inline void report_more_positions() {
   #if ENABLED(CNC_COORDINATE_SYSTEMS)
     if (WITHIN(gcode.active_coordinate_system, 0, MAX_COORDINATE_SYSTEMS - 1)) {
       coordinate_system_t o = gcode.coordinate_system[gcode.active_coordinate_system];
+
+      #if ENABLED(ENCODER_SLED)
+        LOOP_LINEAR_AXES(i) {
+          o.offset.pos[i] += external_shift.pos[i];
+        }
+      #endif
       if (o.rotation == OFFSET_ROTATION_180) {
         o.offset.x = -o.offset.x;
         o.offset.y = -o.offset.y;
@@ -2140,7 +2149,15 @@ void set_axis_is_at_home(const AxisEnum axis) {
 #if HAS_WORKSPACE_OFFSET
   void update_workspace_offset(const AxisEnum axis) {
     workspace_offset[axis] = home_offset[axis] + position_shift[axis];
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Axis ", AS_CHAR(AXIS_CHAR(axis)), " home_offset = ", home_offset[axis], " position_shift = ", position_shift[axis], " rotation = ", offset_rotation * 180);
+
+    #if ENABLED(ENCODER_SLED)
+      workspace_offset[axis] += external_shift[axis];
+    #endif
+    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Axis ", AS_CHAR(AXIS_CHAR(axis)),
+      " home_offset = ", home_offset[axis],
+      " position_shift = ", position_shift[axis],
+      TERN(ENCODER_SLED, " external_shift = ", external_shift[axis])
+      " rotation = ", offset_rotation * 180);
   }
 #endif
 

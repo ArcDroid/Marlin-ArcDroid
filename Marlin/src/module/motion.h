@@ -398,6 +398,9 @@ FORCE_INLINE bool all_axes_trusted()                        { return linear_bits
   #endif
   #if HAS_POSITION_SHIFT
     extern xyz_pos_t position_shift;
+    #if ENABLED(ENCODER_SLED)
+      extern xyz_pos_t external_shift;
+    #endif
     extern coordinate_rotation_t offset_rotation;
   #endif
   #if HAS_HOME_OFFSET && HAS_POSITION_SHIFT

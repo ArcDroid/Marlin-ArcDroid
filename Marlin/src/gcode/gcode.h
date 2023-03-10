@@ -546,6 +546,10 @@ private:
 
   static void G92();
 
+  #if ENABLED(ENCODER_SLED)
+    static void M922();
+  #endif
+
   #if ENABLED(CALIBRATION_GCODE)
     static void G425();
   #endif
