@@ -607,6 +607,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       case 18: case 84: M18_M84(); break;                         // M18/M84: Disable Steppers / Set Timeout
       case 85: M85(); break;                                      // M85: Set inactivity stepper shutdown timeout
       case 92: M92(); break;                                      // M92: Set the steps-per-unit for one or more axes
+
+      #if ENABLED(ENCODER_SLED)
+        case 922: M922(); break;                                    // M922: Set external offset from sled
+      #endif
       case 114: M114(); break;                                    // M114: Report current position
       case 115: M115(); break;                                    // M115: Report capabilities
 
