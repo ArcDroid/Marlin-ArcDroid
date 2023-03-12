@@ -2158,6 +2158,8 @@ void set_axis_is_at_home(const AxisEnum axis) {
       " position_shift = ", position_shift[axis],
       TERN(ENCODER_SLED, " external_shift = ", external_shift[axis])
       " rotation = ", offset_rotation * 180);
+
+    last_full_report = 0;
   }
 #endif
 
