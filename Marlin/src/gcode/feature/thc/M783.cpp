@@ -19,7 +19,7 @@ void M783_report(const bool forReplay) {
     " L", thc.settings.delay_on / 1000.0f,
     " R", thc.settings.sigma_R,
     " P", thc.settings.pid_p,
-    " V", thc.settings.vel_comp,
+    " V", thc.settings.slope_limit,
     " T", thc.variance,
     " A", thc.last_target_v,
   );
@@ -68,7 +68,7 @@ void GcodeSuite::M783() {
   if (seenP) thc.settings.pid_p = parser.value_float();
 
   const bool seenV = parser.seenval('V');
-  if (seenV) thc.settings.vel_comp = parser.value_float();
+  if (seenV) thc.settings.slope_limit = parser.value_float();
 
   //if (!(seenE || seenL || seenM || seenS || seenT || seenB || seenP))
     M783_report(false);

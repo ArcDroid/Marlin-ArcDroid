@@ -1898,7 +1898,7 @@ uint32_t Stepper::block_phase_isr() {
                 thc_trap.acc_step_count += current_block->thc_vel_comp.entry_per;
                 if (thc_trap.cur_power < current_block->thc_vel_comp.power) thc_trap.cur_power++;
               }
-              thc.update_vel_gain(thc_trap.cur_power);
+              thc.update_vel_gain(thc_trap.cur_power, current_block->nominal_speed_sqr);
             }
           }
         #endif
@@ -1992,7 +1992,7 @@ uint32_t Stepper::block_phase_isr() {
                 thc_trap.acc_step_count += current_block->thc_vel_comp.exit_per;
                 if (thc_trap.cur_power > current_block->thc_vel_comp.power_exit) thc_trap.cur_power--;
               }
-              thc.update_vel_gain(thc_trap.cur_power);
+              thc.update_vel_gain(thc_trap.cur_power, current_block->nominal_speed_sqr);
             }
           }
         #endif
@@ -2035,7 +2035,7 @@ uint32_t Stepper::block_phase_isr() {
           if (current_block->thc_vel_comp.power) {
             if (!thc_trap.cruise_set) {
               thc_trap.cur_power = current_block->thc_vel_comp.power;
-              thc.update_vel_gain(thc_trap.cur_power);
+              thc.update_vel_gain(thc_trap.cur_power, current_block->nominal_speed_sqr);
               thc_trap.cruise_set = true;
             }
             thc_trap.last_step_count = step_events_completed;
@@ -2276,7 +2276,7 @@ uint32_t Stepper::block_phase_isr() {
             thc_trap.acc_step_count = current_block->thc_vel_comp.entry_per / 2;
           // Always have PWM in this case
           //// TODO: check if required?
-          thc.update_vel_gain(cutter.enabled() ? thc_trap.cur_power : 0);
+          thc.update_vel_gain(cutter.enabled() ? thc_trap.cur_power : 0, current_block->nominal_speed_sqr);
       #endif // TORCH_HEIGHT_CONTROL_TRAPEZOID
 
       // At this point, we must ensure the movement about to execute isn't

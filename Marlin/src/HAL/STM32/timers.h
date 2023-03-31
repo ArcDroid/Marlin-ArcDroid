@@ -52,7 +52,7 @@
   #define TEMP_TIMER_NUM        1  // Timer Index for Temperature
 #endif
 
-#define TEMP_TIMER_FREQUENCY 4000   // Temperature::isr() is expected to be called at around 1kHz
+#define TEMP_TIMER_FREQUENCY 1000   // Temperature::isr() is expected to be called at around 1kHz
 
 // TODO: get rid of manual rate/prescale/ticks/cycles taken for procedures in stepper.cpp
 #define STEPPER_TIMER_RATE 2000000 // 2 Mhz

@@ -50,7 +50,7 @@ typedef struct _THCSettings {
 
   float pid_p;
   float setpoint_fixed;
-  float vel_comp;
+  float slope_limit;
 } THCSettings;
 
 class TorchHeightControl : EKFModel<2, 1, THCControlStruct> {
@@ -72,6 +72,8 @@ public:
   static uint32_t turned_on_time;
 #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
   static uint8_t vel_gain;
+  static float nominal_speed_sqr;
+  static float nominal_speed;
 #endif
 
   // kalman state
@@ -83,6 +85,7 @@ public:
 
   static float target_v;
   static float accum_i;
+  static float accept_factor;
 
   static ExtendedKalman<2, 1, THCControlStruct> kalman;
 
@@ -105,7 +108,7 @@ public:
   static void update_beam(bool on);
 
   #if ENABLED(TORCH_HEIGHT_CONTROL_TRAPEZOID)
-    static void update_vel_gain(uint8_t v);
+    static void update_vel_gain(uint8_t v, float nominal_speed_sqr);
   #endif
 
   // EKFModel
