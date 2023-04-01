@@ -86,6 +86,7 @@ public:
   static float target_v;
   static float accum_i;
   static float accept_factor;
+  static float sigma_R;
 
   static ExtendedKalman<2, 1, THCControlStruct> kalman;
 

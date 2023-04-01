@@ -173,6 +173,7 @@ float TorchHeightControl::last_measurement;
 float TorchHeightControl::target_v;
 float TorchHeightControl::accum_i;
 float TorchHeightControl::accept_factor;
+float TorchHeightControl::sigma_R;
 
 static const float unlocked_accept_factor = 10.0f;
 
@@ -204,14 +205,14 @@ void TorchHeightControl::init() {
 
 void TorchHeightControl::reset_settings() {
   // kalman filter
-  settings.sigma_R = 60.0f;
+  settings.sigma_R = 8.15f;
   settings.sigma_Q = 1E-06f;
 
   settings.delay_on = 2000;
 
-  settings.pid_p = .3f;
+  settings.pid_p = 5.0f;
   settings.setpoint_fixed = 0;
-  settings.slope_limit = .15;
+  settings.slope_limit = 3.0f;
 }
 
 void TorchHeightControl::update_beam(bool on) {
@@ -261,6 +262,15 @@ void TorchHeightControl::update() {
 
   bool is_turn_on = beam_on && dt > 0 && dt < settings.delay_on;
 
+
+  nominal_speed = SQRT(nominal_speed_sqr);
+  float actual_speed = nominal_speed * (vel_gain / 255.0f);
+  float vel_comp_factor = actual_speed * (1.0f/(1000.0));
+
+  sigma_R = beam_on && vel_comp_factor > 0.00001f && vel_comp_factor < (1.0f/60.0f)
+    ? settings.sigma_R / (powf(vel_comp_factor * 60.0f, 2))
+    : settings.sigma_R;
+
   // update kalman filter
   Matrix<1,1> m;
   m.x[0][0] = raw;
@@ -295,6 +305,7 @@ void TorchHeightControl::update() {
 
   float z_speed = 0;
   float z_slope = 0;
+  float err_slope = 0;
 
   if (beam_on && enabled && dt > settings.delay_on) {
     // babystep Z here
@@ -304,10 +315,7 @@ void TorchHeightControl::update() {
     error *= (vel_gain / 255.0f);
     #endif
 
-    nominal_speed = SQRT(nominal_speed_sqr);
-    float actual_speed = nominal_speed * (vel_gain / 255.0f);
-    float vel_comp_factor = actual_speed * (1.0f/(1200.0f/60.0f));
-
+    //
     float p_part = error * settings.pid_p * vel_comp_factor;
 
     // float d_part = filtered_dt * settings.pid_dv; // kalman already includes step time in velocity calculation
@@ -321,6 +329,13 @@ void TorchHeightControl::update() {
       // incrase z speed limit when going up
       z_limit *= .25;
     }
+
+    err_slope = thc.filtered_dt / vel_comp_factor;
+
+    if (fabsf(err_slope) > 5) {
+      correction = 0;
+    }
+
 
     if (z_limit > actual_speed * settings.slope_limit * accept_factor) {
       correction = 0;
@@ -436,7 +451,7 @@ void TorchHeightControl::update_measured_units() {
 
 Matrix<1, 1> TorchHeightControl::getR() {
   Matrix<1,1> ret;
-  ret.x[0][0] = settings.sigma_R;
+  ret.x[0][0] = sigma_R;
   return ret;
 }
 Matrix<2, 2> TorchHeightControl::getQ(float dT) {
