@@ -325,14 +325,14 @@ void TorchHeightControl::update() {
     z_speed = correction / planner.settings.axis_steps_per_mm[Z_AXIS] * 1000;
     float z_limit = fabsf(z_speed);
 
-    if(samesignf(z_speed, settings.pid_p)) {
+    if(z_speed > 0) {
       // incrase z speed limit when going up
       z_limit *= .25;
     }
 
     err_slope = thc.filtered_dt / vel_comp_factor;
 
-    if (fabsf(err_slope) > 5) {
+    if (fabsf(err_slope) > 12) {
       correction = 0;
     }
 
@@ -374,7 +374,7 @@ void TorchHeightControl::update() {
       .millis = time_us,
       .th_f = thc.filtered,
       .th_v = thc.filtered_dt,
-      .th_s = z_slope,
+      .th_s = err_slope,
       .correction = thc.correction,
       .th_raw = thc.raw,
       .babystep = babystep.axis_total[BS_AXIS_IND(Z_AXIS)],
