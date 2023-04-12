@@ -1530,13 +1530,6 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
    * Auto Bed Leveling
    */
 
-  /**
-   * Delta and SCARA have limited bed leveling options
-   */
-  #if IS_SCARA && DISABLED(AUTO_BED_LEVELING_BILINEAR)
-    #error "SCARA machines can only use the AUTO_BED_LEVELING_BILINEAR leveling option."
-  #endif
-
 #elif ENABLED(MESH_BED_LEVELING)
 
   // Mesh Bed Leveling
