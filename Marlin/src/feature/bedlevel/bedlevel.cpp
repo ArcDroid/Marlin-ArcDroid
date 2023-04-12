@@ -27,11 +27,11 @@
 #include "bedlevel.h"
 #include "../../module/planner.h"
 
-#if EITHER(MESH_BED_LEVELING, PROBE_MANUALLY)
+#if ANY(MESH_BED_LEVELING, PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS)
   #include "../../module/motion.h"
 #endif
 
-#if ENABLED(PROBE_MANUALLY)
+#if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS)
   bool g29_in_progress = false;
 #endif
 

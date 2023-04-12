@@ -27,7 +27,7 @@
   #define G28_L0_ENSURES_LEVELING_OFF 1
 #endif
 
-#if ENABLED(PROBE_MANUALLY)
+#if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS)
   extern bool g29_in_progress;
 #else
   constexpr bool g29_in_progress = false;

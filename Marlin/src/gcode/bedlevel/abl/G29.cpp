@@ -93,7 +93,7 @@ public:
   bool      dryrun,
             reenable;
 
-  #if EITHER(PROBE_MANUALLY, AUTO_BED_LEVELING_LINEAR)
+  #if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS, AUTO_BED_LEVELING_LINEAR)
     int abl_probe_index;
   #endif
 
@@ -103,6 +103,10 @@ public:
     static constexpr int abl_points = 3;
   #elif ABL_USES_GRID
     static constexpr int abl_points = GRID_MAX_POINTS;
+  #endif
+
+  #if ENABLED(ARBITRARY_LEVEL_POINTS)
+    vector_3 points[3];
   #endif
 
   #if ABL_USES_GRID
@@ -217,13 +221,16 @@ public:
  *     There's no extra effect if you have a fixed Z probe.
  */
 G29_TYPE GcodeSuite::G29() {
-  TERN_(PROBE_MANUALLY, static) G29_State abl;
+  #if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS)
+    static
+  #endif
+      G29_State abl;
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_PROBE));
 
   reset_stepper_timeout();
 
-  const bool seenQ = EITHER(DEBUG_LEVELING_FEATURE, PROBE_MANUALLY) && parser.seen_test('Q');
+  const bool seenQ = ANY(DEBUG_LEVELING_FEATURE, PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS) && parser.seen_test('Q');
 
   // G29 Q is also available if debugging
   #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -235,7 +242,13 @@ G29_TYPE GcodeSuite::G29() {
     if (DISABLED(PROBE_MANUALLY) && seenQ) G29_RETURN(false);
   #endif
 
-  const bool seenA = TERN0(PROBE_MANUALLY, parser.seen_test('A')),
+  const bool seenA =
+      #if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS)
+        parser.seen_test('A')
+      #else
+        false
+      #endif
+      ,
          no_action = seenA || seenQ,
               faux = ENABLED(DEBUG_LEVELING_FEATURE) && DISABLED(PROBE_MANUALLY) ? parser.boolval('C') : no_action;
 
@@ -251,7 +264,7 @@ G29_TYPE GcodeSuite::G29() {
   // Don't allow auto-leveling without homing first
   if (homing_needed_error()) G29_RETURN(false);
 
-  #if ENABLED(AUTO_BED_LEVELING_3POINT)
+  #if ENABLED(AUTO_BED_LEVELING_3POINT) && DISABLED(ARBITRARY_LEVEL_POINTS)
     vector_3 points[3];
     probe.get_three_points(points);
   #endif
@@ -267,7 +280,7 @@ G29_TYPE GcodeSuite::G29() {
 
     TERN_(HAS_MULTI_HOTEND, if (active_extruder) tool_change(0));
 
-    #if EITHER(PROBE_MANUALLY, AUTO_BED_LEVELING_LINEAR)
+    #if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS, AUTO_BED_LEVELING_LINEAR)
       abl.abl_probe_index = -1;
     #endif
 
@@ -404,7 +417,13 @@ G29_TYPE GcodeSuite::G29() {
 
     #if ENABLED(AUTO_BED_LEVELING_3POINT)
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> 3-point Leveling");
-      points[0].z = points[1].z = points[2].z = 0;  // Probe at 3 arbitrary points
+
+      #if ENABLED(ARBITRARY_LEVEL_POINTS)
+        abl.points[0].x = abl.points[1].x = abl.points[2].x = abl.points[0].y = abl.points[1].y = abl.points[2].y = NAN;
+        abl.points[0].z = abl.points[1].z = abl.points[2].z = 0;
+      #else
+        points[0].z = points[1].z = points[2].z = 0;  // Probe at 3 arbitrary points
+      #endif
     #endif
 
     #if BOTH(AUTO_BED_LEVELING_BILINEAR, EXTENSIBLE_UI)
@@ -684,27 +703,86 @@ G29_TYPE GcodeSuite::G29() {
 
       // Probe at 3 arbitrary points
 
+
+      #if ENABLED(ARBITRARY_LEVEL_POINTS)
+        if (!no_action) {
+          ++abl.abl_probe_index;
+          g29_in_progress = true;
+        }
+
+        // Abort current G29 procedure, go back to idle state
+        if (seenA && g29_in_progress) {
+          SERIAL_ECHOLNPGM("Manual G29 aborted");
+          SET_SOFT_ENDSTOP_LOOSE(false);
+          set_bed_leveling_enabled(abl.reenable);
+          g29_in_progress = false;
+          TERN_(LCD_BED_LEVELING, ui.wait_for_move = false);
+        }
+
+        // Query G29 status
+        if (abl.verbose_level || seenQ) {
+          SERIAL_ECHOPGM("Manual G29 ");
+          if (g29_in_progress) {
+            SERIAL_ECHOPAIR("point ", _MIN(abl.abl_probe_index + 1, abl.abl_points));
+            SERIAL_ECHOLNPAIR(" of ", abl.abl_points);
+          }
+          else
+            SERIAL_ECHOLNPGM("idle");
+        }
+      #endif
+
+      #if ENABLED(ARBITRARY_LEVEL_POINTS)
+      if (g29_in_progress)
+      do {
+        int i = abl.abl_probe_index;
+      #else
       LOOP_L_N(i, 3) {
+      #endif
         if (abl.verbose_level) SERIAL_ECHOLNPAIR("Probing point ", i + 1, "/3.");
         TERN_(HAS_STATUS_MESSAGE, ui.status_printf_P(0, PSTR(S_FMT " %i/3"), GET_TEXT(MSG_PROBING_MESH), int(i + 1)));
 
         // Retain the last probe position
-        abl.probePos = points[i];
+        #if ENABLED(ARBITRARY_LEVEL_POINTS)
+          set_position_from_encoders_if_lost(true);
+          abl.probePos = xy_pos_t(planner.position_cart);
+          abl.points[i] = abl.probePos;
+        #else
+          abl.probePos = points[i];
+        #endif
         abl.measured_z = faux ? 0.001 * random(-100, 101) : probe.probe_at_point(abl.probePos, raise_after, abl.verbose_level);
         if (isnan(abl.measured_z)) {
           set_bed_leveling_enabled(abl.reenable);
           break;
+          // FIXME: abort ARBITRARY_LEVEL_POINTS too
         }
-        points[i].z = abl.measured_z;
+        TERN(ARBITRARY_LEVEL_POINTS, abl.,)points[i].z = abl.measured_z;
+        #if ENABLED(ARBITRARY_LEVEL_POINTS)
+          if (abl.verbose_level) SERIAL_ECHOLNPAIR(";point ", i + 1, "/3 p=[", abl.points[i].x, ", ", abl.points[i].y, ", ", abl.points[i].z, "]");
+          // lift up again
+          do_blocking_move_to_z(abl.measured_z + 20);
+          // FIXME: use encoder define
+          disable_all_steppers();
+        #endif
       }
+      #if ENABLED(ARBITRARY_LEVEL_POINTS)
+      while (0);
+      #endif
 
+      if (TERN(ARBITRARY_LEVEL_POINTS, abl.abl_probe_index == abl.abl_points - 1, true)) {
       if (!abl.dryrun && !isnan(abl.measured_z)) {
-        vector_3 planeNormal = vector_3::cross(points[0] - points[1], points[2] - points[1]).get_normal();
+        vector_3 planeNormal = vector_3::cross(
+            TERN(ARBITRARY_LEVEL_POINTS, abl.,)points[0] - TERN(ARBITRARY_LEVEL_POINTS, abl.,)points[1],
+            TERN(ARBITRARY_LEVEL_POINTS, abl.,)points[2] - TERN(ARBITRARY_LEVEL_POINTS, abl.,)points[1]
+            ).get_normal();
         if (planeNormal.z < 0) planeNormal *= -1;
         planner.bed_level_matrix = matrix_3x3::create_look_at(planeNormal);
 
         // Can't re-enable (on error) until the new grid is written
         abl.reenable = false;
+      }
+      } else {
+        // continue for next point
+        G29_RETURN(false);
       }
 
     #endif // AUTO_BED_LEVELING_3POINT
@@ -731,7 +809,7 @@ G29_TYPE GcodeSuite::G29() {
 
   if (DEBUGGING(LEVELING)) DEBUG_POS("> probing complete", current_position);
 
-  #if ENABLED(PROBE_MANUALLY)
+  #if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS)
     g29_in_progress = false;
     TERN_(LCD_BED_LEVELING, ui.wait_for_move = false);
   #endif
