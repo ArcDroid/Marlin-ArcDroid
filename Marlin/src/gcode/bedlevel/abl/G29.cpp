@@ -757,7 +757,7 @@ G29_TYPE GcodeSuite::G29() {
         }
         TERN(ARBITRARY_LEVEL_POINTS, abl.,)points[i].z = abl.measured_z;
         #if ENABLED(ARBITRARY_LEVEL_POINTS)
-          if (abl.verbose_level) SERIAL_ECHOLNPAIR(";point ", i + 1, "/3 p=[", abl.points[i].x, ", ", abl.points[i].y, ", ", abl.points[i].z, "]");
+          if (abl.verbose_level) SERIAL_ECHOLNPAIR(";level point P", i + 1, " X", abl.points[i].x, " Y", abl.points[i].y, " Z", abl.points[i].z, "]");
           // lift up again
           do_blocking_move_to_z(abl.measured_z + 20);
           // FIXME: use encoder define
@@ -907,8 +907,20 @@ G29_TYPE GcodeSuite::G29() {
 
       // For LINEAR and 3POINT leveling correct the current position
 
-      if (abl.verbose_level > 0)
+      if (abl.verbose_level > 0) {
         planner.bed_level_matrix.debug(PSTR("\n\nBed Level Correction Matrix:"));
+        float front_back = atan2f(planner.bed_level_matrix.vectors[2][1], planner.bed_level_matrix.vectors[2][2]) * 180.0f / PI;
+        float tz = sqrtf(
+          planner.bed_level_matrix.vectors[2][1] * planner.bed_level_matrix.vectors[2][1]
+          + planner.bed_level_matrix.vectors[2][2] * planner.bed_level_matrix.vectors[2][2]
+        );
+        float left_right = atan2f(-planner.bed_level_matrix.vectors[2][0], tz) * 180.0f / PI;
+        SERIAL_ECHO("; bed_level_matrix_tilt X");
+        SERIAL_ECHO_F(front_back, 4);
+        SERIAL_CHAR('Y');
+        SERIAL_ECHO_F(left_right, 4);
+        SERIAL_EOL();
+      }
 
       if (!abl.dryrun) {
         //

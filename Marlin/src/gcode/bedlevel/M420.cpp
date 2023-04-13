@@ -196,6 +196,17 @@ void GcodeSuite::M420() {
   if (seenV) {
     #if ABL_PLANAR
       planner.bed_level_matrix.debug(PSTR("Bed Level Correction Matrix:"));
+      float front_back = atan2f(planner.bed_level_matrix.vectors[2][1], planner.bed_level_matrix.vectors[2][2]) * 180.0f / PI;
+      float tz = sqrtf(
+        planner.bed_level_matrix.vectors[2][1] * planner.bed_level_matrix.vectors[2][1]
+        + planner.bed_level_matrix.vectors[2][2] * planner.bed_level_matrix.vectors[2][2]
+      );
+      float left_right = atan2f(-planner.bed_level_matrix.vectors[2][0], tz) * 180.0f / PI;
+      SERIAL_ECHO("; bed_level_matrix_tilt X");
+      SERIAL_ECHO_F(front_back, 4);
+      SERIAL_CHAR('Y');
+      SERIAL_ECHO_F(left_right, 4);
+      SERIAL_EOL();
     #else
       if (leveling_is_valid()) {
         #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
