@@ -34,6 +34,7 @@
 #endif
 
 bool leveling_is_valid();
+bool get_bed_leveling_enabled();
 void set_bed_leveling_enabled(const bool enable=true);
 void reset_bed_level();
 

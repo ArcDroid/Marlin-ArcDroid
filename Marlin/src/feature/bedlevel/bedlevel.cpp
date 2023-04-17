@@ -52,6 +52,10 @@ bool leveling_is_valid() {
       && TERN1(AUTO_BED_LEVELING_UBL,      ubl.mesh_is_valid());
 }
 
+bool get_bed_leveling_enabled() {
+  return planner.leveling_active;
+}
+
 /**
  * Turn bed leveling on or off, fixing the current
  * position as-needed.

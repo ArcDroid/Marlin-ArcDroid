@@ -1550,10 +1550,19 @@ void Planner::check_axes_activity() {
 
 #if HAS_LEVELING
 
-  constexpr xy_pos_t level_fulcrum = {
+  #if ENABLED(ARBITRARY_LEVEL_POINTS)
+    xy_pos_t Planner::level_fulcrum
+  #else
+    constexpr xy_pos_t level_fulcrum
+  #endif
+   = {
     TERN(Z_SAFE_HOMING, Z_SAFE_HOMING_X_POINT, X_HOME_POS),
     TERN(Z_SAFE_HOMING, Z_SAFE_HOMING_Y_POINT, Y_HOME_POS)
   };
+
+  void Planner::set_level_fulcrum(xy_pos_t &raw) {
+    level_fulcrum = raw;
+  }
 
   /**
    * rx, ry, rz - Cartesian positions in mm

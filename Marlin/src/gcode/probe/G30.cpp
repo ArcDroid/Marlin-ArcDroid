@@ -29,6 +29,10 @@
 #include "../../module/probe.h"
 #include "../../feature/bedlevel/bedlevel.h"
 
+#if ENABLED(ARBITRARY_LEVEL_POINTS)
+  #include "../../module/planner.h"
+#endif
+
 /**
  * G30: Do a single Z probe at the current XY
  *
@@ -49,7 +53,10 @@ void GcodeSuite::G30() {
   if (!probe.can_reach(pos)) return;
 
   // Disable leveling so the planner won't mess with us
-  TERN_(HAS_LEVELING, set_bed_leveling_enabled(false));
+  #if HAS_LEVELING
+    bool old_leveling = get_bed_leveling_enabled();
+    set_bed_leveling_enabled(false);
+  #endif
 
   remember_feedrate_scaling_off();
 
@@ -64,6 +71,15 @@ void GcodeSuite::G30() {
     probe.move_z_after_probing();
 
   report_current_position();
+
+  #if HAS_LEVELING
+    if (old_leveling) {
+      #if ENABLED(ARBITRARY_LEVEL_POINTS)
+        planner.set_level_fulcrum(current_position);
+      #endif
+      set_bed_leveling_enabled(old_leveling);
+    }
+  #endif
 }
 
 #endif // HAS_BED_PROBE

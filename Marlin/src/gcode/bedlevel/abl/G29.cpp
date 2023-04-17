@@ -107,6 +107,7 @@ public:
 
   #if ENABLED(ARBITRARY_LEVEL_POINTS)
     vector_3 points[3];
+    vector_3 start_point;
   #endif
 
   #if ABL_USES_GRID
@@ -282,6 +283,10 @@ G29_TYPE GcodeSuite::G29() {
 
     #if ANY(PROBE_MANUALLY, ARBITRARY_LEVEL_POINTS, AUTO_BED_LEVELING_LINEAR)
       abl.abl_probe_index = -1;
+      #if ENABLED(ARBITRARY_LEVEL_POINTS)
+        planner.synchronize();
+        abl.start_point = current_position;
+      #endif
     #endif
 
     abl.reenable = planner.leveling_active;
@@ -744,7 +749,7 @@ G29_TYPE GcodeSuite::G29() {
         // Retain the last probe position
         #if ENABLED(ARBITRARY_LEVEL_POINTS)
           set_position_from_encoders_if_lost(true);
-          abl.probePos = xy_pos_t(planner.position_cart);
+          abl.probePos = xy_pos_t(current_position);
           abl.points[i] = abl.probePos;
         #else
           abl.probePos = points[i];
@@ -757,11 +762,14 @@ G29_TYPE GcodeSuite::G29() {
         }
         TERN(ARBITRARY_LEVEL_POINTS, abl.,)points[i].z = abl.measured_z;
         #if ENABLED(ARBITRARY_LEVEL_POINTS)
-          if (abl.verbose_level) SERIAL_ECHOLNPAIR(";level point P", i + 1, " X", abl.points[i].x, " Y", abl.points[i].y, " Z", abl.points[i].z, "]");
+          auto logical = abl.points[i].asLogical();
+          if (abl.verbose_level) SERIAL_ECHOLNPAIR(";level point P", i + 1, " X", logical.x, " Y", logical.y, " Z", logical.z);
           // lift up again
-          do_blocking_move_to_z(abl.measured_z + 20);
-          // FIXME: use encoder define
-          disable_all_steppers();
+          do_blocking_move_to_z(abl.start_point.z);
+
+          #if HAS_CLOSEDLOOP_CONFIG
+            disable_all_steppers();
+          #endif
         #endif
       }
       #if ENABLED(ARBITRARY_LEVEL_POINTS)
@@ -778,7 +786,8 @@ G29_TYPE GcodeSuite::G29() {
         planner.bed_level_matrix = matrix_3x3::create_look_at(planeNormal);
 
         // Can't re-enable (on error) until the new grid is written
-        abl.reenable = false;
+        // abl.reenable = false;
+        planner.set_level_fulcrum(abl.points[2]);
       }
       } else {
         // continue for next point
