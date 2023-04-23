@@ -394,7 +394,7 @@ class Planner {
       #if ABL_PLANAR
         static matrix_3x3 bed_level_matrix; // Transform to compensate for bed level
         #if ENABLED(ARBITRARY_LEVEL_POINTS)
-          static xy_pos_t level_fulcrum;
+          static xyz_pos_t level_fulcrum;
         #endif
       #endif
       #if ENABLED(ENABLE_LEVELING_FADE_HEIGHT)
@@ -650,7 +650,7 @@ class Planner {
       static void unapply_leveling(xyz_pos_t &raw);
 
       #if ENABLED(ARBITRARY_LEVEL_POINTS)
-        static void set_level_fulcrum(xy_pos_t &raw);
+        static void set_level_fulcrum(xyz_pos_t &raw);
       #endif
 
       FORCE_INLINE static void force_unapply_leveling(xyz_pos_t &raw) {

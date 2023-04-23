@@ -925,9 +925,9 @@ G29_TYPE GcodeSuite::G29() {
         );
         float left_right = atan2f(-planner.bed_level_matrix.vectors[2][0], tz) * 180.0f / PI;
         SERIAL_ECHO("; bed_level_matrix_tilt X");
-        SERIAL_ECHO_F(front_back, 4);
-        SERIAL_CHAR('Y');
         SERIAL_ECHO_F(left_right, 4);
+        SERIAL_CHAR('Y');
+        SERIAL_ECHO_F(front_back, 4);
         SERIAL_EOL();
       }
 

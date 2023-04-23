@@ -1551,7 +1551,7 @@ void Planner::check_axes_activity() {
 #if HAS_LEVELING
 
   #if ENABLED(ARBITRARY_LEVEL_POINTS)
-    xy_pos_t Planner::level_fulcrum
+    xyz_pos_t Planner::level_fulcrum
   #else
     constexpr xy_pos_t level_fulcrum
   #endif
@@ -1560,9 +1560,11 @@ void Planner::check_axes_activity() {
     TERN(Z_SAFE_HOMING, Z_SAFE_HOMING_Y_POINT, Y_HOME_POS)
   };
 
-  void Planner::set_level_fulcrum(xy_pos_t &raw) {
-    level_fulcrum = raw;
-  }
+  #if ENABLED(ARBITRARY_LEVEL_POINTS)
+    void Planner::set_level_fulcrum(xyz_pos_t &raw) {
+      level_fulcrum = raw;
+    }
+  #endif
 
   /**
    * rx, ry, rz - Cartesian positions in mm
@@ -1573,8 +1575,8 @@ void Planner::check_axes_activity() {
 
     #if ABL_PLANAR
 
-      xy_pos_t d = raw - level_fulcrum;
-      bed_level_matrix.apply_rotation_xyz(d.x, d.y, raw.z);
+      xyz_pos_t d = raw - level_fulcrum;
+      bed_level_matrix.apply_rotation_xyz(d.x, d.y, d.z);
       raw = d + level_fulcrum;
 
     #elif HAS_MESH
@@ -1610,8 +1612,8 @@ void Planner::check_axes_activity() {
 
         matrix_3x3 inverse = matrix_3x3::transpose(bed_level_matrix);
 
-        xy_pos_t d = raw - level_fulcrum;
-        inverse.apply_rotation_xyz(d.x, d.y, raw.z);
+        xyz_pos_t d = raw - level_fulcrum;
+        inverse.apply_rotation_xyz(d.x, d.y, d.z);
         raw = d + level_fulcrum;
 
       #elif HAS_MESH
