@@ -46,10 +46,29 @@
   #include "../../lcd/extui/ui_api.h"
 #endif
 
+#if ENABLED(ABL_PLANAR)
+bool leveling_matrix_is_valid() {
+  bool result = true;
+  for (int r = 0; r < 3; r++) {
+    float magn = planner.bed_level_matrix.vectors[r].magnitude();
+    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR_P("leveling_matrix_is_valid r:", r, " magn:", magn);
+    if (isnan(magn) || magn < 0.9f || magn > 1.1f)
+    {
+      result = false;
+      break;
+    }
+  }
+  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR_P("leveling_matrix_is_valid: ", result);
+  return result;
+}
+#endif
+
 bool leveling_is_valid() {
   return TERN1(MESH_BED_LEVELING,          mbl.has_mesh())
       && TERN1(AUTO_BED_LEVELING_BILINEAR, !!bilinear_grid_spacing.x)
-      && TERN1(AUTO_BED_LEVELING_UBL,      ubl.mesh_is_valid());
+      && TERN1(AUTO_BED_LEVELING_UBL,      ubl.mesh_is_valid())
+      && TERN1(ABL_PLANAR,                 leveling_matrix_is_valid())
+  ;
 }
 
 bool get_bed_leveling_enabled() {
@@ -65,7 +84,7 @@ bool get_bed_leveling_enabled() {
  */
 void set_bed_leveling_enabled(const bool enable/*=true*/) {
 
-  const bool can_change = TERN1(AUTO_BED_LEVELING_BILINEAR, !enable || leveling_is_valid());
+  const bool can_change = !enable || leveling_is_valid();
 
   if (can_change && enable != planner.leveling_active) {
 

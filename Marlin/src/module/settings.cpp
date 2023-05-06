@@ -1709,6 +1709,9 @@ void MarlinSettings::postprocess() {
       {
         #if ABL_PLANAR
           EEPROM_READ(planner.bed_level_matrix);
+          if (!leveling_is_valid()) {
+            planner.bed_level_matrix.set_to_identity();
+          }
         #else
           for (uint8_t q = 9; q--;) EEPROM_READ(dummyf);
         #endif
