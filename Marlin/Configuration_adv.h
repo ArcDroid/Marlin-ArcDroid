@@ -3475,7 +3475,7 @@
   #define TORCH_HEIGHT_CONTROL_TRAPEZOID
 
   // enable THC debugging log
-  #define TORCH_HEIGHT_CONTROL_LOG
+  ////#define TORCH_HEIGHT_CONTROL_LOG
 #endif
 
 /**
