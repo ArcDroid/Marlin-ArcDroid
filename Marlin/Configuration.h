@@ -917,9 +917,9 @@
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
 #ifdef MINI_MODEL_2AM
-#define DEFAULT_MAX_FEEDRATE          { 5500, 5500, 60, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 5500, 5500, 30, 25 }
 #else
-#define DEFAULT_MAX_FEEDRATE          { 5500, 5500, 60, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 5500, 5500, 30, 25 }
 #endif
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
