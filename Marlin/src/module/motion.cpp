@@ -2142,7 +2142,7 @@ void set_axis_is_at_home(const AxisEnum axis) {
     DEBUG_ECHOLNPAIR("<<< set_axis_is_at_home(", AS_CHAR(axis_codes[axis]), ")");
   }
 }
-
+#define   COMMA ,
 #if HAS_WORKSPACE_OFFSET
   void update_workspace_offset(const AxisEnum axis) {
     workspace_offset[axis] = home_offset[axis] + position_shift[axis];
@@ -2153,7 +2153,7 @@ void set_axis_is_at_home(const AxisEnum axis) {
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Axis ", AS_CHAR(AXIS_CHAR(axis)),
       " home_offset = ", home_offset[axis],
       " position_shift = ", position_shift[axis],
-      TERN(ENCODER_SLED, " external_shift = ", external_shift[axis])
+      TERN_(ENCODER_SLED, " external_shift = " COMMA external_shift[axis] COMMA)
       " rotation = ", offset_rotation * 180);
 
     last_full_report = 0;
