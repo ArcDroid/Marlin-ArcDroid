@@ -39,6 +39,9 @@ void GcodeSuite::M922() {
     if (parser.seenval(axis_codes[i])) {
       const float v = parser.value_float();       // external offset in mm(!)
         external_shift[i] = v;
+        if (!all_axes_homed()) {
+          external_shift_zero[i] = v;
+        }
         update_workspace_offset((AxisEnum)i);
     }
   }

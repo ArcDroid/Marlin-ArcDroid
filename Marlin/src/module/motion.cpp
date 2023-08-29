@@ -178,6 +178,7 @@ xyz_pos_t cartes;
   xyz_pos_t position_shift{0};
   #if ENABLED(ENCODER_SLED)
     xyz_pos_t external_shift{0};
+    xyz_pos_t external_shift_zero{0};
   #endif
   coordinate_rotation_t offset_rotation = OFFSET_ROTATION_DEFAULT;
 #endif
@@ -209,7 +210,7 @@ inline void report_more_positions() {
 
       #if ENABLED(ENCODER_SLED)
         LOOP_LINEAR_AXES(i) {
-          o.offset.pos[i] += external_shift.pos[i];
+          o.offset.pos[i] += external_shift.pos[i] -  external_shift_zero.pos[i];
         }
       #endif
       if (o.rotation == OFFSET_ROTATION_180) {
@@ -2129,6 +2130,10 @@ void set_axis_is_at_home(const AxisEnum axis) {
 
   TERN_(BABYSTEP_DISPLAY_TOTAL, babystep.reset_total(axis));
 
+  #if ENABLED(ENCODER_SLED)
+    external_shift_zero[axis] = external_shift[axis];
+    update_workspace_offset(axis);
+  #endif
   #if HAS_POSITION_SHIFT && DISABLED(CNC_COORDINATE_SYSTEMS)
     position_shift[axis] = 0;
     update_workspace_offset(axis);
@@ -2148,12 +2153,12 @@ void set_axis_is_at_home(const AxisEnum axis) {
     workspace_offset[axis] = home_offset[axis] + position_shift[axis];
 
     #if ENABLED(ENCODER_SLED)
-      workspace_offset[axis] += external_shift[axis];
+      workspace_offset[axis] += external_shift[axis] - external_shift_zero[axis];
     #endif
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Axis ", AS_CHAR(AXIS_CHAR(axis)),
       " home_offset = ", home_offset[axis],
       " position_shift = ", position_shift[axis],
-      TERN_(ENCODER_SLED, " external_shift = " COMMA external_shift[axis] COMMA)
+      TERN_(ENCODER_SLED, " external_shift = " COMMA external_shift[axis] - external_shift_zero[axis] COMMA)
       " rotation = ", offset_rotation * 180);
 
     last_full_report = 0;
