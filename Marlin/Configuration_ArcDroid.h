@@ -1731,20 +1731,6 @@
  */
 #define PRINTJOB_TIMER_AUTOSTART
 
-/**
- * Print Counter
- *
- * Track statistical data such as:
- *
- *  - Total print jobs
- *  - Total successful print jobs
- *  - Total failed print jobs
- *  - Total time printing
- *
- * View the current statistics with M78.
- */
-#define PRINTCOUNTER
-
 //=============================================================================
 //============================= LCD and SD support ============================
 //=============================================================================
