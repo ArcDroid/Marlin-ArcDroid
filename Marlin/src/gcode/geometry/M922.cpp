@@ -35,18 +35,21 @@ void GcodeSuite::M922() {
 
   bool sync_XYZE = false;
 
-  LOOP_LINEAR_AXES(i) {
-    if (parser.seenval(axis_codes[i])) {
-      const float v = parser.value_float();       // external offset in mm(!)
-        external_shift[i] = v;
-        if (!all_axes_homed()) {
-          external_shift_zero[i] = v;
-        }
-        update_workspace_offset((AxisEnum)i);
-    }
-  }
+  if(!all_axes_trusted()) {
 
-  if   (sync_XYZE) sync_plan_position();
+    LOOP_LINEAR_AXES(i) {
+      if (parser.seenval(axis_codes[i])) {
+        const float v = parser.value_float();       // external offset in mm(!)
+          external_shift[i] = v;
+          if (!all_axes_homed()) {
+            external_shift_zero[i] = v;
+          }
+          update_workspace_offset((AxisEnum)i);
+      }
+    }
+
+    if   (sync_XYZE) sync_plan_position();
+  }
 }
 
 #endif // CNC_COORDINATE_SYSTEMS

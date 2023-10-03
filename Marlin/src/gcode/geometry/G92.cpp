@@ -63,7 +63,10 @@ void GcodeSuite::G92() {
 
     #if ENABLED(CNC_COORDINATE_SYSTEMS)
       case 1:                                                         // G92.1 - Zero the Workspace Offset
-        LOOP_LINEAR_AXES(i) if (position_shift[i]) {
+        LOOP_LINEAR_AXES(i) {
+          #if ENABLED(ENCODER_SLED)
+            external_shift_zero[i] = external_shift[i];
+          #endif
           position_shift[i] = 0;
           update_workspace_offset((AxisEnum)i);
         }
