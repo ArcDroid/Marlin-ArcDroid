@@ -816,6 +816,44 @@ void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
   // Update the LVGL interface
   TERN_(HAS_TFT_LVGL_UI, LV_TASK_HANDLER());
 
+  #if ENABLED(ENCODER_SLED)
+    static uint32_t ext_millis = 0;
+    if (!axis_is_trusted(X_AXIS) && !axis_is_trusted(Y_AXIS)
+      && !(planner.has_blocks_queued() || planner.cleaning_buffer_counter))
+    {
+      uint32_t time = millis();
+
+      if (ext_millis == 0) {
+        ext_millis = time + 100;
+      }
+      else if (ELAPSED(time, ext_millis)) {
+        LOOP_LINEAR_AXES(i) {
+          if ((external_shift_set & (1<<i)) && external_shift.pos[i] != external_shift_next[i]) {
+            external_shift[i] = external_shift_next[i];
+
+            if (!all_axes_homed()) {
+              external_shift_zero[i] = external_shift[i];
+            }
+
+            #if ENABLED(DEBUG_LEVELING_FEATURE)
+            if (DEBUGGING(LEVELING)) {
+                DEBUG_ECHOPAIR("idle external_shift i:", i, "x:", external_shift.pos[i], " all_homed:", all_axes_homed());
+                DEBUG_EOL();
+            }
+            #endif
+
+            update_workspace_offset((AxisEnum)i);
+          }
+        }
+        ext_millis = 0;
+      }
+
+    }
+    else if (ext_millis != 0) {
+      ext_millis = 0;
+    }
+  #endif
+
   IDLE_DONE:
   TERN_(MARLIN_DEV_MODE, idle_depth--);
   return;

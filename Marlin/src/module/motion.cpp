@@ -177,8 +177,10 @@ xyz_pos_t cartes;
   // The distance that XYZ has been offset by G92. Reset by G28.
   xyz_pos_t position_shift{0};
   #if ENABLED(ENCODER_SLED)
+    xyz_pos_t external_shift_next{0};
     xyz_pos_t external_shift{0};
     xyz_pos_t external_shift_zero{0};
+    linear_axis_bits_t external_shift_set{0};
   #endif
   coordinate_rotation_t offset_rotation = OFFSET_ROTATION_DEFAULT;
 #endif
@@ -210,7 +212,7 @@ inline void report_more_positions() {
 
       #if ENABLED(ENCODER_SLED)
         LOOP_LINEAR_AXES(i) {
-          o.offset.pos[i] += external_shift.pos[i] -  external_shift_zero.pos[i];
+          o.offset.pos[i] += external_shift_rel(i);
         }
       #endif
       if (o.rotation == OFFSET_ROTATION_180) {
@@ -218,6 +220,13 @@ inline void report_more_positions() {
         o.offset.y = -o.offset.y;
       }
       SERIAL_ECHOPAIR(" CS:", gcode.active_coordinate_system + 54, " OX:", o.offset.x, " OY:", o.offset.y, " OZ:", o.offset.z, " OR:", o.rotation * 180);
+      LOOP_LINEAR_AXES(i) {
+        if (external_shift_set & (1<<i)) {
+          SERIAL_ECHO(" E");
+          SERIAL_CHAR(AXIS_CHAR(i));
+          SERIAL_ECHOPAIR(":", external_shift_rel(i));
+        }
+      }
     } else {
       SERIAL_ECHO(" CS:53 OX:0 OY:0 OZ:0 OR:0");
     }
@@ -2153,12 +2162,12 @@ void set_axis_is_at_home(const AxisEnum axis) {
     workspace_offset[axis] = home_offset[axis] + position_shift[axis];
 
     #if ENABLED(ENCODER_SLED)
-      workspace_offset[axis] += external_shift[axis] - external_shift_zero[axis];
+      workspace_offset[axis] += external_shift_rel(axis);
     #endif
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Axis ", AS_CHAR(AXIS_CHAR(axis)),
       " home_offset = ", home_offset[axis],
       " position_shift = ", position_shift[axis],
-      TERN_(ENCODER_SLED, " external_shift = " COMMA external_shift[axis] - external_shift_zero[axis] COMMA)
+      TERN_(ENCODER_SLED, " external_shift = " COMMA external_shift_rel(axis) COMMA)
       " rotation = ", offset_rotation * 180);
 
     last_full_report = 0;

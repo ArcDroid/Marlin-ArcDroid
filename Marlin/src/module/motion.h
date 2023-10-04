@@ -399,8 +399,12 @@ FORCE_INLINE bool all_axes_trusted()                        { return linear_bits
   #if HAS_POSITION_SHIFT
     extern xyz_pos_t position_shift;
     #if ENABLED(ENCODER_SLED)
+      extern xyz_pos_t external_shift_next;
       extern xyz_pos_t external_shift;
+      extern linear_axis_bits_t external_shift_set;
       extern xyz_pos_t external_shift_zero;
+      extern bool external_shift_lock;
+      #define external_shift_rel(AXIS) (external_shift.pos[AXIS] -  external_shift_zero.pos[AXIS])
     #endif
     extern coordinate_rotation_t offset_rotation;
   #endif

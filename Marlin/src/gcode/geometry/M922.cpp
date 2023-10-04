@@ -33,22 +33,24 @@
  */
 void GcodeSuite::M922() {
 
-  bool sync_XYZE = false;
+  bool sync_XYZE = true;
 
-  if(!all_axes_trusted()) {
+  // M922.1 zero external offset
+  if (parser.subcode == 1) {
+    external_shift_zero = external_shift;
+    return;
+  }
+
+  // only update when motors are off
+  if(parser.subcode == 0) {
 
     LOOP_LINEAR_AXES(i) {
       if (parser.seenval(axis_codes[i])) {
         const float v = parser.value_float();       // external offset in mm(!)
-          external_shift[i] = v;
-          if (!all_axes_homed()) {
-            external_shift_zero[i] = v;
-          }
-          update_workspace_offset((AxisEnum)i);
+        external_shift_next[i] = v;
+        external_shift_set |= (1<<i);
       }
     }
-
-    if   (sync_XYZE) sync_plan_position();
   }
 }
 
