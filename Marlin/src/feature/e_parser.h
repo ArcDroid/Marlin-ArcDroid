@@ -41,6 +41,8 @@ extern bool wait_for_user, wait_for_heatup;
   void quickresume_stepper();
 #endif
 
+void queue_ok_instant();
+
 void HAL_reboot();
 
 class EmergencyParser {
@@ -53,7 +55,7 @@ public:
     EP_N,
     EP_M,
     EP_M1,
-    EP_M10, EP_M108,
+    EP_M10, EP_M108, EP_M101,
     EP_M11, EP_M112,
     EP_M4, EP_M41, EP_M410,
     #if ENABLED(HOST_PROMPT_SUPPORT)
@@ -158,7 +160,7 @@ public:
         }
         break;
 
-      case EP_M10: state = (c == '8') ? EP_M108 : EP_IGNORE; break;
+      case EP_M10: state = (c == '8') ? EP_M108 : (c == '1') ? EP_M101 : EP_IGNORE; break;
       case EP_M11: state = (c == '2') ? EP_M112 : EP_IGNORE; break;
       case EP_M4:  state = (c == '1') ? EP_M41  : EP_IGNORE; break;
       case EP_M41: state = (c == '0') ? EP_M410 : EP_IGNORE; break;
@@ -195,6 +197,7 @@ public:
       default:
         if (ISEOL(c)) {
           if (enabled) switch (state) {
+            case EP_M101: queue_ok_instant(); break;
             case EP_M108: wait_for_user = wait_for_heatup = false; break;
             case EP_M112: killed_by_M112 = true; break;
             case EP_M410: quickstop_by_M410 = true; break;

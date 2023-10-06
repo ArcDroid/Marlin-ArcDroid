@@ -236,4 +236,6 @@ private:
 
 extern GCodeQueue queue;
 
+void queue_ok_instant();
+
 extern const char G28_STR[];

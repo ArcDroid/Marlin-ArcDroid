@@ -257,7 +257,6 @@ void GCodeQueue::RingBuffer::ok_to_send() {
 void GCodeQueue::RingBuffer::ok_instant() {
   SERIAL_ECHOPGM(STR_OK);
   #if ENABLED(ADVANCED_OK)
-    SERIAL_ECHO(' ');
     SERIAL_ECHOPAIR_P(SP_P_STR, int(planner.moves_free()),
                       SP_B_STR, int(BUFSIZE - length));
   #endif
@@ -683,4 +682,8 @@ void GCodeQueue::advance() {
 
   // The queue may be reset by a command handler or by code invoked by idle() within a handler
   ring_buffer.advance_pos(ring_buffer.index_r, -1);
+}
+
+void queue_ok_instant() {
+  queue.ok_instant();
 }
