@@ -1,0 +1,25 @@
++++ packages\framework-arduinoststm32\cores\arduino\USBSerial.h
+
+  uint32_t getInternalState();
+
++++ packages\framework-arduinoststm32\cores\arduino\USBSerial.cpp
+
+uint32_t USBSerial::getInternalState()
+{
+  uint32_t state;
+  int time;
+  uint32_t line;
+  CDC_get_state(&state, &time, &line);
+  state <<= 16;
+  state |= CDC_connected();
+  return state;
+}
+
++++ packages\framework-arduinoststm32\cores\arduino\stm32\usb\cdc\usbd_cdc_if.c
+
+bool CDC_get_state(uint32_t* dev_state, int* ttime, uint32_t * linestate) {
+  *dev_state = hUSBD_Device_CDC.dev_state;
+  *ttime = (int32_t)(HAL_GetTick() - transmitStart);
+  *linestate = lineState;
+  return true;
+}
