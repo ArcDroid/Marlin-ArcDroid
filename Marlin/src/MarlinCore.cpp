@@ -818,20 +818,27 @@ void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
 
   #if ENABLED(ENCODER_SLED)
     static uint32_t ext_millis = 0;
+    static uint32_t ext_last_state = 0;
     if (!axis_is_trusted(X_AXIS) && !axis_is_trusted(Y_AXIS)
       && !(planner.has_blocks_queued() || planner.cleaning_buffer_counter))
     {
       uint32_t time = millis();
 
       if (ext_millis == 0) {
+        // axis stopped, start the offset update delay
         ext_millis = time + 100;
       }
       else if (ELAPSED(time, ext_millis)) {
+        // offset delay passed, update the external offset
+
+        bool any_updated = false;
+
         LOOP_LINEAR_AXES(i) {
-          if ((external_shift_set & (1<<i)) && external_shift.pos[i] != external_shift_next[i]) {
+          if ((external_shift_set & (1<<i)) && external_shift[i] != external_shift_next[i]) {
             external_shift[i] = external_shift_next[i];
 
             if (!all_axes_homed()) {
+              // keep resetting external offset when not homed
               external_shift_zero[i] = external_shift[i];
             }
 
@@ -843,13 +850,67 @@ void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
             #endif
 
             update_workspace_offset((AxisEnum)i);
+            any_updated = true;
           }
         }
-        ext_millis = 0;
+
+        if (external_shift_set && !any_updated) {
+          uint32_t state = SerialUSB.getInternalState();
+          bool connected = state & 1;
+          int usb_state = state >> 16;
+
+          static uint32_t reset_time = 0;
+          static bool wait_reset = false;
+          static int reset_counter = 0;
+
+          uint32_t time = millis();
+
+          if (!connected && reset_counter < 5) {
+            if (reset_time == 0) {
+              // start 2 second reset timer
+              reset_time = time + 2000;
+            }
+            else if (!wait_reset && ELAPSED(time, reset_time)) {
+              // reset usb serial port
+              SerialUSB.end();
+              if (DEBUGGING(LEVELING)) {
+                DEBUG_ECHOPAIR("usb reset ", reset_counter);
+                DEBUG_EOL();
+              }
+              SerialUSB.begin();
+              reset_counter++;
+              wait_reset = true;
+              // back off until next reset doubles each time
+              reset_time = time + (1<<reset_counter)*1000;
+            }
+            else if (wait_reset && ELAPSED(time, reset_time)) {
+              // try reset again
+              if (DEBUGGING(LEVELING)) {
+                DEBUG_ECHOPAIR("usb reset elapsed", reset_counter);
+                DEBUG_EOL();
+              }
+              wait_reset = false;
+            }
+          } else if (connected) {
+            // stop timer
+            reset_time = 0;
+            reset_counter = 0;
+            wait_reset = false;
+          }
+
+          if (state != ext_last_state) {
+            if (DEBUGGING(LEVELING)) {
+              DEBUG_ECHOPAIR("usb state con:", connected, " state:", usb_state);
+              DEBUG_EOL();
+            }
+            ext_last_state = state;
+          }
+        }
       }
 
     }
     else if (ext_millis != 0) {
+      // axis active, stop the update delay timer
       ext_millis = 0;
     }
   #endif
