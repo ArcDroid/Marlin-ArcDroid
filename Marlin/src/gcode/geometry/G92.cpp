@@ -118,7 +118,12 @@ void GcodeSuite::G92() {
         #if HAS_POSITION_SHIFT
           if (parser.seenval('R')) {
             bool rotate = parser.value_bool();
-            offset_rotation = rotate ? OFFSET_ROTATION_180 : OFFSET_ROTATION_0;
+            coordinate_rotation_t new_offset_rotation = rotate ? OFFSET_ROTATION_180 : OFFSET_ROTATION_0;
+            if (offset_rotation != new_offset_rotation) {
+              offset_rotation = new_offset_rotation;
+              update_workspace_offset(X_AXIS);
+              update_workspace_offset(Y_AXIS);
+            }
           }
         #endif
   }

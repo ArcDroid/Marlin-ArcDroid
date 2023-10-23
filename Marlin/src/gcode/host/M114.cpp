@@ -26,6 +26,8 @@
 #include "../../module/motion.h"
 #include "../../module/stepper.h"
 
+#include <usbd_cdc_if.h>
+
 #if ENABLED(M114_DETAIL)
 
   #if HAS_L64XX
@@ -241,6 +243,24 @@ void GcodeSuite::M114() {
     }
     if (parser.seen_test('E')) {
       SERIAL_ECHOLNPAIR("Count E:", stepper.position(E_AXIS));
+      return;
+    }
+    // TODO: remove this test code
+    if (parser.seen_test('U')) {
+      // test current usb status
+      uint32_t dev_state;
+      int ttime;
+      uint32_t linestate;
+      CDC_get_state(&dev_state, &ttime, &linestate);
+      SERIAL_ECHOLNPAIR("usb dev_state", dev_state, " ttime", ttime, " linestate", linestate);
+      return;
+    }
+    if (parser.seen_test('V')) {
+      // resets usb device
+      SerialUSB.end();
+      safe_delay(100);
+      SerialUSB.begin();
+      SERIAL_ECHOLNPAIR("usb reset");
       return;
     }
   #endif

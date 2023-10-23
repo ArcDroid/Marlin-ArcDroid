@@ -219,7 +219,7 @@ inline void report_more_positions() {
         o.offset.x = -o.offset.x;
         o.offset.y = -o.offset.y;
       }
-      SERIAL_ECHOPAIR(" CS:", gcode.active_coordinate_system + 54, " OX:", o.offset.x, " OY:", o.offset.y, " OZ:", o.offset.z, " OR:", o.rotation * 180);
+      SERIAL_ECHOPAIR(" CS:", gcode.active_coordinate_system + 54, " OX:", o.offset.x, " OY:", o.offset.y, " OR:", o.rotation * 180);
       LOOP_LINEAR_AXES(i) {
         if (external_shift_set & (1<<i)) {
           SERIAL_ECHO(" E");
@@ -228,7 +228,7 @@ inline void report_more_positions() {
         }
       }
     } else {
-      SERIAL_ECHO(" CS:53 OX:0 OY:0 OZ:0 OR:0");
+      SERIAL_ECHO(" CS:53 OX:0 OY:0 OR:0");
     }
   #endif
   //TERN_(IS_SCARA, scara_report_positions());
@@ -251,7 +251,8 @@ inline void report_logical_position(const xyze_pos_t &rpos) {
   #endif
 }
 
-static millis_t last_full_report = 0;
+#define FULL_REPORT_INTERVAL 500
+static millis_t next_full_report = 0;
 
 // Report the real current position according to the steppers.
 // Forward kinematics and un-leveling are applied.
@@ -301,8 +302,8 @@ void report_real_position() {
   //SERIAL_ECHOPAIR(" ErrA:", da, " ErrB:", db);
   UNUSED(da); UNUSED(db);
   const millis_t ms = millis();
-  if (ms > last_full_report + 100) {
-    last_full_report = ms;
+  if (next_full_report == 0 || ELAPSED(ms, next_full_report)) {
+    next_full_report = ms + FULL_REPORT_INTERVAL;
     report_more_positions();
   }
   else {
@@ -315,8 +316,8 @@ void report_current_position() {
   report_logical_position(current_position);
   stepper.report_positions();
   const millis_t ms = millis();
-  if (ms > last_full_report + 100) {
-    last_full_report = ms;
+  if (next_full_report == 0 || ELAPSED(ms, next_full_report)) {
+    next_full_report = ms + FULL_REPORT_INTERVAL;
     report_more_positions();
   }
   else {
@@ -2170,7 +2171,7 @@ void set_axis_is_at_home(const AxisEnum axis) {
       TERN_(ENCODER_SLED, " external_shift = " COMMA external_shift_rel(axis) COMMA)
       " rotation = ", offset_rotation * 180);
 
-    last_full_report = 0;
+    next_full_report = 0;
   }
 #endif
 

@@ -26,15 +26,13 @@
 #if ENABLED(ENCODER_SLED)
 
 #include "../../module/stepper.h"
+#include "../../module/temperature.h"
 
 
 /**
  * M922: apply external offset to machine coordinates
  */
 void GcodeSuite::M922() {
-
-  bool sync_XYZE = true;
-
   // M922.1 zero external offset
   if (parser.subcode == 1) {
     external_shift_zero = external_shift;
@@ -50,6 +48,13 @@ void GcodeSuite::M922() {
         external_shift_next[i] = v;
         external_shift_set |= (1<<i);
       }
+    }
+    if (external_shift_set) {
+      // reduce traffic on the scale port by disabling auto-reporting on it
+      auto mask = position_auto_reporter.report_port_mask;
+      mask = position_auto_reporter.report_port_mask.combineMinus(multiSerial.portMask);
+      position_auto_reporter.report_port_mask = mask;
+      thermalManager.auto_reporter.report_port_mask = mask;
     }
   }
 }

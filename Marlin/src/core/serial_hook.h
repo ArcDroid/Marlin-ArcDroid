@@ -36,6 +36,7 @@ class SerialMask {
 public:
   inline constexpr bool enabled(const SerialMask PortMask) const    { return mask & PortMask.mask; }
   inline constexpr SerialMask combine(const SerialMask other) const { return SerialMask(mask | other.mask); }
+  inline constexpr SerialMask combineMinus(const SerialMask other) const { return SerialMask(mask & ~other.mask); }
   inline constexpr SerialMask operator<< (const int offset) const   { return SerialMask(mask << offset); }
   static inline SerialMask from(const serial_index_t index) {
     if (index.valid()) return SerialMask(_BV(index.index));
