@@ -41,8 +41,6 @@ extern bool wait_for_user, wait_for_heatup;
   void quickresume_stepper();
 #endif
 
-void queue_ok_instant();
-
 void HAL_reboot();
 
 class EmergencyParser {
@@ -75,6 +73,7 @@ public:
 
   static bool killed_by_M112;
   static bool quickstop_by_M410;
+  static bool m101_requested;
 
   #if ENABLED(HOST_PROMPT_SUPPORT)
     static uint8_t M876_reason;
@@ -197,7 +196,7 @@ public:
       default:
         if (ISEOL(c)) {
           if (enabled) switch (state) {
-            case EP_M101: queue_ok_instant(); break;
+            case EP_M101: m101_requested = true; break;
             case EP_M108: wait_for_user = wait_for_heatup = false; break;
             case EP_M112: killed_by_M112 = true; break;
             case EP_M410: quickstop_by_M410 = true; break;

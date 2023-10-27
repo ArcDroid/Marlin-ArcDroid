@@ -1218,6 +1218,12 @@ void Temperature::manage_heater() {
       emergency_parser.quickstop_by_M410 = false; // quickstop_stepper may call idle so clear this now!
       quickstop_stepper();
     }
+
+    if (emergency_parser.m101_requested) {
+      // skip the queue, respond asap
+      queue.ok_instant();
+      emergency_parser.m101_requested = false;
+    }
   #endif
 
   if (!updateTemperaturesIfReady()) return; // Will also reset the watchdog if temperatures are ready

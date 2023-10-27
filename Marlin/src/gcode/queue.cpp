@@ -683,7 +683,3 @@ void GCodeQueue::advance() {
   // The queue may be reset by a command handler or by code invoked by idle() within a handler
   ring_buffer.advance_pos(ring_buffer.index_r, -1);
 }
-
-void queue_ok_instant() {
-  queue.ok_instant();
-}
