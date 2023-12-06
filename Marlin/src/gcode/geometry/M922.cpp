@@ -36,6 +36,9 @@ void GcodeSuite::M922() {
   // M922.1 zero external offset
   if (parser.subcode == 1) {
     external_shift_zero = external_shift;
+    LOOP_LINEAR_AXES(i) {
+      update_workspace_offset((AxisEnum)i);
+    }
     return;
   }
 
